@@ -18,8 +18,8 @@ contract IssuerDAO is AccessControl, ReentrancyGuard, Pausable {
     bytes32 public constant VOTER_ROLE = keccak256("VOTER_ROLE");
 
     // DAO Configuration
-    uint256 public votingPeriod = 7 days;
-    uint256 public votingDelay = 1 days;
+    uint256 public votingPeriod = 5 minutes;
+    uint256 public votingDelay = 30 seconds;
     uint256 public proposalThreshold = 1; // Minimum votes to create proposal
     uint256 public quorumPercentage = 50; // 50% quorum required
 
@@ -506,46 +506,47 @@ contract IssuerDAO is AccessControl, ReentrancyGuard, Pausable {
         emit VotingPowerUpdated(voterAddress, newVotingPower);
     }
 
+    // Add this struct after the Proposal struct definition
+    struct ProposalView {
+        uint256 id;
+        address proposer;
+        ProposalAction action;
+        address targetIssuer;
+        string description;
+        uint256 forVotes;
+        uint256 againstVotes;
+        uint256 abstainVotes;
+        uint256 startBlock;
+        uint256 endBlock;
+        uint256 eta;
+        bool canceled;
+        bool executed;
+    }
+
     /**
-     * @dev Get proposal details
+     * @dev Get proposal details - Returns struct to avoid stack too deep
      */
     function getProposal(
         uint256 proposalId
-    )
-        external
-        view
-        returns (
-            uint256 id,
-            address proposer,
-            ProposalAction action,
-            address targetIssuer,
-            string memory description,
-            uint256 forVotes,
-            uint256 againstVotes,
-            uint256 abstainVotes,
-            uint256 startBlock,
-            uint256 endBlock,
-            uint256 eta,
-            bool canceled,
-            bool executed
-        )
-    {
+    ) external view returns (ProposalView memory) {
         Proposal storage p = proposals[proposalId];
-        return (
-            p.id,
-            p.proposer,
-            p.action,
-            p.targetIssuer,
-            p.description,
-            p.forVotes,
-            p.againstVotes,
-            p.abstainVotes,
-            p.startBlock,
-            p.endBlock,
-            p.eta,
-            p.canceled,
-            p.executed
-        );
+
+        return
+            ProposalView({
+                id: p.id,
+                proposer: p.proposer,
+                action: p.action,
+                targetIssuer: p.targetIssuer,
+                description: p.description,
+                forVotes: p.forVotes,
+                againstVotes: p.againstVotes,
+                abstainVotes: p.abstainVotes,
+                startBlock: p.startBlock,
+                endBlock: p.endBlock,
+                eta: p.eta,
+                canceled: p.canceled,
+                executed: p.executed
+            });
     }
 
     /**
