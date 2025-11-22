@@ -1,148 +1,196 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react";
 
-interface SkillNode {
-  id: string
-  name: string
-  status: "verified" | "pending" | "expired"
-  endorsements: number
+export interface SkillNode {
+  id: string;
+  name: string;
+  status: "verified" | "pending" | "expired";
+  endorsements: number;
 }
 
 interface SkillConstellationProps {
-  skills: SkillNode[]
-  onNodeClick?: (skill: SkillNode) => void
+  skills: SkillNode[];
+  onNodeClick?: (skill: SkillNode) => void;
 }
 
-export function SkillConstellation({ skills, onNodeClick }: SkillConstellationProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [selectedSkill, setSelectedSkill] = useState<SkillNode | null>(null)
-  const animationRef = useRef<number>()
+export function SkillConstellation({
+  skills,
+  onNodeClick,
+}: SkillConstellationProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<number>();
+  const nodePositionsRef = useRef<
+    { id: string; x: number; y: number; radius: number }[]
+  >([]);
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
 
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    // Set canvas size
-    canvas.width = canvas.offsetWidth
-    canvas.height = canvas.offsetHeight
+    const handleResize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = container.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
+      ctx.scale(dpr, dpr);
+    };
 
-    const centerX = canvas.width / 2
-    const centerY = canvas.height / 2
-    const radius = Math.min(canvas.width, canvas.height) / 3
+    handleResize();
+    window.addEventListener("resize", handleResize);
 
-    let animationTime = 0
+    let animationTime = 0;
 
     const animate = () => {
-      animationTime += 0.01
+      animationTime += 0.003; // Slightly slower rotation for elegance
 
-      // Clear canvas
-      ctx.fillStyle = "rgba(10, 14, 39, 0.1)"
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      const width = canvas.width / (window.devicePixelRatio || 1);
+      const height = canvas.height / (window.devicePixelRatio || 1);
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const orbitRadius = Math.min(width, height) / 3;
 
-      // Draw center node (You)
-      const youX = centerX
-      const youY = centerY
-      const youSize = 15
+      ctx.clearRect(0, 0, width, height);
 
-      ctx.fillStyle = "#e0e8ff"
-      ctx.beginPath()
-      ctx.arc(youX, youY, youSize, 0, Math.PI * 2)
-      ctx.fill()
+      // Draw "You" (Center Node)
+      const youSize = 15;
 
-      // Glow around center
-      const glowGradient = ctx.createRadialGradient(youX, youY, youSize, youX, youY, youSize * 2)
-      glowGradient.addColorStop(0, "rgba(0, 212, 255, 0.3)")
-      glowGradient.addColorStop(1, "rgba(0, 212, 255, 0)")
-      ctx.fillStyle = glowGradient
-      ctx.beginPath()
-      ctx.arc(youX, youY, youSize * 2, 0, Math.PI * 2)
-      ctx.fill()
+      // Halo
+      const youGradient = ctx.createRadialGradient(
+        centerX,
+        centerY,
+        5,
+        centerX,
+        centerY,
+        youSize * 2
+      );
+      youGradient.addColorStop(0, "rgba(255, 255, 255, 0.9)");
+      youGradient.addColorStop(0.5, "rgba(59, 130, 246, 0.4)"); // Blue glow
+      youGradient.addColorStop(1, "rgba(59, 130, 246, 0)");
+      ctx.fillStyle = youGradient;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, youSize * 2, 0, Math.PI * 2);
+      ctx.fill();
 
-      // Draw skill nodes and connections
+      // Core
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      nodePositionsRef.current = [];
+
       skills.forEach((skill, index) => {
-        const angle = (index / skills.length) * Math.PI * 2 + animationTime * 0.5
-        const x = centerX + Math.cos(angle) * radius
-        const y = centerY + Math.sin(angle) * radius
+        const angle = (index / skills.length) * Math.PI * 2 + animationTime;
+        const x = centerX + Math.cos(angle) * orbitRadius;
+        const y = centerY + Math.sin(angle) * orbitRadius;
 
-        // Draw connection line
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.moveTo(youX, youY)
-        ctx.lineTo(x, y)
-        ctx.stroke()
+        nodePositionsRef.current.push({ id: skill.id, x, y, radius: 20 });
 
-        // Determine node color based on status
-        let nodeColor = "#06b6d4" // cyan for verified
-        if (skill.status === "expired") nodeColor = "#92400e" // rust
-        if (skill.status === "pending") nodeColor = "#fbbf24" // gold
+        let mainColor = "#3b82f6"; // Blue (Verified default)
+        let glowColor = "rgba(59, 130, 246, 0.4)";
+        let isExpired = false;
 
-        // Draw node
-        const nodeSize = 8
-        ctx.fillStyle = nodeColor
-        ctx.beginPath()
-        ctx.arc(x, y, nodeSize, 0, Math.PI * 2)
-        ctx.fill()
+        if (skill.status === "expired") {
+          mainColor = "#7f1d1d"; // Dark Red/Rust
+          glowColor = "rgba(127, 29, 29, 0.2)";
+          isExpired = true;
+        } else if (skill.status === "pending") {
+          mainColor = "#f59e0b"; // Amber
+          glowColor = "rgba(245, 158, 11, 0.4)";
+        } else if (skill.status === "verified") {
+          mainColor = "#06b6d4"; // Cyan
+          glowColor = "rgba(6, 182, 212, 0.4)";
+        }
 
-        // Glow effect
-        const glowGradient = ctx.createRadialGradient(x, y, nodeSize, x, y, nodeSize * 3)
-        glowGradient.addColorStop(0, `${nodeColor}66`)
-        glowGradient.addColorStop(1, `${nodeColor}00`)
-        ctx.fillStyle = glowGradient
-        ctx.beginPath()
-        ctx.arc(x, y, nodeSize * 3, 0, Math.PI * 2)
-        ctx.fill()
-      })
+        // Connection Line
+        const gradient = ctx.createLinearGradient(centerX, centerY, x, y);
+        gradient.addColorStop(0, "rgba(255, 255, 255, 0)");
+        gradient.addColorStop(
+          1,
+          isExpired ? "rgba(127, 29, 29, 0.3)" : "rgba(6, 182, 212, 0.3)"
+        );
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
 
-      animationRef.current = requestAnimationFrame(animate)
-    }
+        // Node Glow
+        if (!isExpired) {
+          const glowGrad = ctx.createRadialGradient(x, y, 5, x, y, 30);
+          glowGrad.addColorStop(0, glowColor);
+          glowGrad.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.fillStyle = glowGrad;
+          ctx.beginPath();
+          ctx.arc(x, y, 30, 0, Math.PI * 2);
+          ctx.fill();
+        }
 
-    animate()
+        // Node Body
+        ctx.fillStyle = mainColor;
+        ctx.beginPath();
+        ctx.arc(x, y, isExpired ? 6 : 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Label
+        ctx.fillStyle = isExpired ? "#71717a" : "#e4e4e7";
+        ctx.font = "500 12px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(skill.name, x, y + 24);
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
 
     return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current)
+      window.removeEventListener("resize", handleResize);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, [skills]);
+
+  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width / (window.devicePixelRatio || 1);
+    const scaleY = canvas.height / rect.height / (window.devicePixelRatio || 1);
+    const clickX = (e.clientX - rect.left) * scaleX;
+    const clickY = (e.clientY - rect.top) * scaleY;
+
+    for (const node of nodePositionsRef.current) {
+      const distance = Math.sqrt(
+        (clickX - node.x) ** 2 + (clickY - node.y) ** 2
+      );
+      if (distance < node.radius + 10) {
+        const clickedSkill = skills.find((s) => s.id === node.id);
+        if (clickedSkill && onNodeClick) onNodeClick(clickedSkill);
+        break;
+      }
     }
-  }, [skills])
+  };
 
   return (
-    <div className="relative w-full h-80 rounded-xl overflow-hidden glass-effect border border-primary/30 glow-box-cyan">
+    <div
+      ref={containerRef}
+      className="relative w-full h-full min-h-[400px] overflow-hidden cursor-pointer"
+    >
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-pointer"
-        onClick={(e) => {
-          const canvas = canvasRef.current
-          if (!canvas) return
-          const rect = canvas.getBoundingClientRect()
-          const x = e.clientX - rect.left
-          const y = e.clientY - rect.top
-
-          const centerX = canvas.width / 2
-          const centerY = canvas.height / 2
-
-          // Check distance to nodes
-          const radius = Math.min(canvas.width, canvas.height) / 3
-          for (let i = 0; i < skills.length; i++) {
-            const angle = (i / skills.length) * Math.PI * 2
-            const nodeX = centerX + Math.cos(angle) * radius
-            const nodeY = centerY + Math.sin(angle) * radius
-            const distance = Math.sqrt((x - nodeX) ** 2 + (y - nodeY) ** 2)
-            if (distance < 20) {
-              setSelectedSkill(skills[i])
-              onNodeClick?.(skills[i])
-              break
-            }
-          }
-        }}
+        className="w-full h-full block"
+        onClick={handleClick}
       />
-
-      {/* Info overlay */}
-      <div className="absolute bottom-4 left-4 right-4 text-xs text-muted-foreground text-center bg-background/80 backdrop-blur px-3 py-2 rounded">
-        Click on a skill node to view details
-      </div>
     </div>
-  )
+  );
 }
