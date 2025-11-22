@@ -1,0 +1,11 @@
+node_modules/
+.env
+build/
+deployed/*.json
+cache/
+artifacts/
+circuits/**/build/*
+circuits/**/*.r1cs
+circuits/**/*.wasm
+circuits/**/*.sym
+*.log
