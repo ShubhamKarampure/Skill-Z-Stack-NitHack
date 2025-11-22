@@ -26,7 +26,7 @@ import {
   Award,
   Star,
 } from "lucide-react";
-
+import { Navbar } from "@/components/navbar";
 // --- TYPES ---
 
 interface BaseProps {
@@ -648,77 +648,6 @@ const TestimonialCarousel = () => {
   );
 };
 
-// Navbar Component
-const Navbar = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  return (
-    <nav className="fixed top-0 w-full z-50 px-6 py-4 backdrop-blur-xl bg-black/20 border-b border-white/5">
-      <div className="max-w-6xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <span className="font-bold text-sm">S</span>
-          </div>
-          <span className="font-bold text-xl">Skill-Z</span>
-        </div>
-
-        <div className="hidden md:flex items-center gap-8">
-          <a
-            href="#features"
-            className="text-sm hover:text-white transition-colors text-zinc-400"
-          >
-            Features
-          </a>
-          <a
-            href="#how-it-works"
-            className="text-sm hover:text-white transition-colors text-zinc-400"
-          >
-            How It Works
-          </a>
-          <a
-            href="#about"
-            className="text-sm hover:text-white transition-colors text-zinc-400"
-          >
-            About
-          </a>
-          <button className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-sm font-semibold transition-colors">
-            Launch App
-          </button>
-        </div>
-
-        <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-          {menuOpen ? <X /> : <Menu />}
-        </button>
-      </div>
-
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden mt-4 pb-4 bg-zinc-950/90 backdrop-blur-md"
-          >
-            <div className="flex flex-col gap-4 px-6">
-              <a href="#features" className="text-sm text-zinc-400">
-                Features
-              </a>
-              <a href="#how-it-works" className="text-sm text-zinc-400">
-                How It Works
-              </a>
-              <a href="#about" className="text-sm text-zinc-400">
-                About
-              </a>
-              <button className="px-6 py-2 bg-white/10 rounded-full text-sm font-semibold w-full">
-                Launch App
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
-  );
-};
 
 // Main Component
 export default function SkillZLanding() {

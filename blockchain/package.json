@@ -7,7 +7,11 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "truffle test",
+    "test:unit": "truffle test test/unit/ --compile-none",
+    "test:integration": "truffle test test/integration/ --compile-none",
+    "test:coverage": "truffle run coverage",
+    "test:gas": "REPORT_GAS=true truffle test"
   },
   "keywords": [],
   "author": "",
@@ -15,8 +19,10 @@
   "type": "commonjs",
   "devDependencies": {
     "@ganache/cli": "^0.10.2",
+    "@openzeppelin/test-helpers": "^0.5.16",
     "chai": "^6.2.1",
     "chai-as-promised": "^8.0.2",
+    "eth-gas-reporter": "^0.2.27",
     "solidity-coverage": "^0.8.16",
     "truffle": "^5.11.5"
   },

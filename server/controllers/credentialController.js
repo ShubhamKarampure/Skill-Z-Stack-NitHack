@@ -1,0 +1,178 @@
+// src/controllers/credentialController.js
+import credentialService from '../blockchain/services/credentialService.js';
+import UserModel from '../models/User.js';
+import CredentialModel from '../models/Credential.js';
+
+export const issueCredential = async (req, res) => {
+  try {
+    const {
+      issuerPrivateKey,
+      holderAddress,
+      credentialType,
+      metadataURI,
+      expirationDate,
+      revocable,
+      credentialData
+    } = req.body;
+
+    // Validation
+    if (!issuerPrivateKey || !holderAddress || !metadataURI) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields'
+      });
+    }
+
+    // Issue on blockchain
+    const result = await credentialService.issueCredential(
+      issuerPrivateKey,
+      holderAddress,
+      {
+        credentialType: credentialType || 0,
+        metadataURI,
+        expirationDate: expirationDate || 0,
+        revocable: revocable !== undefined ? revocable : true,
+        ...credentialData
+      }
+    );
+
+    // Save metadata to database
+    const credential = await CredentialModel.create({
+      tokenId: result.tokenId,
+      holder: holderAddress.toLowerCase(),
+      issuer: req.user?.walletAddress || holderAddress,
+      credentialType: credentialType || 0,
+      metadataURI,
+      transactionHash: result.transactionHash,
+      blockNumber: result.blockNumber,
+      issuedAt: new Date()
+    });
+
+    // Update user's credentials
+    await UserModel.findOneAndUpdate(
+      { walletAddress: holderAddress.toLowerCase() },
+      { $push: { 'studentData.credentials': result.tokenId } }
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'Credential issued successfully',
+      data: {
+        ...result,
+        credential
+      }
+    });
+
+  } catch (error) {
+    console.error('Issue Credential Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to issue credential',
+      error: error.message
+    });
+  }
+};
+
+export const getCredential = async (req, res) => {
+  try {
+    const { tokenId } = req.params;
+
+    // Get from blockchain
+    const credential = await credentialService.getCredential(tokenId);
+
+    // Get metadata from database
+    const metadata = await CredentialModel.findOne({ tokenId });
+
+    return res.status(200).json({
+      success: true,
+      credential: {
+        ...credential,
+        metadata
+      }
+    });
+
+  } catch (error) {
+    console.error('Get Credential Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get credential',
+      error: error.message
+    });
+  }
+};
+
+export const getHolderCredentials = async (req, res) => {
+  try {
+    const { address } = req.params;
+
+    // Get token IDs from blockchain
+    const tokenIds = await credentialService.getHolderCredentials(address);
+
+    // Get details for each
+    const credentials = await Promise.all(
+      tokenIds.map(async (tokenId) => {
+        const onChainData = await credentialService.getCredential(tokenId);
+        const metadata = await CredentialModel.findOne({ tokenId });
+        return { ...onChainData, metadata };
+      })
+    );
+
+    return res.status(200).json({
+      success: true,
+      count: credentials.length,
+      credentials
+    });
+
+  } catch (error) {
+    console.error('Get Holder Credentials Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get credentials',
+      error: error.message
+    });
+  }
+};
+
+export const revokeCredential = async (req, res) => {
+  try {
+    const { tokenId, issuerPrivateKey, reason } = req.body;
+
+    if (!tokenId || !issuerPrivateKey || !reason) {
+      return res.status(400).json({
+        success: false,
+        message: 'tokenId, issuerPrivateKey, and reason are required'
+      });
+    }
+
+    const result = await credentialService.revokeCredential(
+      tokenId,
+      issuerPrivateKey,
+      reason
+    );
+
+    // Update database
+    await CredentialModel.findOneAndUpdate(
+      { tokenId },
+      {
+        isRevoked: true,
+        revocationReason: reason,
+        revokedAt: new Date(),
+        revocationTxHash: result.transactionHash
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Credential revoked successfully',
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Revoke Credential Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to revoke credential',
+      error: error.message
+    });
+  }
+};

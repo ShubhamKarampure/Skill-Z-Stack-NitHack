@@ -245,8 +245,15 @@ contract Timelock is AccessControl {
             TransactionState state
         )
     {
-        QueuedTransaction storage tx = queuedTransactions[txHash];
-        return (tx.target, tx.value, tx.signature, tx.data, tx.eta, tx.state);
+        QueuedTransaction storage queuedTx = queuedTransactions[txHash];
+        return (
+            queuedTx.target,
+            queuedTx.value,
+            queuedTx.signature,
+            queuedTx.data,
+            queuedTx.eta,
+            queuedTx.state
+        );
     }
 
     /**

@@ -57,22 +57,22 @@ export function Navbar() {
         animate={{ y: 0 }}
         className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#09090b]/80 border-b border-white/5"
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-8 py-10 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <span className="font-bold text-sm">S</span>
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-12 h-12 rounded-xl bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <span className="font-bold text-lg">S</span>
             </div>
-            <span className="font-bold text-xl tracking-tight">Skill-Z</span>
+            <span className="font-bold text-2xl tracking-tight">Skill-Z</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-10">
             {navItems.map((item) => (
               <motion.a
                 key={item.href}
                 href={item.href}
-                className="text-sm text-zinc-400 hover:text-white transition-colors"
+                className="text-lg text-zinc-400 hover:text-white transition-colors"
                 whileHover={{ y: -2 }}
               >
                 {item.label}
@@ -80,29 +80,29 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* CTA Button and Mobile Menu */}
-          <div className="flex items-center gap-4">
+          {/* CTA Button + Mobile Menu */}
+          <div className="flex items-center gap-6">
             {/* Desktop Connect Wallet Button */}
             <motion.button
               onClick={handleConnectWallet}
-              className={`hidden md:flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-full transition-all ${buttonClass}`}
-              whileHover={{ scale: 1.05, y: walletAddress ? 0 : -2 }}
+              className={`hidden md:flex items-center gap-3 px-6 py-3 text-base font-semibold rounded-full transition-all ${buttonClass}`}
+              whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.95 }}
             >
-              {walletAddress && <Wallet size={16} />}
+              {walletAddress && <Wallet size={20} />}
               <span>{buttonText}</span>
             </motion.button>
 
             {/* Mobile Menu Button */}
             <motion.button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-white"
+              className="md:hidden p-3 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-white"
               aria-label="Toggle menu"
             >
               {isOpen ? (
-                <X className="w-6 h-6" />
+                <X className="w-7 h-7" />
               ) : (
-                <Menu className="w-6 h-6" />
+                <Menu className="w-7 h-7" />
               )}
             </motion.button>
           </div>
@@ -118,24 +118,25 @@ export function Navbar() {
               transition={{ duration: 0.2 }}
               className="md:hidden overflow-hidden bg-[#09090b]/90 border-t border-white/5"
             >
-              <div className="px-6 py-4 flex flex-col gap-1">
+              <div className="px-7 py-5 flex flex-col gap-2">
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="px-4 py-2 text-base text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+                    className="px-4 py-3 text-lg text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5"
                     onClick={() => setIsOpen(false)}
                   >
                     {item.label}
                   </Link>
                 ))}
+
                 {/* Mobile Connect Wallet Button */}
                 <motion.button
                   onClick={handleConnectWallet}
-                  className={`mt-4 flex items-center justify-center gap-2 px-5 py-3 text-base font-semibold rounded-full transition-all w-full ${buttonClass}`}
+                  className={`mt-5 flex items-center justify-center gap-3 px-6 py-4 text-lg font-semibold rounded-full transition-all w-full ${buttonClass}`}
                   whileTap={{ scale: 0.98 }}
                 >
-                  {walletAddress && <Wallet size={18} />}
+                  {walletAddress && <Wallet size={22} />}
                   <span>{buttonText}</span>
                 </motion.button>
               </div>
@@ -145,4 +146,5 @@ export function Navbar() {
       </motion.nav>
     </>
   );
+
 }
