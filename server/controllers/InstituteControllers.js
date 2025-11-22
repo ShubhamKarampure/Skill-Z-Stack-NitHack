@@ -1,6 +1,9 @@
-import NFTModel from "../models/NFT.js";
-import { uploadFileToPinata, uploadJSONToPinata } from "../utils/pinata.js";
-import UserModel from "../models/User.js";
+import NFTModel from "../models/NFTModel.js";
+import { uploadFileToPinata, uploadJSONToPinata } from "../utils/PinataHelper.js";
+import UserModel from "../models/UserModel.js";
+import nftContract from "../blockchain/NFTContract.js";
+import account from "../blockchain/Wallet.js";
+import web3 from "../blockchain/Provider.js";
 
 export const createNFT = async (req, res) => {
     try {
@@ -73,10 +76,10 @@ export const mintNFT = async (req, res) => {
         // 2. Build transaction
         const tx = nftContract.methods.mint(toAddress, tokenURI);
 
-        const gas = await tx.estimateGas({ from: signer.address });
+        const gas = await tx.estimateGas({ from: account.address });
 
         const txData = {
-            from: signer.address,
+            from: account.address,
             to: nftContract.options.address,
             data: tx.encodeABI(),
             gas

@@ -2,9 +2,10 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv';
-import {connectDB} from './db/MongoConf.js';
-import authRoutes from './routes/AuthRoutes.js';  
-import { createWeb3Instance } from './blockchain/provider.js';
+import {connectDB}from './db/MongoConf.js';
+import authRoutes from './routes/AuthRoutes.js';
+import instituteRoutes from './routes/InstituteRoutes.js';
+import { createWeb3Instance } from './blockchain/Provider.js';
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ const corsConfig = {
 app.use(cors(corsConfig));               
 app.use(express.json());       
 app.use('/api/auth', authRoutes);
-app.use('/api/institute', authRoutes);
+app.use('/api/institute', instituteRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;
