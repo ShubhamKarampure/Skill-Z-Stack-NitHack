@@ -5,37 +5,33 @@ import { motion } from "framer-motion";
 import { ShieldCheck, Lock, Zap, Globe, Users, Award } from "lucide-react";
 import SplitText from "@/components/ui/SplitText";
 import DecryptedText from "@/components/ui/DecryptedText";
+import WordPullUp from "@/components/ui/WordPullUp";
 import MagicBento, { BentoCard } from "@/components/ui/MagicBento";
+import LightRays from "@/components/ui/LightRays";
 
 export default function Home() {
-  const features = [
-    {
-      icon: ShieldCheck,
-      title: "Tamper-Proof Credentials",
-      description: "Academic records are secured on the blockchain, making them impossible to forge or alter."
-    },
-    {
-      icon: Lock,
-      title: "Privacy Preserved",
-      description: "Zero-Knowledge Proofs allow verification without revealing sensitive personal data."
-    },
-    {
-      icon: Zap,
-      title: "Instant Verification",
-      description: "Employers and institutes can verify credentials in seconds, not weeks."
-    },
-    {
-      icon: Globe,
-      title: "Global Recognition",
-      description: "A decentralized standard accepted worldwide by accredited institutions."
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-32 pb-40">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+    <div className="relative min-h-screen text-white selection:bg-cyan-500/30">
+      {/* Light Rays Background */}
+      <div className="absolute inset-0 w-full h-full">
+        <LightRays
+          raysOrigin="top-center"
+          raysColor="#ffffff"
+          raysSpeed={1.5}
+          lightSpread={1.5}
+          rayLength={3.5}
+          followMouse={true}
+          mouseInfluence={0.2}
+          noiseAmount={0.2}
+          distortion={0.1}
+          saturation={2.0}
+        />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden pt-32 pb-40">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -52,7 +48,7 @@ export default function Home() {
             
             <h1 className="text-5xl md:text-8xl font-bold tracking-tighter mb-8 text-white">
               Your Achievements, <br />
-              <SplitText text="Verifiable Forever." className="text-gradient" delay={0.1} />
+              <WordPullUp text="Verifiable Forever." className="text-gradient" delayMultiple={0.08} />
             </h1>
             
             <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed">
@@ -207,6 +203,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      </div>
     </div>
   );
 }

@@ -69,3 +69,42 @@ body {
     @apply shadow-lg shadow-emerald-500/20;
   }
 }
+
+/* Aurora Background */
+.aurora-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.aurora-gradient {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  mix-blend-mode: screen;
+}
+
+.aurora-1 {
+  top: -50%;
+  left: -25%;
+  width: 80%;
+  height: 80%;
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+}
+
+.aurora-2 {
+  top: 20%;
+  right: -25%;
+  width: 70%;
+  height: 70%;
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+}
+
+.aurora-3 {
+  bottom: -40%;
+  left: 10%;
+  width: 60%;
+  height: 60%;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+}
