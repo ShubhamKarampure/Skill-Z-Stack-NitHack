@@ -70,36 +70,20 @@ contract GovernanceHelper {
             uint256 eta
         )
     {
-        (
-            id,
-            proposer,
-            action,
-            targetIssuer,
-            description,
-            forVotes,
-            againstVotes,
-            abstainVotes,
-            , // startBlock
-            , // endBlock
-            eta,
-            , // canceled
-
-        ) = // executed
-            dao.getProposal(proposalId);
-
+        IssuerDAO.ProposalView memory p = dao.getProposal(proposalId);
         currentState = dao.state(proposalId);
 
         return (
-            id,
-            proposer,
-            action,
-            targetIssuer,
-            description,
-            forVotes,
-            againstVotes,
-            abstainVotes,
+            p.id,
+            p.proposer,
+            p.action,
+            p.targetIssuer,
+            p.description,
+            p.forVotes,
+            p.againstVotes,
+            p.abstainVotes,
             currentState,
-            eta
+            p.eta
         );
     }
 
