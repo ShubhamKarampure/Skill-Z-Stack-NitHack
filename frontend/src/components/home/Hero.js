@@ -14,7 +14,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="mb-8 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-white backdrop-blur-xl">
+          <div className="mb-8 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-white">
             <span className="mr-2 flex h-2 w-2 relative">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
               <span className="relative inline-flex h-2 w-2 rounded-full bg-white"></span>

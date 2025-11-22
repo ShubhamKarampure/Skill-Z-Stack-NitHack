@@ -26,19 +26,19 @@ body {
 
 @layer utilities {
   .glass-panel {
-    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-xl;
+    @apply bg-black/40 border border-white/10 shadow-xl;
   }
   
   .glass-panel-cyan {
-    @apply bg-black/40 backdrop-blur-xl border border-cyan-500/20 shadow-xl shadow-cyan-500/5;
+    @apply bg-black/40 border border-cyan-500/20 shadow-xl shadow-cyan-500/5;
   }
   
   .glass-panel-purple {
-    @apply bg-black/40 backdrop-blur-xl border border-purple-500/20 shadow-xl shadow-purple-500/5;
+    @apply bg-black/40 border border-purple-500/20 shadow-xl shadow-purple-500/5;
   }
   
   .glass-panel-emerald {
-    @apply bg-black/40 backdrop-blur-xl border border-emerald-500/20 shadow-xl shadow-emerald-500/5;
+    @apply bg-black/40 border border-emerald-500/20 shadow-xl shadow-emerald-500/5;
   }
   
   .text-gradient {

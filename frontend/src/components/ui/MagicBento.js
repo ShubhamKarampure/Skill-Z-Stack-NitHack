@@ -12,7 +12,7 @@ export const BentoCard = React.memo(function BentoCard({ children, className, ..
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 p-6 transition-colors hover:border-white/20",
+        "relative overflow-hidden rounded-2xl bg-black/40 border border-white/10 p-6 transition-colors hover:border-white/20",
         className
       )}
       {...props}

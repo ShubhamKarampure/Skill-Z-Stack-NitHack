@@ -12,7 +12,7 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-7xl">
-      <div className="glass-panel rounded-full px-6 py-3 border border-white/10 backdrop-blur-xl">
+      <div className="glass-panel rounded-full px-6 py-3 border border-white/10">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">

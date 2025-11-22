@@ -24,7 +24,7 @@ export default function Features() {
         <MagicBento>
           {/* Large Feature - Tamper Proof */}
           <BentoCard 
-            className="col-span-1 md:col-span-3 row-span-2 flex flex-col justify-between min-h-[400px] bg-linear-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/20"
+            className="col-span-1 md:col-span-3 row-span-2 flex flex-col justify-between min-h-[400px] bg-neutral-900/50 border-neutral-700"
           >
             <div>
               <ShieldCheck className="w-16 h-16 text-cyan-400 mb-6" />
@@ -66,7 +66,7 @@ export default function Features() {
 
           {/* Network Stats */}
           <BentoCard 
-            className="col-span-1 md:col-span-2 flex flex-col justify-center items-center text-center min-h-[200px] bg-linear-to-br from-purple-500/10 to-fuchsia-500/10 border-purple-500/20"
+            className="col-span-1 md:col-span-2 flex flex-col justify-center items-center text-center min-h-[200px] bg-neutral-900/50 border-neutral-700"
           >
             <Users className="w-12 h-12 text-purple-400 mb-4" />
             <div className="text-4xl font-bold text-gradient-purple mb-2">247+</div>
@@ -75,7 +75,7 @@ export default function Features() {
 
           {/* Global Recognition */}
           <BentoCard 
-            className="col-span-1 md:col-span-2 flex flex-col justify-center min-h-[200px] bg-linear-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20"
+            className="col-span-1 md:col-span-2 flex flex-col justify-center min-h-[200px] bg-neutral-900/50 border-neutral-700"
           >
             <Globe className="w-12 h-12 text-emerald-400 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Global Recognition</h3>
