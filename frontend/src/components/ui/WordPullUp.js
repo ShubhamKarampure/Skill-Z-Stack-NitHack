@@ -1,8 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 export default function WordPullUp({ text, className = "", delayMultiple = 0.05 }) {
+  const shouldReduceMotion = useReducedMotion();
   const words = text.split(" ");
 
   const container = {
@@ -34,19 +35,14 @@ export default function WordPullUp({ text, className = "", delayMultiple = 0.05 
     },
   };
 
+  if (shouldReduceMotion) {
+    return <div className={className}>{text}</div>;
+  }
+
   return (
-    <motion.div
-      className={className}
-      variants={container}
-      initial="hidden"
-      animate="visible"
-    >
+    <motion.div className={className} variants={container} initial="hidden" animate="visible">
       {words.map((word, index) => (
-        <motion.span
-          key={index}
-          variants={child}
-          style={{ display: "inline-block", marginRight: "0.25em" }}
-        >
+        <motion.span key={index} variants={child} style={{ display: "inline-block", marginRight: "0.25em" }}>
           {word === "" ? <span>&nbsp;</span> : word}
         </motion.span>
       ))}

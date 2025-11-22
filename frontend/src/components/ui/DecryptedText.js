@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
 
-export default function DecryptedText({ text, className = "", speed = 50, maxIterations = 10, revealDirection = "start" }) {
+export default function DecryptedText({ text, className = "", speed = 50 }) {
+  const shouldReduceMotion = useReducedMotion();
   const [displayText, setDisplayText] = useState(text);
   const [isHovered, setIsHovered] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -42,19 +43,16 @@ export default function DecryptedText({ text, className = "", speed = 50, maxIte
   }, []);
 
   useEffect(() => {
-    if (isMounted) {
+    if (isMounted && !shouldReduceMotion) {
       scramble();
+    } else if (shouldReduceMotion) {
+      setDisplayText(text); // ensure stable text with no scrambling
     }
     return () => clearInterval(intervalRef.current);
-  }, [text, isMounted]);
+  }, [text, isMounted, shouldReduceMotion]);
 
   return (
-    <motion.span
-      className={className}
-      onMouseEnter={() => isMounted && scramble()}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
+    <motion.span className={className} onMouseEnter={() => isMounted && !shouldReduceMotion && scramble()} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       {displayText}
     </motion.span>
   );

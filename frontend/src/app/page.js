@@ -20,7 +20,7 @@ export default function Home() {
           raysSpeed={1.5}
           lightSpread={1.5}
           rayLength={3.5}
-          followMouse={true}
+          followMouse={false}
           mouseInfluence={0.2}
           noiseAmount={0.2}
           distortion={0.1}
@@ -166,43 +166,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Problem Statement Section */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Why SkillsPassport?</h2>
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
-                    <span className="text-red-400 font-bold">1</span>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold mb-1">Eliminate Fake Degrees</h3>
-                    <p className="text-gray-400">Traditional paper degrees are easily forged. Our NFT-based credentials are cryptographically secured by the issuer.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
-                    <span className="text-red-400 font-bold">2</span>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold mb-1">Decentralized Trust</h3>
-                    <p className="text-gray-400">No central authority controls your data. A DAO of accredited institutes governs the network.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="relative h-[400px] rounded-2xl overflow-hidden glass-panel flex items-center justify-center">
-              <div className="absolute inset-0 bg-linear-to-br from-blue-500/20 to-purple-500/20"></div>
-              <div className="text-center p-8">
-                <div className="text-6xl font-bold text-white mb-2">100%</div>
-                <div className="text-xl text-gray-300">Tamper Proof</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
       </div>
     </div>
   );
