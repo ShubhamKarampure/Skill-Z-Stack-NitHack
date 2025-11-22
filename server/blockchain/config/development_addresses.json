@@ -1,0 +1,13 @@
+{
+  "network": "development",
+  "deployedAt": "2025-11-22T15:26:35.598Z",
+  "IssuerRegistry": "0x5433Fc6b037E45c5091A4465167Cbf3979D266E5",
+  "CredentialNFT": "0x18a5226f69080b3Ef57BE7C365Ba045D48c4De87",
+  "CredentialVerifier": "0xAe11931B05436728e0BB8B749000010502FA68b6",
+  "RevocationRegistry": "0x2766D1856b84E79e17d1b0dBf14c6baF0eFDBA79",
+  "governance": {
+    "IssuerDAO": "0x9AC5522a69f932c1D7693840106c5CDB76C00401",
+    "Timelock": "0xe649174B706B24b4d7D4a9371e0C806DE886017C",
+    "GovernanceHelper": "0x077Ae9C07823E16d0c3fDB39E94c3EF157889f52"
+  }
+}
