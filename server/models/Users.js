@@ -66,10 +66,6 @@ const userSchema = new Schema(
             ref: "Proposal",
           },
           voted: Boolean,
-          vote: {
-            type: String,
-            enum: ["for", "against"],
-          },
         },
       ],
     },
