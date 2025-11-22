@@ -12,7 +12,7 @@ const corsConfig = {
 };
 
 // Middleware
-app.use(cors());               
+app.use(cors(corsConfig));               
 app.use(express.json());       
 
 // Start server
