@@ -58,7 +58,7 @@ export default function StudentPage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-32 pb-20">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size:24px_24px"></div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <BlurFade delay={0.1}>
@@ -76,7 +76,7 @@ export default function StudentPage() {
 
             <BlurFade delay={0.3}>
               <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed">
-                Take control of your academic achievements with blockchain-verified credentials. 
+                Take control of your academic achievements with blockchain-verified credentials.
                 Share your qualifications securely with employers while maintaining complete privacy.
               </p>
             </BlurFade>
