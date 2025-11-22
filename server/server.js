@@ -3,6 +3,8 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv';
 import {connectDB} from './db/MongoConf.js';
+import authRoutes from './routes/AuthRoutes.js';  
+import { createWeb3Instance } from './blockchain/provider.js';
 
 dotenv.config();
 
@@ -18,10 +20,13 @@ const corsConfig = {
 // Middleware
 app.use(cors(corsConfig));               
 app.use(express.json());       
+app.use('/api/auth', authRoutes);
+app.use('/api/institute', authRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   connectDB();
+  createWeb3Instance();
   console.log(`Server listening on port ${PORT}`);
 });

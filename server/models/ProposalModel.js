@@ -25,6 +25,6 @@ const proposalSchema = new Schema(
   { timestamps: true }
 );
 
-const Proposal = mongoose.model("Proposal", proposalSchema);
+const ProposalModel = mongoose.model("Proposal", proposalSchema);
 
-export default Proposal;
+export default ProposalModel;

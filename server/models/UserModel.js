@@ -20,26 +20,22 @@ const userSchema = new Schema(
       unique: true,
     },
 
-    // -------------------------
-    // STUDENT FIELDS
-    // -------------------------
+    //Student fields
     studentData: {
       instituteId: {
         type: Schema.Types.ObjectId,
-        ref: "User", // institute user
+        ref: "User", 
       },
       isVerifiedByInstitute: {
         type: Boolean,
         default: false,
       },
       zkpProof: {
-        type: String, // can store CID/IPFS hash or raw proof
+        type: String, 
       },
     },
 
-    // -------------------------
-    // INSTITUTE FIELDS
-    // -------------------------
+    //Institute fields
     instituteData: {
       isVerifiedByDAO: { type: Boolean, default: false },
 
@@ -53,9 +49,7 @@ const userSchema = new Schema(
       },
     },
 
-    // -------------------------
-    // DAO MEMBER FIELDS
-    // -------------------------
+    //DAO member fields
     daoData: {
       memberSince: { type: Date },
 
@@ -74,6 +68,6 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-const User = mongoose.model("User", userSchema);
+const UserModel = mongoose.model("User", userSchema);
 
-export default User;
+export default UserModel;
