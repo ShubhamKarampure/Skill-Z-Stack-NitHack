@@ -6,6 +6,7 @@ import { Menu, X, Wallet, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
+import { LogoCrest } from "./logo";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -73,14 +74,9 @@ export function Navbar() {
         } flex items-center justify-between`}
       >
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <span className="font-bold text-xl text-white">S</span>
-          </div>
-          <span className="font-bold text-xl tracking-tight text-white">
-            Skill-Z{" "}
-            <span className="text-xs text-zinc-400 font-normal ml-2">
-              {isAuthenticated ? user?.role : ""}
-            </span>
+          <LogoCrest className="w-10 h-10 group-hover:scale-105 transition-transform" />
+          <span className="font-bold text-2xl tracking-tight text-white">
+            Skill-Z
           </span>
         </Link>
 
