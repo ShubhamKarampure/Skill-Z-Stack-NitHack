@@ -105,8 +105,8 @@ function UserCore() {
   const innerRef = useRef<THREE.Mesh>(null);
   const outerRef = useRef<THREE.Mesh>(null);
 
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
+  useFrame((state: RootState) => {
+    const t: number = state.clock.elapsedTime;
     if (groupRef.current) {
       // Gentle floating hover
       groupRef.current.position.y = Math.sin(t * 0.5) * 0.2;
@@ -530,7 +530,7 @@ export default function SkillConstellation({
         <color attach="background" args={["#050507"]} />
         <fog attach="fog" args={["#050507", 20, 80]} />
 
-        <Environment preset="city" blur={1} intensity={0.5} />
+        <Environment preset="city" blur={1} />
         <ambientLight intensity={0.8} />
         <pointLight position={[15, 15, 15]} intensity={2} color="#3b82f6" />
         <pointLight position={[-15, -10, -15]} intensity={2} color="#d946ef" />
