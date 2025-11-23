@@ -59,7 +59,7 @@ export function Navbar() {
         } flex items-center justify-between`}
       >
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
             <span className="font-bold text-xl text-white">S</span>
           </div>
           <span className="font-bold text-xl tracking-tight text-white">

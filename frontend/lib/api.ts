@@ -136,3 +136,12 @@ export const credentialService = {
     };
   },
 };
+
+export const verifierService = {
+  verifyZKProof: async (proofType: string, proof: any, publicSignals: any) => {
+    return fetchAPI<{ isValid: boolean }>("/verifier/verify-zkp", {
+      method: "POST",
+      body: JSON.stringify({ proofType, proof, publicSignals }),
+    });
+  },
+};
