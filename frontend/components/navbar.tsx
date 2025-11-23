@@ -1,144 +1,212 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Menu, X, Wallet } from "lucide-react";
-import { motion } from "framer-motion";
-import { AnimatePresence } from "framer-motion";
-// Helper function to truncate wallet address for display
-const truncateAddress = (address: string) =>
-  `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+import { useState, useEffect } from "react";
+import {
+  Menu,
+  X,
+  LogIn,
+  ChevronRight,
+  Wallet,
+  LogOut,
+  User,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuthStore } from "@/app/lib/store";
+import { useRouter } from "next/navigation";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  // State to simulate wallet connection
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const router = useRouter();
 
-  const navItems = [
-    { label: "Features", href: "#features" },
-    { label: "How it Works", href: "#how-it-works" },
+  // --- SCROLL EFFECT ---
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
+  // --- NAVIGATION CONFIG ---
+  const publicLinks = [
+    { label: "Features", href: "/#features" },
+    { label: "Protocol", href: "/#how-it-works" },
     { label: "Governance", href: "/governance" },
-    { label: "Docs", href: "#docs" },
   ];
 
-  // --- WALLET CONNECTION HANDLER ---
-  const handleConnectWallet = () => {
-    if (walletAddress) {
-      // Logic for Disconnect (Simulated)
-      console.log("Disconnecting Wallet...");
-      setWalletAddress(null);
-    } else {
-      // Logic for Connect (Simulated)
-      console.log("Connecting Wallet...");
-      const simulatedAddress = "0x4A6b98eC3d906Aa2621bE07B576C71D62423F5F4"; // Example address
-      setWalletAddress(simulatedAddress);
-      // In a real app, successful connection would trigger navigation/role check.
-    }
-    // Close mobile menu on action
-    if (isOpen) {
-      setIsOpen(false);
-    }
+  const roleLinks: Record<string, { label: string; href: string }[]> = {
+    student: [
+      { label: "Dashboard", href: "/student/dashboard" },
+      { label: "Inventory", href: "/student/inventory" },
+    ],
+    institute: [
+      { label: "Dashboard", href: "/institute/dashboard" },
+      { label: "Students", href: "/institute/students" }, // Placeholder path
+    ],
+    admin: [
+      { label: "Proposals", href: "/admin/dashboard" },
+      { label: "Members", href: "/admin/members" },
+    ],
+    employer: [
+      { label: "Dashboard", href: "/employer/dashboard" },
+      { label: "Search", href: "/employer/search" }, // Placeholder path
+    ],
   };
-  // ------------------------------------
 
-  // Define common button text/styles
-  const buttonText = walletAddress
-    ? truncateAddress(walletAddress)
-    : "Connect Wallet";
-
-  const buttonClass = walletAddress
-    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/20" // Connected style
-    : "text-black bg-white hover:bg-zinc-200 border-none"; // Disconnected style (using your primary style from landing page)
+  // Determine which links to show
+  const currentLinks =
+    isAuthenticated && user?.role ? roleLinks[user.role] : publicLinks;
 
   return (
     <>
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#09090b]/80 border-b border-white/5"
+        className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 px-4 md:px-8`}
       >
-        <div className="max-w-7xl mx-auto px-8 py-10 flex items-center justify-between">
+        <div
+          className={`max-w-7xl mx-auto rounded-2xl transition-all duration-300 ${
+            scrolled
+              ? "bg-[#09090b]/80 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50 py-4 px-6"
+              : "bg-transparent py-6 px-4"
+          } flex items-center justify-between`}
+        >
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-12 h-12 rounded-xl bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <span className="font-bold text-lg">S</span>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              <span className="font-bold text-xl text-white">S</span>
             </div>
-            <span className="font-bold text-2xl tracking-tight">Skill-Z</span>
+            <span className="font-bold text-xl tracking-tight text-white">
+              Skill-Z{" "}
+              <span className="text-xs font-normal text-zinc-400 ml-2 border border-white/10 px-2 py-0.5 rounded-full uppercase">
+                {isAuthenticated ? user?.role : "Protocol"}
+              </span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-10">
-            {navItems.map((item) => (
-              <motion.a
+          <div className="hidden md:flex items-center gap-1 bg-white/5 px-2 py-1.5 rounded-full border border-white/5 backdrop-blur-md">
+            {currentLinks?.map((item) => (
+              <Link
                 key={item.href}
                 href={item.href}
-                className="text-lg text-zinc-400 hover:text-white transition-colors"
-                whileHover={{ y: -2 }}
+                className="px-5 py-2 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
               >
                 {item.label}
-              </motion.a>
+              </Link>
             ))}
           </div>
 
-          {/* CTA Button + Mobile Menu */}
-          <div className="flex items-center gap-6">
-            {/* Desktop Connect Wallet Button */}
-            <motion.button
-              onClick={handleConnectWallet}
-              className={`hidden md:flex items-center gap-3 px-6 py-3 text-base font-semibold rounded-full transition-all ${buttonClass}`}
-              whileHover={{ scale: 1.06 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {walletAddress && <Wallet size={20} />}
-              <span>{buttonText}</span>
-            </motion.button>
-
-            {/* Mobile Menu Button */}
-            <motion.button
-              onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-3 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-white"
-              aria-label="Toggle menu"
-            >
-              {isOpen ? (
-                <X className="w-7 h-7" />
-              ) : (
-                <Menu className="w-7 h-7" />
-              )}
-            </motion.button>
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-4">
+            {isAuthenticated ? (
+              <>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-zinc-300">
+                  <Wallet className="w-4 h-4 text-emerald-400" />
+                  <span>
+                    {user?.walletAddress
+                      ? `${user.walletAddress.slice(
+                          0,
+                          6
+                        )}...${user.walletAddress.slice(-4)}`
+                      : "No Wallet"}
+                  </span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-full hover:bg-red-500/10 text-zinc-400 hover:text-red-400 transition-colors"
+                  title="Logout"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-6 py-3 text-sm font-bold text-zinc-300 hover:text-white transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="group relative px-7 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)] overflow-hidden"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    Get Started{" "}
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </Link>
+              </>
+            )}
           </div>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden p-3 rounded-xl bg-white/5 text-white border border-white/10"
+          >
+            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Menu Overlay */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden overflow-hidden bg-[#09090b]/90 border-t border-white/5"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="md:hidden absolute top-24 left-4 right-4 bg-[#18181b] border border-white/10 rounded-2xl p-6 shadow-2xl"
             >
-              <div className="px-7 py-5 flex flex-col gap-2">
-                {navItems.map((item) => (
+              <div className="flex flex-col gap-2">
+                {currentLinks?.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="px-4 py-3 text-lg text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+                    className="text-lg font-medium text-zinc-400 hover:text-white py-3 border-b border-white/5 px-2"
                     onClick={() => setIsOpen(false)}
                   >
                     {item.label}
                   </Link>
                 ))}
 
-                {/* Mobile Connect Wallet Button */}
-                <motion.button
-                  onClick={handleConnectWallet}
-                  className={`mt-5 flex items-center justify-center gap-3 px-6 py-4 text-lg font-semibold rounded-full transition-all w-full ${buttonClass}`}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {walletAddress && <Wallet size={22} />}
-                  <span>{buttonText}</span>
-                </motion.button>
+                <div className="flex flex-col gap-3 mt-6">
+                  {isAuthenticated ? (
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsOpen(false);
+                      }}
+                      className="w-full py-3 text-center text-red-400 font-bold bg-red-500/10 border border-red-500/20 rounded-xl"
+                    >
+                      Log Out
+                    </button>
+                  ) : (
+                    <>
+                      <Link
+                        href="/login"
+                        onClick={() => setIsOpen(false)}
+                        className="w-full py-3 text-center text-white font-bold bg-white/10 rounded-xl"
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        href="/register"
+                        onClick={() => setIsOpen(false)}
+                        className="w-full py-3 text-center bg-white text-black font-bold rounded-xl"
+                      >
+                        Get Started
+                      </Link>
+                    </>
+                  )}
+                </div>
               </div>
             </motion.div>
           )}
@@ -146,5 +214,4 @@ export function Navbar() {
       </motion.nav>
     </>
   );
-
 }
