@@ -7,21 +7,30 @@ import {
   ShieldCheck,
   Loader2,
   Filter,
-  AlertCircle,
   Key,
   GraduationCap,
   FileBadge,
   Award,
+  FileJson,
+  PenTool,
+  Blocks,
+  Check,
+  XCircle,
 } from "lucide-react";
-import { enrollmentService, templateService, credentialService } from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  enrollmentService,
+  templateService,
+  credentialService,
+} from "@/lib/api";
 import { CredentialType } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/lib/store";
 import { getPrivateKey } from "@/lib/wallet-constants";
 
-// Define interface matching your Backend Response
+// --- TYPES ---
 interface StudentData {
-  _id: string; // Enrollment ID
+  _id: string;
   studentName: string;
   studentWalletAddress: string;
   isActive: boolean;
@@ -41,14 +50,184 @@ interface CredentialTemplate {
   metadataURI: string;
 }
 
-export default function IssuePage() {
-  const [selectedTemplate, setSelectedTemplate] = useState<CredentialTemplate | null>(null);
-  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
-  const [isMinting, setIsMinting] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  // const [issuerPrivateKey, setIssuerPrivateKey] = useState(""); // Removed in favor of auto-lookup
+// --- MINTING LOADER COMPONENT ---
+const MintingLoader = ({
+  stage,
+  statusText,
+}: {
+  stage: number;
+  statusText: string;
+}) => {
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl text-white">
+      {/* Background Grid */}
+      <div
+        className="absolute inset-0 opacity-10 pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
 
-  // API Data
+      <div className="relative z-10 flex flex-col items-center">
+        {/* 3D / Icon Container */}
+        <div className="w-32 h-32 mb-8 relative flex items-center justify-center perspective-1000">
+          <AnimatePresence mode="wait">
+            {/* STAGE 1: PREPARING DATA */}
+            {stage === 1 && (
+              <motion.div
+                key="prep"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5, y: -20 }}
+                className="relative"
+              >
+                <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full" />
+                <FileJson className="w-20 h-20 text-blue-400 relative z-10" />
+                <motion.div
+                  className="absolute -right-4 -bottom-2 bg-zinc-800 p-2 rounded-lg border border-zinc-700"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <div className="w-8 h-1 bg-blue-500 rounded-full animate-pulse" />
+                  <div className="w-5 h-1 bg-zinc-600 rounded-full mt-1" />
+                </motion.div>
+              </motion.div>
+            )}
+
+            {/* STAGE 2: SIGNING */}
+            {stage === 2 && (
+              <motion.div
+                key="signing"
+                initial={{ opacity: 0, rotateY: 90 }}
+                animate={{ opacity: 1, rotateY: 0 }}
+                exit={{ opacity: 0, rotateY: -90 }}
+                transition={{ type: "spring", stiffness: 100 }}
+                className="relative"
+              >
+                <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full" />
+                <ShieldCheck className="w-20 h-20 text-purple-400" />
+                <motion.div
+                  className="absolute -right-2 -bottom-2"
+                  animate={{
+                    x: [0, 5, 0],
+                    y: [0, 5, 0],
+                    rotate: [0, -10, 0],
+                  }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  <PenTool className="w-10 h-10 text-white fill-purple-600 drop-shadow-lg" />
+                </motion.div>
+              </motion.div>
+            )}
+
+            {/* STAGE 3: BLOCKCHAIN MINTING (3D Cube Animation) */}
+            {stage === 3 && (
+              <motion.div
+                key="minting"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.5 }}
+                className="relative preserve-3d"
+              >
+                {/* Simulated 3D Cube using CSS Borders + Rotation */}
+                <motion.div
+                  className="w-20 h-20 border-4 border-emerald-500/50 relative flex items-center justify-center bg-emerald-500/10"
+                  animate={{
+                    rotateX: [0, 360],
+                    rotateY: [0, 360],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                >
+                  <Blocks className="w-10 h-10 text-emerald-400" />
+                  {/* "Ghost" borders for 3D feel */}
+                  <div
+                    className="absolute inset-0 border-2 border-emerald-300/30 transform translate-z-4"
+                    style={{ transform: "translateZ(20px)" }}
+                  />
+                  <div
+                    className="absolute inset-0 border-2 border-emerald-300/30 transform -translate-z-4"
+                    style={{ transform: "translateZ(-20px)" }}
+                  />
+                </motion.div>
+
+                {/* Connection Lines */}
+                <motion.div
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-dashed border-emerald-500/30 rounded-full"
+                  animate={{ rotate: -360 }}
+                  transition={{
+                    duration: 10,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                />
+              </motion.div>
+            )}
+
+            {/* STAGE 4: SUCCESS */}
+            {stage === 4 && (
+              <motion.div
+                key="success"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="relative"
+              >
+                <div className="absolute inset-0 bg-green-500/30 blur-2xl rounded-full" />
+                <div className="relative bg-gradient-to-br from-green-400 to-emerald-600 rounded-full p-4 shadow-[0_0_50px_rgba(16,185,129,0.5)]">
+                  <Check className="w-12 h-12 text-white stroke-[3]" />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Text Status */}
+        <motion.div className="text-center space-y-2 h-16">
+          <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
+            {stage === 4 ? "Issuance Complete" : "Processing"}
+          </h2>
+          <motion.p
+            key={statusText}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-sm font-mono text-emerald-400"
+          >
+            {statusText}
+          </motion.p>
+        </motion.div>
+
+        {/* Progress Indicators */}
+        {stage < 4 && (
+          <div className="flex gap-2 mt-8">
+            {[1, 2, 3].map((i) => (
+              <motion.div
+                key={i}
+                className={`h-1 rounded-full transition-all duration-500 ${
+                  i <= stage ? "bg-emerald-500 w-8" : "bg-zinc-800 w-2"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN PAGE ---
+export default function IssuePage() {
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<CredentialTemplate | null>(null);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+
+  // Loader States
+  const [isMinting, setIsMinting] = useState(false);
+  const [mintingStage, setMintingStage] = useState(0); // 0=off, 1=prep, 2=sign, 3=mint, 4=success
+  const [mintingStatusText, setMintingStatusText] = useState("");
+
+  const [searchQuery, setSearchQuery] = useState("");
   const [students, setStudents] = useState<StudentData[]>([]);
   const [templates, setTemplates] = useState<CredentialTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,24 +240,24 @@ export default function IssuePage() {
       try {
         // Fetch Students
         const enrollRes = await enrollmentService.getEnrolledStudents();
-        console.log("enrolled :",enrollRes)
         if (enrollRes.success && Array.isArray((enrollRes as any).students)) {
           setStudents((enrollRes as any).students);
         }
 
         // Fetch Templates
         const tempRes = await templateService.getTemplates();
-        console.log("templates : ",tempRes)
         if (tempRes.success && tempRes.data) {
-          const mapped: CredentialTemplate[] = tempRes.data.map((item: any) => ({
-            id: item.tokenId,
-            name: item.metadata?.name || "Unnamed Credential",
-            description: item.metadata?.description || "No description",
-            type: item.credentialType,
-            image: item.metadata?.image || "",
-            skills: item.metadata?.skills || [],
-            metadataURI: item.metadataURI || "",
-          }));
+          const mapped: CredentialTemplate[] = tempRes.data.map(
+            (item: any) => ({
+              id: item.tokenId,
+              name: item.metadata?.name || "Unnamed Credential",
+              description: item.metadata?.description || "No description",
+              type: item.credentialType,
+              image: item.metadata?.image || "",
+              skills: item.metadata?.skills || [],
+              metadataURI: item.metadataURI || "",
+            })
+          );
           setTemplates(mapped);
         }
       } catch (error) {
@@ -110,9 +289,15 @@ export default function IssuePage() {
     }
   };
 
+  // Helper for sleep
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
   const handleMint = async () => {
     const user = useAuthStore.getState().user;
-    const privateKey = user?.walletAddress ? getPrivateKey(user.walletAddress) : null;
+    const privateKey = user?.walletAddress
+      ? getPrivateKey(user.walletAddress)
+      : null;
 
     if (!selectedTemplate || selectedStudents.length === 0) {
       toast({
@@ -126,52 +311,77 @@ export default function IssuePage() {
     if (!privateKey) {
       toast({
         title: "Wallet Error",
-        description: "Could not find a private key for your connected wallet. Please check your configuration.",
+        description:
+          "Could not find a private key. Check wallet configuration.",
         variant: "destructive",
       });
       return;
     }
 
+    // 1. START LOADER
     setIsMinting(true);
+    setMintingStage(1);
+    setMintingStatusText("Preparing Credential Data...");
 
     try {
-      // Process each selected student
-      for (const enrollmentId of selectedStudents) {
-        const student = students.find((s) => s._id === enrollmentId);
-        if (!student) continue;
+      // STAGE 1: PREP (1.5s)
+      await sleep(1500);
 
-        // Construct payload based on user request
-        const payload = {
-          issuerPrivateKey: privateKey,
-          holderAddress: student.studentWalletAddress,
-          credentialType: selectedTemplate.type,
-          metadataURI: selectedTemplate.metadataURI,
-          expirationDate: 0,
-          revocable: true,
-          credentialData: {
-            name: selectedTemplate.name,
-            major: "Computer Science",
-            graduationYear: 2024,
-            gpa: 3.8,
-          },
-        };
+      // STAGE 2: SIGNING (2.5s)
+      setMintingStage(2);
+      setMintingStatusText("Institute Signing Transaction...");
+      await sleep(2500);
 
-        const res = await credentialService.issueCredential(payload);
-        
-        if (!res.success) {
-          throw new Error(res.message || `Failed to issue to ${student.studentName}`);
+      // STAGE 3: MINTING (API Call + Min Wait)
+      setMintingStage(3);
+      setMintingStatusText("Minting NFT on Blockchain...");
+
+      // Create the actual processing promise
+      const processMinting = async () => {
+        for (const enrollmentId of selectedStudents) {
+          const student = students.find((s) => s._id === enrollmentId);
+          if (!student) continue;
+
+          const payload = {
+            issuerPrivateKey: privateKey,
+            holderAddress: student.studentWalletAddress,
+            credentialType: selectedTemplate.type,
+            metadataURI: selectedTemplate.metadataURI,
+            expirationDate: 0,
+            revocable: true,
+            credentialData: {
+              name: selectedTemplate.name,
+              major: "Computer Science",
+              graduationYear: 2024,
+              gpa: 3.8,
+            },
+          };
+
+          const res = await credentialService.issueCredential(payload);
+          if (!res.success) {
+            throw new Error(
+              res.message || `Failed to issue to ${student.studentName}`
+            );
+          }
         }
-      }
+      };
+
+      // Run API parallel to a minimum timer (e.g., 5 seconds for the "Blockchain" feel)
+      // This ensures the cool cube animation plays for at least 5s even if API is instant
+      await Promise.all([processMinting(), sleep(5000)]);
+
+      // STAGE 4: SUCCESS
+      setMintingStatusText("Transaction Confirmed!");
+      setMintingStage(4);
+
+      await sleep(2000); // Show success checkmark for 2s
 
       toast({
         title: "Success",
         description: `Successfully issued credentials to ${selectedStudents.length} students.`,
       });
-      
-      // Reset selection
+
       setSelectedStudents([]);
-      // setIssuerPrivateKey(""); // No longer needed
-      
     } catch (error: any) {
       console.error("Minting error:", error);
       toast({
@@ -180,7 +390,9 @@ export default function IssuePage() {
         variant: "destructive",
       });
     } finally {
+      // Reset EVERYTHING
       setIsMinting(false);
+      setMintingStage(0);
     }
   };
 
@@ -192,21 +404,15 @@ export default function IssuePage() {
     return nameMatch || emailMatch;
   });
 
-  const getTypeIcon = (type: CredentialType) => {
-    switch (type) {
-      case CredentialType.DEGREE:
-        return <GraduationCap className="w-5 h-5" />;
-      case CredentialType.CERTIFICATE:
-        return <FileBadge className="w-5 h-5" />;
-      case CredentialType.BADGE:
-        return <Award className="w-5 h-5" />;
-      default:
-        return <Award className="w-5 h-5" />;
-    }
-  };
-
   return (
     <main className="min-h-screen text-white pt-32 pb-20 px-6 max-w-7xl mx-auto">
+      {/* THE FULL SCREEN LOADER */}
+      <AnimatePresence>
+        {isMinting && (
+          <MintingLoader stage={mintingStage} statusText={mintingStatusText} />
+        )}
+      </AnimatePresence>
+
       {/* Page Header */}
       <div className="flex justify-between items-end mb-10 border-b border-white/10 pb-6">
         <div>
@@ -258,7 +464,11 @@ export default function IssuePage() {
                             : "bg-white/10 text-zinc-400"
                         }`}
                       >
-                        {cred.type === CredentialType.DEGREE ? "Degree" : cred.type === CredentialType.CERTIFICATE ? "Certificate" : "Badge"}
+                        {cred.type === CredentialType.DEGREE
+                          ? "Degree"
+                          : cred.type === CredentialType.CERTIFICATE
+                          ? "Certificate"
+                          : "Badge"}
                       </span>
                       {selectedTemplate?.id === cred.id && (
                         <CheckCircle2 className="w-4 h-4 text-blue-400" />
@@ -279,13 +489,14 @@ export default function IssuePage() {
             )}
           </div>
 
-          {/* Private Key Input - REMOVED (Auto-handled) */}
+          {/* Auto Key Info */}
           <div className="bg-white/0.02 border border-white/10 rounded-2xl p-6">
-             <h3 className="text-sm font-bold uppercase text-zinc-500 mb-2 tracking-wider flex items-center gap-2">
+            <h3 className="text-sm font-bold uppercase text-zinc-500 mb-2 tracking-wider flex items-center gap-2">
               <Key className="w-4 h-4" /> Issuer Wallet
             </h3>
             <p className="text-xs text-zinc-400">
-              Transaction will be signed using the private key associated with your connected wallet.
+              Transaction will be signed using the private key associated with
+              your connected wallet.
             </p>
           </div>
         </div>
@@ -401,17 +612,8 @@ export default function IssuePage() {
                 }
                 className="w-full py-4 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {isMinting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Minting Credentials...
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="w-5 h-5" />
-                    Issue {selectedStudents.length} Credentials
-                  </>
-                )}
+                <ShieldCheck className="w-5 h-5" />
+                Issue {selectedStudents.length} Credentials
               </button>
             </div>
           </div>
