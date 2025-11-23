@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, X, LogIn, Sparkles, ChevronRight } from "lucide-react";
+import { Menu, X, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LogoCrest } from "./logo";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,9 +39,7 @@ export function Navbar() {
         >
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              <span className="font-bold text-2xl text-white">S</span>
-            </div>
+            <LogoCrest className="w-10 h-10 group-hover:scale-105 transition-transform" />
             <span className="font-bold text-2xl tracking-tight text-white">
               Skill-Z
             </span>

@@ -2,6 +2,7 @@ import type React from "react";
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 const inter = Inter({
@@ -15,12 +16,10 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   display: "swap",
 });
-
 export const metadata: Metadata = {
   title: "Skill-Z - Blockchain Credential Platform",
   description:
     "Own your credentials forever. Tamper-proof blockchain verification. Zero-knowledge privacy. Decentralized governance. The future of education starts here.",
-  generator: "v0.app",
   keywords: [
     "blockchain",
     "credentials",
@@ -32,23 +31,16 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Skill-Z Team" }],
   creator: "Skill-Z",
+
   icons: {
     icon: [
       {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
+        url: "/icon.svg?v=2",
         type: "image/svg+xml",
       },
     ],
-    apple: "/apple-icon.png",
   },
+  // ---------------------------
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -152,6 +144,7 @@ export default function RootLayout({
         {/* Main Content */}
         <div className="relative z-0">{children}</div>
 
+        <Toaster />
         <Analytics />
       </body>
     </html>
