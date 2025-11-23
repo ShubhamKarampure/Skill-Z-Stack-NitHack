@@ -135,7 +135,7 @@ export default function AdmissionsPage() {
                 >
                   <div className="flex items-center gap-4">
                     {/* Avatar Placeholder */}
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
                       {/* Fallback if name is missing */}
                       {(student.studentName || "U").charAt(0).toUpperCase()}
                     </div>

@@ -119,7 +119,7 @@ const CredentialCard = ({ cred, index }: { cred: Credential; index: number }) =>
     >
       {/* Image Header */}
       <div className="h-48 w-full overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent z-10" />
+        <div className="absolute inset-0 bg-linear-to-t from-zinc-900 to-transparent z-10" />
         {imageUrl && !imgError ? (
           <img
             src={imageUrl}
@@ -155,7 +155,7 @@ const CredentialCard = ({ cred, index }: { cred: Credential; index: number }) =>
 
           <div className="flex items-center justify-between pt-4 border-t border-white/5">
             <div className="flex items-center gap-2 text-xs text-zinc-500">
-              <div className="w-4 h-4 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500" />
+              <div className="w-4 h-4 rounded-full bg-linear-to-tr from-cyan-500 to-blue-500" />
               <span className="truncate max-w-[100px]" title={cred.issuer}>
                 {cred.issuer}
               </span>
@@ -353,7 +353,7 @@ export default function InventoryPage() {
       </div>
 
       {/* Toast Container */}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none">
+      <div className="fixed bottom-6 right-6 z-100 flex flex-col gap-2 pointer-events-none">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
@@ -385,7 +385,7 @@ export default function InventoryPage() {
             <div className="space-y-2">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
                 My{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-pink-600">
                   Inventory
                 </span>
               </h1>
@@ -410,7 +410,7 @@ export default function InventoryPage() {
                   placeholder="Search name, issuer, ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full sm:w-64 bg-white/[0.03] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.05] transition-all"
+                  className="w-full sm:w-64 bg-white/0.03 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:bg-white/0.05 transition-all"
                 />
               </div>
               <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
@@ -421,7 +421,7 @@ export default function InventoryPage() {
                     className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all whitespace-nowrap ${
                       selectedCategory === cat
                         ? "bg-white text-black border-white"
-                        : "bg-white/[0.03] border-white/10 text-zinc-400 hover:text-white hover:bg-white/[0.05]"
+                        : "bg-white/0.03 border-white/10 text-zinc-400 hover:text-white hover:bg-white/0.05"
                     }`}
                   >
                     {cat}
