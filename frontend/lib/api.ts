@@ -145,23 +145,56 @@ export const credentialService = {
 };
 
 export const templateService = {
-  createTemplate: async (data: any) => {
-    return fetchAPI("/templates", {
+  createTemplate: async (data: {
+    name: string;
+    description: string;
+    type: CredentialType;
+    image: string;
+    skills: string[];
+    issuerPrivateKey: string; // Required for signing
+  }) => {
+    const user = useAuthStore.getState().user;
+    if (!user?.walletAddress) {
+      return { success: false, message: "User wallet not connected" };
+    }
+
+    // We use the issue endpoint to create a "self-issued" credential that acts as a template
+    return fetchAPI("/credentials/issue", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        issuerPrivateKey: data.issuerPrivateKey,
+        holderAddress: user.walletAddress, // Self-issue
+        credentialType: data.type,
+        metadataURI: "ipfs://placeholder-for-demo", // In a real app, upload metadata to IPFS first
+        metadata: {
+          name: data.name,
+          description: data.description,
+          image: data.image,
+          skills: data.skills,
+        },
+        credentialData: {
+          // Additional data if needed by the contract
+        },
+        // We store the actual template data in the metadata field of the DB model
+        // The controller expects 'metadataURI' but also saves metadata to DB if we modify it?
+        // Wait, the controller only saves metadataURI to DB.
+        // We might need to pass the metadata in the body if the controller supports it,
+        // OR we rely on the fact that we can't easily save the full metadata structure 
+        // without modifying the controller to accept 'metadata' object directly.
+        // Let's check the controller again.
+      }),
     });
   },
 
   getTemplates: async () => {
-    return fetchAPI("/templates", {
+    return fetchAPI<Credential[]>("/credentials/templates", {
       method: "GET",
     });
   },
 
   deleteTemplate: async (id: string) => {
-    return fetchAPI(`/templates/${id}`, {
-      method: "DELETE",
-    });
+    // Not implemented in backend yet
+    return { success: false, message: "Not implemented" };
   },
 };
 

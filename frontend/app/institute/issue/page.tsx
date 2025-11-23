@@ -87,7 +87,7 @@ export default function IssuePage() {
       <div className="grid lg:grid-cols-12 gap-8 h-[calc(100vh-250px)] min-h-[600px]">
         {/* LEFT COL: SELECT CREDENTIAL (4 Cols) */}
         <div className="lg:col-span-4 flex flex-col gap-6 h-full">
-          <div className="flex-1 bg-white/[0.02] border border-white/10 rounded-2xl p-6 overflow-y-auto">
+          <div className="flex-1 bg-white/0.02 border border-white/10 rounded-2xl p-6 overflow-y-auto">
             <h3 className="text-sm font-bold uppercase text-zinc-500 mb-4 tracking-wider">
               1. Select Template
             </h3>
@@ -123,7 +123,7 @@ export default function IssuePage() {
                     </div>
                   </div>
                   {selectedPreset === cred.id && (
-                    <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white/10 to-transparent" />
+                    <div className="absolute right-0 top-0 bottom-0 w-16 bg-linear-to-l from-white/10 to-transparent" />
                   )}
                 </button>
               ))}
@@ -135,9 +135,9 @@ export default function IssuePage() {
         </div>
 
         {/* RIGHT COL: SELECT STUDENTS (8 Cols) */}
-        <div className="lg:col-span-8 flex flex-col h-full bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden">
+        <div className="lg:col-span-8 flex flex-col h-full bg-white/0.02 border border-white/5 rounded-2xl overflow-hidden">
           {/* Toolbar */}
-          <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+          <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/0.02">
             <div className="flex items-center gap-4">
               <h3 className="text-sm font-bold uppercase text-zinc-500 tracking-wider">
                 2. Select Recipients
@@ -179,7 +179,7 @@ export default function IssuePage() {
                   className={`group flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
                     isSelected
                       ? "bg-blue-500/10 border-blue-500/30"
-                      : "bg-transparent border-transparent hover:bg-white/[0.02]"
+                      : "bg-transparent border-transparent hover:bg-white/0.02"
                   }`}
                 >
                   <div className="flex items-center gap-4">
@@ -233,7 +233,7 @@ export default function IssuePage() {
                 !selectedPreset || selectedStudents.length === 0 || isMinting
               }
               onClick={handleMint}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-bold text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed flex items-center gap-2 transition-all transform active:scale-95"
+              className="px-8 py-3 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-bold text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed flex items-center gap-2 transition-all transform active:scale-95"
             >
               {isMinting ? (
                 <>

@@ -10,337 +10,294 @@ import {
   X,
   ChevronRight,
   Image as ImageIcon,
-  LayoutTemplate,
-  Sparkles,
+  AlignLeft,
+  Type,
+  List,
+  Key,
   Loader2,
 } from "lucide-react";
+import { CredentialType } from "@/lib/types";
 import { templateService } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-
-// Define types locally or import from @/lib/types if available
-type CredentialCategory = "Degree" | "Certificate" | "Badge";
 
 interface CredentialTemplate {
   id: string;
   name: string;
   description: string;
-  type: CredentialCategory;
+  type: CredentialType;
   image: string;
   skills: string[];
   holders: number;
-  department?: string;
 }
 
-const Aurora = () => (
-  <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-[#09090b]">
-    <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-600/10 blur-[120px]" />
-    <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-purple-600/10 blur-[120px]" />
-  </div>
-);
-
 export default function CredentialsLibrary() {
-  const { toast } = useToast();
   const [credentials, setCredentials] = useState<CredentialTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedCred, setSelectedCred] = useState<CredentialTemplate | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-  // Form State
-  const [newCred, setNewCred] = useState<Partial<CredentialTemplate>>({
+  // Form State for creation
+  const [newCred, setNewCred] = useState({
     name: "",
     description: "",
-    type: "Certificate",
+    type: CredentialType.DEGREE,
     image: "",
-    skills: [],
-    department: "",
+    skills: "",
+    issuerPrivateKey: "", // Added for signing
   });
-  const [skillInput, setSkillInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    loadTemplates();
+    fetchTemplates();
   }, []);
 
-  const loadTemplates = async () => {
-    try {
-      setIsLoading(true);
-      const response = await templateService.getTemplates();
-      if (response.success && response.data) {
-        // Map _id to id for frontend consistency
-        const mapped = response.data.map((t: any) => ({
-          ...t,
-          id: t._id,
-        }));
-        setCredentials(mapped);
-      }
-    } catch (error) {
-      console.error("Failed to load templates", error);
+  const fetchTemplates = async () => {
+    setIsLoading(true);
+    const res = await templateService.getTemplates();
+    if (res.success && res.data) {
+      // Map backend data to frontend model
+      const mapped: CredentialTemplate[] = res.data.map((item: any) => ({
+        id: item.tokenId,
+        name: item.metadata?.name || "Unnamed Credential",
+        description: item.metadata?.description || "No description",
+        type: item.credentialType,
+        image: item.metadata?.image || "https://via.placeholder.com/400",
+        skills: item.metadata?.skills || [],
+        holders: 0, // We don't have holder count in this API yet
+      }));
+      setCredentials(mapped);
+    } else {
       toast({
         title: "Error",
-        description: "Failed to load credential templates",
+        description: "Failed to fetch credential templates",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    try {
-      const payload = {
-        name: newCred.name,
-        description: newCred.description,
-        type: newCred.type,
-        image: newCred.image,
-        skills: skillInput.split(",").map((s) => s.trim()).filter(Boolean),
-        department: newCred.department,
-      };
 
-      const response = await templateService.createTemplate(payload);
-      
-      if (response.success) {
-        toast({
-          title: "Success",
-          description: "Credential template created successfully",
-        });
-        await loadTemplates();
-        setIsCreateOpen(false);
-        setNewCred({ name: "", description: "", type: "Certificate", image: "", department: "" });
-        setSkillInput("");
-      } else {
-        throw new Error(response.message || "Failed to create template");
-      }
-    } catch (error: any) {
+    const res = await templateService.createTemplate({
+      name: newCred.name,
+      description: newCred.description,
+      type: newCred.type,
+      image: newCred.image || "https://via.placeholder.com/400",
+      skills: newCred.skills.split(",").map((s) => s.trim()),
+      issuerPrivateKey: newCred.issuerPrivateKey,
+    });
+
+    if (res.success) {
+      toast({
+        title: "Success",
+        description: "Credential template created successfully",
+      });
+      setIsCreateOpen(false);
+      setNewCred({
+        name: "",
+        description: "",
+        type: CredentialType.DEGREE,
+        image: "",
+        skills: "",
+        issuerPrivateKey: "",
+      });
+      fetchTemplates(); // Refresh list
+    } else {
       toast({
         title: "Error",
-        description: error.message || "Failed to create template",
+        description: res.message || "Failed to create template",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
+    }
+    setIsSubmitting(false);
+  };
+
+  const getTypeColor = (type: CredentialType) => {
+    switch (type) {
+      case CredentialType.DEGREE:
+        return "bg-purple-500/20 text-purple-400 border-purple-500/20";
+      case CredentialType.CERTIFICATE:
+        return "bg-blue-500/20 text-blue-400 border-blue-500/20";
+      case CredentialType.BADGE:
+        return "bg-amber-500/20 text-amber-400 border-amber-500/20";
+      default:
+        return "bg-zinc-500/20 text-zinc-400 border-zinc-500/20";
+    }
+  };
+
+  const getTypeIcon = (type: CredentialType) => {
+    switch (type) {
+      case CredentialType.DEGREE:
+        return <GraduationCap className="w-5 h-5" />;
+      case CredentialType.CERTIFICATE:
+        return <FileBadge className="w-5 h-5" />;
+      case CredentialType.BADGE:
+        return <Award className="w-5 h-5" />;
+      default:
+        return <Award className="w-5 h-5" />;
+    }
+  };
+
+  const getTypeName = (type: CredentialType) => {
+    switch (type) {
+      case CredentialType.DEGREE:
+        return "Degree";
+      case CredentialType.CERTIFICATE:
+        return "Certificate";
+      case CredentialType.BADGE:
+        return "Badge";
+      default:
+        return "Unknown";
     }
   };
 
   return (
-    <main className="min-h-screen text-white font-sans selection:bg-indigo-500/30">
-      <Aurora />
-      
-      <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
-          <div>
-            <h1 className="text-4xl font-bold mb-3 bg-clip-text text-transparent bg-linear-to-r from-white to-zinc-400">
-              Credential Library
-            </h1>
-            <p className="text-zinc-400 max-w-xl text-lg">
-              Design and manage the credentials your institute issues. Create templates for degrees, certificates, and achievement badges.
-            </p>
-          </div>
-          <button
-            onClick={() => setIsCreateOpen(true)}
-            className="group flex items-center gap-2 px-6 py-3 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-all shadow-lg shadow-white/5 hover:shadow-white/20 hover:-translate-y-0.5"
-          >
-            <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" /> 
-            Create Template
-          </button>
+    <main className="min-h-screen text-white pt-32 pb-20 px-6 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Credential Library</h1>
+          <p className="text-zinc-400">
+            Define the degrees, certificates, and badges your institute offers.
+          </p>
         </div>
-
-        {isLoading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
-          </div>
-        ) : credentials.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl bg-white/5">
-            <LayoutTemplate className="w-12 h-12 mx-auto text-zinc-500 mb-4" />
-            <h3 className="text-xl font-bold text-zinc-300 mb-2">No Templates Found</h3>
-            <p className="text-zinc-500 max-w-md mx-auto mb-6">
-              You haven't created any credential templates yet. Start by creating your first degree, certificate, or badge template.
-            </p>
-            <button
-              onClick={() => setIsCreateOpen(true)}
-              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-colors"
-            >
-              Create First Template
-            </button>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {credentials.map((cred) => (
-              <motion.div
-                key={cred.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                whileHover={{ y: -5 }}
-                onClick={() => setSelectedCred(cred)}
-                className="relative overflow-hidden rounded-2xl bg-white/0.02 border border-white/5 hover:border-indigo-500/30 transition-all cursor-pointer group"
-              >
-                {/* Image Header */}
-                <div className="h-32 w-full relative overflow-hidden">
-                  <div className="absolute inset-0 bg-linear-to-t from-[#09090b] to-transparent z-10" />
-                  {cred.image ? (
-                    <img 
-                      src={cred.image} 
-                      alt={cred.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
-                      <Award className="w-10 h-10 text-zinc-700" />
-                    </div>
-                  )}
-                  <div className="absolute top-4 right-4 z-20">
-                    <div
-                      className={`p-2 rounded-lg backdrop-blur-md border border-white/10 ${
-                        cred.type === "Degree"
-                          ? "bg-purple-500/20 text-purple-300"
-                          : cred.type === "Certificate"
-                          ? "bg-blue-500/20 text-blue-300"
-                          : "bg-amber-500/20 text-amber-300"
-                      }`}
-                    >
-                      {cred.type === "Degree" ? (
-                        <GraduationCap className="w-5 h-5" />
-                      ) : cred.type === "Certificate" ? (
-                        <FileBadge className="w-5 h-5" />
-                      ) : (
-                        <Award className="w-5 h-5" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-6 pt-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                      {cred.department || "General"}
-                    </span>
-                  </div>
-                  
-                  <h3 className="text-xl font-bold mb-2 group-hover:text-indigo-400 transition-colors">
-                    {cred.name}
-                  </h3>
-                  
-                  <p className="text-sm text-zinc-400 line-clamp-2 mb-4">
-                    {cred.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {cred.skills.slice(0, 3).map((skill, i) => (
-                      <span
-                        key={i}
-                        className="px-2 py-1 rounded-md bg-white/5 text-xs text-zinc-300 border border-white/5"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                    {cred.skills.length > 3 && (
-                      <span className="text-xs text-zinc-500 py-1">
-                        +{cred.skills.length - 3}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                    <span className="text-xs text-zinc-500 font-mono flex items-center gap-1">
-                      <LayoutTemplate className="w-3 h-3" /> {cred.holders} Issued
-                    </span>
-                    <span className="text-xs font-bold text-indigo-400 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      View Details <ChevronRight className="w-3 h-3" />
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
+        <button
+          onClick={() => setIsCreateOpen(true)}
+          className="flex items-center gap-2 px-6 py-3 bg-white text-black font-bold rounded-full hover:bg-zinc-200 transition-all shadow-lg shadow-white/10"
+        >
+          <Plus className="w-4 h-4" /> Create New
+        </button>
       </div>
 
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {isLoading ? (
+          <div className="col-span-full flex justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
+          </div>
+        ) : credentials.length === 0 ? (
+          <div className="col-span-full text-center py-20 text-zinc-500">
+            No credential templates found. Create one to get started.
+          </div>
+        ) : (
+          credentials.map((cred) => (
+            <motion.div
+              key={cred.id}
+              whileHover={{ y: -5 }}
+              onClick={() => setSelectedCred(cred)}
+              className="group relative overflow-hidden rounded-2xl bg-zinc-900/50 border border-white/5 hover:border-white/20 transition-all cursor-pointer"
+            >
+              {/* Image Header */}
+              <div className="h-48 w-full overflow-hidden relative">
+                <div className="absolute inset-0 bg-linear-to-t from-zinc-900 to-transparent z-10" />
+                <img
+                  src={cred.image}
+                  alt={cred.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className={`absolute top-4 right-4 z-20 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 backdrop-blur-md border ${getTypeColor(cred.type)}`}>
+                  {getTypeIcon(cred.type)}
+                  {getTypeName(cred.type)}
+                </div>
+              </div>
+
+              <div className="p-6 relative z-20 -mt-12">
+                <div className="bg-zinc-900/90 backdrop-blur-xl border border-white/10 p-4 rounded-xl shadow-xl">
+                  <h3 className="text-lg font-bold mb-2 group-hover:text-blue-400 transition-colors line-clamp-1">
+                    {cred.name}
+                  </h3>
+                  <p className="text-zinc-400 text-sm line-clamp-2 mb-4 h-10">
+                    {cred.description}
+                  </p>
+                  
+                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                    <div className="flex items-center gap-2 text-xs text-zinc-500">
+                      <List className="w-3 h-3" />
+                      {cred.skills.length} Skills
+                    </div>
+                    <span className="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">
+                      {cred.holders} Issued
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))
+        )}
+      </div>
 
       {/* VIEW DETAILS MODAL */}
       <AnimatePresence>
         {selectedCred && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedCred(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="bg-[#18181b] border border-white/10 w-full max-w-2xl rounded-2xl relative overflow-hidden shadow-2xl shadow-black/50 z-10"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#18181b] border border-white/10 w-full max-w-2xl rounded-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
             >
-              <div className="h-48 w-full relative">
-                <div className="absolute inset-0 bg-linear-to-t from-[#18181b] to-transparent z-10" />
-                <img 
-                  src={selectedCred.image} 
+              <div className="h-48 w-full relative shrink-0">
+                <img
+                  src={selectedCred.image}
                   alt={selectedCred.name}
                   className="w-full h-full object-cover"
                 />
+                <div className="absolute inset-0 bg-linear-to-t from-[#18181b] to-transparent" />
                 <button
                   onClick={() => setSelectedCred(null)}
-                  className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/40 text-white hover:bg-white hover:text-black transition-colors backdrop-blur-md"
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-black transition-colors"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="p-8 -mt-12 relative z-20">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                    selectedCred.type === "Degree"
-                      ? "bg-purple-500/10 border-purple-500/20 text-purple-400"
-                      : selectedCred.type === "Certificate"
-                      ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
-                      : "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                  }`}>
-                    {selectedCred.type}
-                  </span>
-                  {selectedCred.department && (
-                    <span className="text-zinc-400 text-sm flex items-center gap-1">
-                      • {selectedCred.department}
-                    </span>
-                  )}
+              <div className="p-8 overflow-y-auto">
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-3 border ${getTypeColor(selectedCred.type)}`}>
+                      {getTypeIcon(selectedCred.type)}
+                      {getTypeName(selectedCred.type)}
+                    </div>
+                    <h2 className="text-3xl font-bold mb-2">{selectedCred.name}</h2>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-zinc-500 mb-1">Total Issued</div>
+                    <div className="text-2xl font-mono font-bold text-white">{selectedCred.holders}</div>
+                  </div>
                 </div>
 
-                <h2 className="text-3xl font-bold mb-4">{selectedCred.name}</h2>
-                <p className="text-zinc-300 text-lg leading-relaxed mb-8">
-                  {selectedCred.description}
-                </p>
-
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="space-y-8">
                   <div>
-                    <h4 className="text-sm font-bold text-zinc-500 uppercase mb-3 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4" /> Skills & Competencies
+                    <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <AlignLeft className="w-4 h-4" /> Description
+                    </h4>
+                    <p className="text-zinc-300 leading-relaxed">
+                      {selectedCred.description}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <List className="w-4 h-4" /> Skills & Competencies
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedCred.skills.map((s, i) => (
                         <span
                           key={i}
-                          className="px-3 py-1.5 bg-white/5 rounded-lg border border-white/10 text-sm text-zinc-200"
+                          className="px-3 py-1.5 bg-white/5 rounded-lg border border-white/10 text-sm text-zinc-300 hover:bg-white/10 transition-colors"
                         >
                           {s}
                         </span>
                       ))}
                     </div>
                   </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-bold text-zinc-500 uppercase mb-2">Stats</h4>
-                      <div className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                        <span className="text-zinc-400">Total Issued</span>
-                        <span className="text-2xl font-bold font-mono">{selectedCred.holders}</span>
-                      </div>
-                    </div>
-                    <button className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2">
-                      Issue This Credential <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-white/10 flex justify-end">
+                  <button className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all flex items-center gap-2">
+                    View Holders List <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -351,37 +308,27 @@ export default function CredentialsLibrary() {
       {/* CREATE NEW MODAL */}
       <AnimatePresence>
         {isCreateOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsCreateOpen(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="bg-[#18181b] border border-white/10 w-full max-w-xl p-8 rounded-2xl relative z-10 shadow-2xl"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#18181b] border border-white/10 w-full max-w-xl p-8 rounded-2xl relative max-h-[90vh] overflow-y-auto"
             >
               <button
                 onClick={() => setIsCreateOpen(false)}
-                className="absolute top-6 right-6 text-zinc-400 hover:text-white transition-colors"
+                className="absolute top-4 right-4 text-zinc-400 hover:text-white"
               >
-                <X className="w-6 h-6" />
+                <X />
               </button>
+              <h2 className="text-2xl font-bold mb-1">Create New Credential</h2>
+              <p className="text-zinc-400 text-sm mb-6">Add a new credential template to your library.</p>
               
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold mb-2">Create Credential Template</h2>
-                <p className="text-zinc-400 text-sm">Define the structure for a new credential type.</p>
-              </div>
-
               <form onSubmit={handleCreate} className="space-y-5">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase block mb-2">
-                      Credential Name
+                    <label className="text-xs font-bold text-zinc-400 uppercase flex mb-2 items-center gap-2">
+                      <Type className="w-3 h-3" /> Credential Name
                     </label>
                     <input
                       required
@@ -389,51 +336,46 @@ export default function CredentialsLibrary() {
                       onChange={(e) =>
                         setNewCred({ ...newCred, name: e.target.value })
                       }
-                      className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
-                      placeholder="e.g. Master of Science in AI"
+                      className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm focus:border-blue-500 outline-none transition-colors"
+                      placeholder="e.g. Master in Economics"
                     />
                   </div>
                   
                   <div>
-                    <label className="text-xs font-bold text-zinc-500 uppercase block mb-2">
+                    <label className="text-xs font-bold text-zinc-400 uppercase block mb-2">
                       Type
                     </label>
-                    <div className="relative">
-                      <select
-                        value={newCred.type}
-                        onChange={(e) =>
-                          setNewCred({ ...newCred, type: e.target.value as CredentialCategory })
-                        }
-                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none appearance-none"
-                      >
-                        <option value="Degree">Degree</option>
-                        <option value="Certificate">Certificate</option>
-                        <option value="Badge">Badge</option>
-                      </select>
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
-                        <ChevronRight className="w-4 h-4 rotate-90" />
-                      </div>
-                    </div>
+                    <select
+                      value={newCred.type}
+                      onChange={(e) =>
+                        setNewCred({ ...newCred, type: Number(e.target.value) })
+                      }
+                      className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm focus:border-blue-500 outline-none transition-colors"
+                    >
+                      <option value={CredentialType.DEGREE}>Degree</option>
+                      <option value={CredentialType.CERTIFICATE}>Certificate</option>
+                      <option value={CredentialType.BADGE}>Badge</option>
+                    </select>
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-zinc-500 uppercase block mb-2">
-                      Department
+                    <label className="text-xs font-bold text-zinc-400 uppercase flex mb-2 items-center gap-2">
+                      <ImageIcon className="w-3 h-3" /> Image URL
                     </label>
                     <input
-                      value={newCred.department}
+                      value={newCred.image}
                       onChange={(e) =>
-                        setNewCred({ ...newCred, department: e.target.value })
+                        setNewCred({ ...newCred, image: e.target.value })
                       }
-                      className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
-                      placeholder="e.g. Computer Science"
+                      className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm focus:border-blue-500 outline-none transition-colors"
+                      placeholder="https://..."
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-zinc-500 uppercase block mb-2">
-                    Description
+                  <label className="text-xs font-bold text-zinc-400 uppercase flex mb-2 items-center gap-2">
+                    <AlignLeft className="w-3 h-3" /> Description
                   </label>
                   <textarea
                     required
@@ -441,48 +383,57 @@ export default function CredentialsLibrary() {
                     onChange={(e) =>
                       setNewCred({ ...newCred, description: e.target.value })
                     }
-                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none h-24 resize-none"
-                    placeholder="Describe what this credential represents..."
+                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm focus:border-blue-500 outline-none h-24 resize-none transition-colors"
+                    placeholder="Describe the credential..."
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-zinc-500 uppercase block mb-2">
-                    Cover Image URL
+                  <label className="text-xs font-bold text-zinc-400 uppercase flex mb-2 items-center gap-2">
+                    <List className="w-3 h-3" /> Skills (Comma separated)
                   </label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                      <input
-                        value={newCred.image}
-                        onChange={(e) =>
-                          setNewCred({ ...newCred, image: e.target.value })
-                        }
-                        className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 p-3 text-sm focus:border-indigo-500 outline-none"
-                        placeholder="https://..."
-                      />
-                    </div>
-                  </div>
+                  <textarea
+                    required
+                    value={newCred.skills}
+                    onChange={(e) =>
+                      setNewCred({ ...newCred, skills: e.target.value })
+                    }
+                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm focus:border-blue-500 outline-none h-24 resize-none transition-colors"
+                    placeholder="e.g. Economics, Finance, Mathematics"
+                  />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-zinc-500 uppercase block mb-2">
-                    Skills (Comma separated)
+                  <label className="text-xs font-bold text-zinc-400 uppercase flex mb-2 items-center gap-2">
+                    <Key className="w-3 h-3" /> Issuer Private Key (For Demo)
                   </label>
                   <input
                     required
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
-                    placeholder="e.g. React, Leadership, Project Management"
+                    type="password"
+                    value={newCred.issuerPrivateKey}
+                    onChange={(e) =>
+                      setNewCred({ ...newCred, issuerPrivateKey: e.target.value })
+                    }
+                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm focus:border-blue-500 outline-none transition-colors font-mono"
+                    placeholder="0x..."
                   />
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Required to sign the transaction on the blockchain.
+                  </p>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-4 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-colors mt-4 flex items-center justify-center gap-2"
+                  disabled={isSubmitting}
+                  className="w-full py-4 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 mt-4 transition-colors shadow-lg shadow-white/5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  <Plus className="w-5 h-5" /> Create Template
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Creating...
+                    </>
+                  ) : (
+                    "Create Credential Template"
+                  )}
                 </button>
               </form>
             </motion.div>
