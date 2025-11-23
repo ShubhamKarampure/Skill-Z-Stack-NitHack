@@ -7,28 +7,51 @@ import {
   Download,
   Share2,
   Search,
-  Filter,
   CheckCircle,
-  Clock,
-  X,
-  Menu,
-  Wallet,
   Loader2,
   Hexagon,
-  Sparkles,
-  Shield,
+  ShieldAlert,
+  ExternalLink,
+  GraduationCap,
+  FileBadge,
+  Calendar,
+  Hash,
 } from "lucide-react";
 
-// --- SHARED TYPES ---
+// --- TYPES (Matched to Mongoose Model) ---
+enum CredentialType {
+  DEGREE = 0,
+  CERTIFICATE = 1,
+  BADGE = 2,
+}
+
+interface CredentialMetadata {
+  name: string;
+  description: string;
+  image: string;
+  major?: string;
+  graduationYear?: number;
+  gpa?: number;
+  honors?: string;
+  skills?: string[];
+  achievements?: string[];
+}
+
 interface Credential {
-  id: string;
-  title: string;
+  tokenId: string;
+  holder: string;
   issuer: string;
-  date: string;
-  verified: boolean;
-  nftAddress?: string;
-  category: "Development" | "Blockchain" | "Design" | "Security";
-  color: string;
+  credentialType: CredentialType;
+  credentialTypeName: "DEGREE" | "CERTIFICATE" | "BADGE";
+  metadataURI: string;
+  metadata: CredentialMetadata;
+  transactionHash: string;
+  blockNumber?: number;
+  isRevoked: boolean;
+  revocationReason?: string;
+  revokedAt?: string;
+  expirationDate?: string;
+  issuedAt: string;
 }
 
 interface Toast {
@@ -40,106 +63,73 @@ interface Toast {
 // --- MOCK DATA ---
 const INITIAL_DATA: Credential[] = [
   {
-    id: "1",
-    title: "Advanced React Patterns",
-    issuer: "TechCertified Academy",
-    date: "2024-11-15",
-    verified: true,
-    nftAddress: "0x71C...9A21",
-    category: "Development",
-    color: "#3b82f6",
+    tokenId: "1001",
+    holder: "0xUser",
+    issuer: "University of Tech",
+    credentialType: CredentialType.DEGREE,
+    credentialTypeName: "DEGREE",
+    metadataURI: "ipfs://Qm...",
+    transactionHash: "0x123456789abcdef...",
+    issuedAt: "2023-06-15T00:00:00Z",
+    isRevoked: false,
+    metadata: {
+      name: "B.S. Computer Science",
+      description: "Bachelor of Science in CS",
+      image: "",
+      major: "Computer Science",
+      graduationYear: 2023,
+      gpa: 3.8,
+      skills: ["Algorithms", "Data Structures"],
+    },
   },
   {
-    id: "2",
-    title: "Solidity Smart Contracts",
-    issuer: "Web3 University",
-    date: "2024-10-20",
-    verified: true,
-    nftAddress: "0x892...B31C",
-    category: "Blockchain",
-    color: "#8b5cf6",
+    tokenId: "1002",
+    holder: "0xUser",
+    issuer: "TechCertified Academy",
+    credentialType: CredentialType.CERTIFICATE,
+    credentialTypeName: "CERTIFICATE",
+    metadataURI: "ipfs://Qm...",
+    transactionHash: "0x987654321fedcba...",
+    issuedAt: "2024-01-20T00:00:00Z",
+    isRevoked: false,
+    metadata: {
+      name: "Full Stack Development",
+      description: "MERN Stack Bootcamp",
+      image: "",
+      skills: ["MongoDB", "Express", "React", "Node"],
+    },
+  },
+  {
+    tokenId: "1003",
+    holder: "0xUser",
+    issuer: "Hackathon DAO",
+    credentialType: CredentialType.BADGE,
+    credentialTypeName: "BADGE",
+    metadataURI: "ipfs://Qm...",
+    transactionHash: "0xbadbadbad...",
+    issuedAt: "2023-12-05T00:00:00Z",
+    isRevoked: true,
+    revocationReason: "Violation of Hackathon Rules",
+    revokedAt: "2023-12-10T00:00:00Z",
+    metadata: {
+      name: "Code Wizard",
+      description: "Fastest deployment",
+      image: "",
+    },
   },
 ];
 
-const CATEGORIES = ["All", "Development", "Blockchain", "Design", "Security"];
-
-// --- COMPONENTS ---
-
-const ToastContainer = ({ toasts }: { toasts: Toast[] }) => (
-  <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none">
-    <AnimatePresence>
-      {toasts.map((toast) => (
-        <motion.div
-          key={toast.id}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 20 }}
-          className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl bg-[#09090b] border border-white/10 shadow-2xl shadow-black text-sm font-medium"
-        >
-          {toast.type === "loading" && (
-            <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-          )}
-          {toast.type === "success" && (
-            <CheckCircle className="w-4 h-4 text-emerald-400" />
-          )}
-          {toast.type === "info" && (
-            <Sparkles className="w-4 h-4 text-amber-400" />
-          )}
-          <span className="text-white">{toast.message}</span>
-        </motion.div>
-      ))}
-    </AnimatePresence>
-  </div>
-);
-
-const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  return (
-    <nav className="fixed top-0 w-full z-40 bg-[#09090b]/80 backdrop-blur-md border-b border-white/5">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2 font-bold text-xl tracking-tighter cursor-pointer">
-          <div className="w-8 h-8 bg-gradient-to-tr from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center text-white">
-            Z
-          </div>
-          <span>Skill-Z</span>
-        </div>
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-          <a href="/student/dashboard" className="hover:text-white transition-colors">
-            Dashboard
-          </a>
-          <a href="/inventory" className="text-white">
-            Inventory
-          </a>
-        </div>
-        <div className="hidden md:flex items-center gap-4">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-sm font-medium">
-            <Wallet className="w-4 h-4 text-cyan-400" />
-            <span>0x7f...a3c2</span>
-          </button>
-        </div>
-        <button
-          className="md:hidden p-2 text-zinc-400"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          {isMenuOpen ? <X /> : <Menu />}
-        </button>
-      </div>
-      {isMenuOpen && (
-        <div className="md:hidden absolute w-full bg-[#09090b] border-b border-white/10 p-4 flex flex-col gap-4 shadow-xl">
-          <a href="/dashboard" className="text-zinc-400">
-            Dashboard
-          </a>
-          <a href="/inventory" className="text-white">
-            Inventory
-          </a>
-        </div>
-      )}
-    </nav>
-  );
+const resolveIPFS = (url?: string) => {
+  if (!url) return null;
+  if (url.startsWith("ipfs://")) {
+    return url.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
+  }
+  return url; // Return as is if it's already http
 };
 
-// --- MAIN PAGE ---
+const CATEGORIES = ["All", "Degree", "Certificate", "Badge", "Revoked"];
 
+// --- COMPONENT ---
 export default function InventoryPage() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -148,55 +138,57 @@ export default function InventoryPage() {
     useState<Credential[]>(INITIAL_DATA);
   const [filteredData, setFilteredData] = useState<Credential[]>(INITIAL_DATA);
 
-  // --- LOCAL STORAGE SYNC ---
+  // Load additional credentials from LocalStorage (Simulating blockchain fetch)
   useEffect(() => {
-    // 1. Fetch Approved Credentials
     const storedIssued = JSON.parse(
       localStorage.getItem("skill-z-issued-credentials") || "[]"
     );
-    const newCreds = storedIssued.map((c: any) => ({
-      id: c.id,
-      title: c.title,
-      issuer: "TechCertified Academy",
-      date: c.issuedDate,
-      verified: true,
-      nftAddress: c.transactionHash || "0x...",
-      category: "Development", // Default for hackathon
-      color: "#8b5cf6",
-    }));
 
-    // 2. Fetch Pending Requests
-    const storedPending = JSON.parse(
-      localStorage.getItem("skill-z-pending-requests") || "[]"
-    );
-    const pendingCreds = storedPending.map((req: any) => ({
-      id: req.id,
-      title: req.title,
-      issuer: "TechCertified Academy",
-      date: "Processing",
-      verified: false,
-      category: "Development",
-      color: "#fbbf24",
-    }));
+    if (storedIssued.length > 0) {
+      const newCreds: Credential[] = storedIssued.map((c: any) => ({
+        tokenId: c.tokenId || Math.floor(Math.random() * 100000).toString(),
+        holder: "0xUser",
+        issuer: "TechCertified Academy",
+        credentialType: c.credentialType || CredentialType.CERTIFICATE,
+        credentialTypeName: "CERTIFICATE",
+        metadataURI: "ipfs://mock",
+        transactionHash: c.transactionHash || "0x...",
+        issuedAt: c.issuedDate || new Date().toISOString(),
+        isRevoked: false,
+        metadata: {
+          name: c.title,
+          description: "Issued via Dashboard Simulation",
+          image: "",
+          skills: ["Pending"],
+        },
+      }));
 
-    // Merge Unique
-    const allCreds = [...INITIAL_DATA, ...newCreds, ...pendingCreds];
-    // Simple dedupe by ID
-    const uniqueCreds = allCreds.filter(
-      (v, i, a) => a.findIndex((v2) => v2.id === v.id) === i
-    );
-
-    setInventoryData(uniqueCreds);
+      // Merge & Dedupe
+      const allCreds = [...INITIAL_DATA, ...newCreds];
+      const uniqueCreds = allCreds.filter(
+        (v, i, a) => a.findIndex((v2) => v2.tokenId === v.tokenId) === i
+      );
+      setInventoryData(uniqueCreds);
+    }
   }, []);
 
   // Filter Logic
   useEffect(() => {
     const filtered = inventoryData.filter((item) => {
       const matchesSearch =
-        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.issuer.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "All" || item.category === selectedCategory;
+        item.metadata.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.issuer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.tokenId.includes(searchTerm);
+
+      let matchesCategory = true;
+      if (selectedCategory === "Degree")
+        matchesCategory = item.credentialType === CredentialType.DEGREE;
+      if (selectedCategory === "Certificate")
+        matchesCategory = item.credentialType === CredentialType.CERTIFICATE;
+      if (selectedCategory === "Badge")
+        matchesCategory = item.credentialType === CredentialType.BADGE;
+      if (selectedCategory === "Revoked") matchesCategory = item.isRevoked;
+
       return matchesSearch && matchesCategory;
     });
     setFilteredData(filtered);
@@ -211,24 +203,75 @@ export default function InventoryPage() {
     );
   };
 
-  const handleDownload = () => {
-    addToast("Fetching metadata from IPFS...", "loading");
-    setTimeout(() => addToast("Certificate Downloaded", "success"), 2000);
+  // --- Styles Helper ---
+  const getCredentialStyles = (type: CredentialType) => {
+    switch (type) {
+      case CredentialType.DEGREE:
+        return {
+          icon: GraduationCap,
+          color: "text-pink-400",
+          bg: "bg-pink-500/10",
+          border: "border-pink-500/20",
+          label: "Degree",
+        };
+      case CredentialType.CERTIFICATE:
+        return {
+          icon: FileBadge,
+          color: "text-blue-400",
+          bg: "bg-blue-500/10",
+          border: "border-blue-500/20",
+          label: "Certificate",
+        };
+      case CredentialType.BADGE:
+        return {
+          icon: Award,
+          color: "text-amber-400",
+          bg: "bg-amber-500/10",
+          border: "border-amber-500/20",
+          label: "Badge",
+        };
+      default:
+        return {
+          icon: Award,
+          color: "text-zinc-400",
+          bg: "bg-zinc-500/10",
+          border: "border-zinc-500/20",
+          label: "Unknown",
+        };
+    }
   };
 
   return (
     <main className="min-h-screen bg-[#09090b] text-white font-sans overflow-x-hidden selection:bg-cyan-500/30">
-      {/* Background FX */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/10 blur-[120px]" />
         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/10 blur-[120px]" />
       </div>
 
-      <Navbar />
-      <ToastContainer toasts={toasts} />
+      {/* Toast Container */}
+      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none">
+        <AnimatePresence>
+          {toasts.map((toast) => (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl bg-[#09090b] border border-white/10 shadow-2xl text-sm font-medium"
+            >
+              {toast.type === "loading" && (
+                <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+              )}
+              {toast.type === "success" && (
+                <CheckCircle className="w-4 h-4 text-emerald-400" />
+              )}
+              <span className="text-white">{toast.message}</span>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
 
       <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        {/* Header Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -237,7 +280,7 @@ export default function InventoryPage() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
             <div className="space-y-2">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-                Full{" "}
+                My{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
                   Inventory
                 </span>
@@ -245,11 +288,11 @@ export default function InventoryPage() {
               <div className="flex items-center gap-4 text-zinc-400 text-sm font-medium">
                 <span className="flex items-center gap-2">
                   <Hexagon className="w-4 h-4 text-cyan-400" />{" "}
-                  {inventoryData.length} Total
+                  {inventoryData.length} Total Assets
                 </span>
                 <span className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-400" />{" "}
-                  {inventoryData.filter((c) => c.verified).length} Verified
+                  {inventoryData.filter((c) => !c.isRevoked).length} Active
                 </span>
               </div>
             </div>
@@ -260,13 +303,12 @@ export default function InventoryPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-cyan-400 transition-colors" />
                 <input
                   type="text"
-                  placeholder="Search credentials..."
+                  placeholder="Search name, issuer, ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full sm:w-64 bg-white/[0.03] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.05] transition-all"
                 />
               </div>
-
               <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
                 {CATEGORIES.map((cat) => (
                   <button
@@ -289,84 +331,168 @@ export default function InventoryPage() {
         {/* Credentials Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence mode="popLayout">
-            {filteredData.map((cred, idx) => (
-              <motion.div
-                layout
-                key={cred.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2, delay: idx * 0.05 }}
-                className="group relative p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.04] transition-all flex flex-col justify-between min-h-[280px]"
-              >
-                {/* Hover Gradient */}
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"
-                  style={{
-                    background: `linear-gradient(to bottom right, ${cred.color}10, transparent)`,
-                  }}
-                />
+            {filteredData.map((cred, idx) => {
+              const style = getCredentialStyles(cred.credentialType);
+              const Icon = style.icon;
+              const imageUrl = resolveIPFS(cred.metadata.image); // Resolve the image
 
-                <div>
-                  <div className="flex items-start justify-between mb-6 relative z-10">
-                    <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Award
-                        className="w-6 h-6"
-                        style={{ color: cred.color }}
-                      />
+              return (
+                <motion.div
+                  layout
+                  key={cred.tokenId}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2, delay: idx * 0.05 }}
+                  className={`group relative rounded-2xl bg-[#09090b] border transition-all flex flex-col justify-between overflow-hidden ${
+                    cred.isRevoked
+                      ? "border-red-500/30"
+                      : "border-white/10 hover:border-cyan-500/30 hover:shadow-[0_0_30px_-10px_rgba(6,182,212,0.15)]"
+                  }`}
+                >
+                  {/* --- 1. IMAGE HEADER SECTION --- */}
+                  <div className="relative h-40 w-full bg-white/5 overflow-hidden">
+                    {imageUrl ? (
+                      // IF IMAGE EXISTS: Show Image
+                      <>
+                        <img
+                          src={imageUrl}
+                          alt={cred.metadata.name}
+                          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${
+                            cred.isRevoked ? "grayscale opacity-50" : ""
+                          }`}
+                          onError={(e) => {
+                            // Fallback if image fails to load
+                            e.currentTarget.style.display = "none";
+                            // You might want to trigger a state here to show icon instead
+                          }}
+                        />
+                        {/* Gradient Overlay so text below pops */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-transparent" />
+
+                        {/* Type Badge (Floating on top of image) */}
+                        <div className="absolute top-3 right-3">
+                          <span
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border backdrop-blur-md shadow-lg ${style.bg} ${style.border} ${style.color}`}
+                          >
+                            {style.label}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      // IF NO IMAGE: Show Big Icon Pattern
+                      <div
+                        className={`w-full h-full flex items-center justify-center ${style.bg} relative overflow-hidden`}
+                      >
+                        {/* Decorative Background Icon */}
+                        <Icon
+                          className={`absolute -bottom-4 -right-4 w-32 h-32 opacity-10 rotate-12 ${style.color}`}
+                        />
+
+                        {/* Center Icon */}
+                        <div
+                          className={`w-16 h-16 rounded-2xl border ${style.border} flex items-center justify-center backdrop-blur-sm bg-black/20`}
+                        >
+                          <Icon className={`w-8 h-8 ${style.color}`} />
+                        </div>
+
+                        {/* Type Badge */}
+                        <div className="absolute top-3 right-3">
+                          <span
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${style.bg} ${style.border} ${style.color}`}
+                          >
+                            {style.label}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* --- 2. CONTENT SECTION --- */}
+                  <div className="p-6 pt-2 flex-1 flex flex-col">
+                    {/* Issuer info (moved up for hierarchy) */}
+                    <div className="flex items-center gap-2 mb-2">
+                      {/* Small issuer logo placeholder */}
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500" />
+                      <p className="text-xs text-zinc-400 font-medium">
+                        {cred.issuer}
+                      </p>
                     </div>
 
-                    <span
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${
-                        cred.verified
-                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                          : "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                      }`}
-                    >
-                      {cred.verified ? "Verified" : "Pending Vote"}
-                    </span>
+                    <h3 className="text-xl font-bold text-white mb-2 leading-tight group-hover:text-cyan-100 transition-colors">
+                      {cred.metadata.name}
+                    </h3>
+
+                    {/* Description line clamped */}
+                    <p className="text-sm text-zinc-500 mb-4 line-clamp-2 flex-1">
+                      {cred.metadata.description}
+                    </p>
+
+                    {/* Metadata Tags */}
+                    <div className="flex flex-wrap gap-2 mt-auto">
+                      {cred.metadata.gpa && (
+                        <span className="text-xs px-2 py-1 rounded bg-white/5 text-zinc-300 border border-white/5 font-mono">
+                          GPA: {cred.metadata.gpa}
+                        </span>
+                      )}
+                      {cred.metadata.skills?.slice(0, 2).map((skill, i) => (
+                        <span
+                          key={i}
+                          className="text-xs px-2 py-1 rounded bg-white/5 text-zinc-300 border border-white/5"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
-                  <h3 className="text-xl font-bold text-white mb-2 leading-tight group-hover:text-cyan-100 transition-colors">
-                    {cred.title}
-                  </h3>
-                  <p className="text-sm text-zinc-400 mb-4">{cred.issuer}</p>
+                  {/* --- 3. FOOTER SECTION --- */}
+                  <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between bg-white/[0.01]">
+                    <div className="flex gap-2">
+                      <button className="p-2 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
+                        <Download className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
+                        <Share2 className="w-4 h-4" />
+                      </button>
+                    </div>
 
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    <span className="text-xs px-2 py-1 rounded bg-white/5 text-zinc-300 border border-white/5">
-                      {cred.category}
-                    </span>
-                    <span className="text-xs px-2 py-1 rounded bg-white/5 text-zinc-300 border border-white/5 font-mono">
-                      {cred.date}
-                    </span>
+                    <div className="text-right">
+                      {cred.isRevoked ? (
+                        <span className="flex items-center gap-1 text-xs text-red-400 font-bold">
+                          <ShieldAlert className="w-3 h-3" /> Revoked
+                        </span>
+                      ) : (
+                        <a
+                          href={`https://sepolia.etherscan.io/tx/${cred.transactionHash}`}
+                          target="_blank"
+                          className="flex items-center gap-1 text-[10px] text-zinc-500 hover:text-cyan-400 font-mono transition-colors"
+                        >
+                          <Hash className="w-3 h-3" />{" "}
+                          {cred.tokenId.slice(0, 6)}...
+                          <ExternalLink className="w-3 h-3 ml-1" />
+                        </a>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div className="pt-4 border-t border-white/5 flex items-center gap-3 relative z-10">
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(cred.title);
-                      addToast("Copied details", "success");
-                    }}
-                    className="flex-1 py-2 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Share2 className="w-4 h-4" /> Share
-                  </button>
-                  <button
-                    onClick={handleDownload}
-                    className="flex-1 py-2 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-4 h-4" /> Export
-                  </button>
-                </div>
-
-                {cred.nftAddress && (
-                  <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-mono text-zinc-600">
-                    ID: {cred.nftAddress.slice(0, 8)}...
-                  </div>
-                )}
-              </motion.div>
-            ))}
+                  {/* Revoked Overlay remains the same */}
+                  {cred.isRevoked && (
+                    // ... keep existing overlay code
+                    <div className="absolute inset-0 z-20 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 text-center">
+                      <div>
+                        <div className="text-red-400 font-bold mb-2 flex items-center justify-center gap-2">
+                          <ShieldAlert className="w-5 h-5" /> Revoked
+                        </div>
+                        <p className="text-sm text-zinc-300">
+                          Reason: {cred.revocationReason}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </div>
       </div>
