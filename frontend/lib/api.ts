@@ -136,6 +136,45 @@ export const credentialService = {
       data: MOCK_CREDENTIALS_DB,
     };
   },
+
+  getCredentialsByAddress: async (address: string) => {
+    return fetchAPI<{ count: number, credentials: Credential[] }>(`/credentials/holder/${address}`, {
+      method: "GET",
+    });
+  },
+};
+
+export const verifierService = {
+  verifyZKProof: async (proofType: string, proof: any, publicSignals: any) => {
+    return fetchAPI<{ isValid: boolean }>("/verifier/verify-zkp", {
+      method: "POST",
+      body: JSON.stringify({ proofType, proof, publicSignals }),
+    });
+  },
+};
+
+export const userService = {
+  getCandidates: async (page = 1, limit = 10, search = "") => {
+    const queryParams = new URLSearchParams({
+      role: "student",
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    
+    if (search) {
+      queryParams.append("search", search);
+    }
+
+    return fetchAPI<{ users: User[], totalPages: number, currentPage: number, total: number }>(`/users?${queryParams.toString()}`, {
+      method: "GET",
+    });
+  },
+
+  getUserById: async (id: string) => {
+    return fetchAPI<{ user: User }>(`/users/${id}`, {
+      method: "GET",
+    });
+  },
 };
 
 // --- SHARED INTERFACES ---

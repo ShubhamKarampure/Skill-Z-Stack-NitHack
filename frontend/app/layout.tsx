@@ -103,6 +103,7 @@ export default function RootLayout({
         />
       </head>
       <body
+        suppressHydrationWarning
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased overflow-x-hidden bg-[#09090b] text-zinc-50`}
       >
         {/* Ambient Background Effects */}

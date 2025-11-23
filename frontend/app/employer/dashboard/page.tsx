@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -14,7 +14,9 @@ import {
   Filter,
   Loader2,
   ChevronRight,
+  FileJson,
 } from "lucide-react";
+import { verifierService, userService } from "@/lib/api";
 
 // --- TYPES ---
 interface Candidate {
@@ -26,34 +28,6 @@ interface Candidate {
   matchScore: number;
 }
 
-// --- MOCK DATA ---
-const MOCK_CANDIDATES: Candidate[] = [
-  {
-    id: "1",
-    name: "Alex Chen",
-    role: "Frontend Developer",
-    walletAddress: "0x7f8...a3c2",
-    verifiedSkills: ["React.js", "TypeScript", "Next.js"],
-    matchScore: 98,
-  },
-  {
-    id: "2",
-    name: "Sarah Jones",
-    role: "Smart Contract Eng",
-    walletAddress: "0x3a2...b1b9",
-    verifiedSkills: ["Solidity", "Hardhat", "Ethers.js"],
-    matchScore: 92,
-  },
-  {
-    id: "3",
-    name: "Mike Ross",
-    role: "Product Designer",
-    walletAddress: "0x99c...d2e1",
-    verifiedSkills: ["Figma", "UI/UX", "Prototyping"],
-    matchScore: 85,
-  },
-];
-
 // --- COMPONENTS ---
 const Aurora = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-[#09090b]">
@@ -63,37 +37,99 @@ const Aurora = () => (
 );
 
 export default function EmployerDashboard() {
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [isLoadingCandidates, setIsLoadingCandidates] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCandidates, setTotalCandidates] = useState(0);
+  
   const [verificationId, setVerificationId] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<
     "success" | "error" | null
   >(null);
+  const [verificationType, setVerificationType] = useState<"credential" | "zkp">("credential");
+  const [zkpProof, setZkpProof] = useState("");
+  const [zkpType, setZkpType] = useState<"age" | "credential" | "rank">("age");
 
-  const handleVerify = (e: React.FormEvent) => {
+  const fetchCandidates = async (page: number, search: string = "") => {
+    setIsLoadingCandidates(true);
+    try {
+      const res = await userService.getCandidates(page, 5, search);
+      if (res.success && res.data?.users) {
+        const mappedCandidates = res.data.users.map((user: any) => ({
+          id: user._id || user.id,
+          name: user.name,
+          role: "Student", // Default role
+          walletAddress: user.walletAddress,
+          verifiedSkills: user.studentData?.skills || ["Blockchain", "Web3"], // Mock skills if not present
+          matchScore: Math.floor(Math.random() * 20) + 80, // Mock score
+        }));
+        setCandidates(mappedCandidates);
+        setTotalPages(res.data.totalPages || 1);
+        setTotalCandidates(res.data.total || 0);
+      }
+    } catch (error) {
+      console.error("Failed to fetch candidates", error);
+    } finally {
+      setIsLoadingCandidates(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchCandidates(currentPage, searchTerm);
+  }, [currentPage]);
+
+  // Debounce search
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentPage(1); // Reset to page 1 on new search
+      fetchCandidates(1, searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!verificationId) return;
+    if (verificationType === "credential" && !verificationId) return;
+    if (verificationType === "zkp" && !zkpProof) return;
 
     setIsVerifying(true);
     setVerificationResult(null);
 
-    // Mock Verification Logic
-    setTimeout(() => {
-      setIsVerifying(false);
-      // Mock: If ID starts with "0x", it's valid
-      if (verificationId.startsWith("0x")) {
-        setVerificationResult("success");
+    try {
+      if (verificationType === "zkp") {
+        const proofData = JSON.parse(zkpProof);
+        const res = await verifierService.verifyZKProof(zkpType, proofData.proof, proofData.publicSignals);
+        if (res.success && res.data?.isValid) {
+          setVerificationResult("success");
+        } else {
+          setVerificationResult("error");
+        }
       } else {
-        setVerificationResult("error");
+        // Mock Verification Logic
+        setTimeout(() => {
+          // Mock: If ID starts with "0x", it's valid
+          if (verificationId.startsWith("0x")) {
+            setVerificationResult("success");
+          } else {
+            setVerificationResult("error");
+          }
+          setIsVerifying(false);
+        }, 2000);
+        return;
       }
-    }, 2000);
+    } catch (error) {
+      console.error("Verification failed", error);
+      setVerificationResult("error");
+    } finally {
+      if (verificationType === "zkp") {
+        setIsVerifying(false);
+      }
+    }
   };
-
-  const filteredCandidates = MOCK_CANDIDATES.filter(
-    (c) =>
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <main className="min-h-screen font-sans text-white selection:bg-indigo-500/30">
@@ -104,7 +140,7 @@ export default function EmployerDashboard() {
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
             Talent{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 to-cyan-400">
               Verification
             </span>
           </h1>
@@ -128,18 +164,18 @@ export default function EmployerDashboard() {
                   placeholder="Search candidates..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 pr-4 py-2 bg-white/[0.03] border border-white/10 rounded-lg text-sm focus:outline-none focus:border-indigo-500 transition-all w-64"
+                  className="pl-9 pr-4 py-2 bg-white/0.03 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-indigo-500 transition-all w-64"
                 />
               </div>
             </div>
 
             <div className="space-y-4">
-              {filteredCandidates.map((candidate) => (
+              {candidates.map((candidate) => (
                 <motion.div
                   key={candidate.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-indigo-500/30 transition-all group"
+                  className="p-6 rounded-2xl bg-white/0.02 border border-white/5 hover:border-indigo-500/30 transition-all group"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-4">
@@ -179,19 +215,46 @@ export default function EmployerDashboard() {
                     <span className="text-xs font-mono text-zinc-500">
                       {candidate.walletAddress}
                     </span>
-                    <button className="text-sm font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
+                    <a
+                      href={`/employer/candidate/${candidate.id}`}
+                      className="text-sm font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                    >
                       View Full Profile <ChevronRight className="w-4 h-4" />
-                    </button>
+                    </a>
                   </div>
                 </motion.div>
               ))}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-8">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-bold hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-zinc-400">
+                  Page <span className="text-white font-bold">{currentPage}</span> of{" "}
+                  <span className="text-white font-bold">{totalPages}</span>
+                </span>
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-bold hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
 
           {/* RIGHT COLUMN: Verification Tool */}
           <div className="space-y-6">
             {/* Verify Box */}
-            <div className="p-6 rounded-2xl bg-gradient-to-b from-indigo-900/20 to-transparent border border-indigo-500/20 sticky ">
+            <div className="p-6 rounded-2xl bg-linear-to-b from-indigo-900/20 to-transparent border border-indigo-500/20 sticky ">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
                   <ShieldCheck className="w-6 h-6" />
@@ -204,27 +267,81 @@ export default function EmployerDashboard() {
                 </div>
               </div>
 
-              <form onSubmit={handleVerify} className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-zinc-500 uppercase mb-1 block">
-                    Credential ID / Tx Hash
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="0x..."
-                    value={verificationId}
-                    onChange={(e) => setVerificationId(e.target.value)}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 transition-all font-mono"
-                  />
-                </div>
+              <div className="flex gap-2 mb-4 p-1 bg-black/40 rounded-lg border border-white/5">
                 <button
-                  disabled={isVerifying || !verificationId}
+                  onClick={() => setVerificationType("credential")}
+                  className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${
+                    verificationType === "credential"
+                      ? "bg-indigo-600 text-white"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  Credential ID
+                </button>
+                <button
+                  onClick={() => setVerificationType("zkp")}
+                  className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${
+                    verificationType === "zkp"
+                      ? "bg-indigo-600 text-white"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  ZK Proof
+                </button>
+              </div>
+
+              <form onSubmit={handleVerify} className="space-y-4">
+                {verificationType === "credential" ? (
+                  <div>
+                    <label className="text-xs font-bold text-zinc-500 uppercase mb-1 block">
+                      Credential ID / Tx Hash
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="0x..."
+                      value={verificationId}
+                      onChange={(e) => setVerificationId(e.target.value)}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 transition-all font-mono"
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-bold text-zinc-500 uppercase mb-1 block">
+                        Proof Type
+                      </label>
+                      <select
+                        value={zkpType}
+                        onChange={(e) => setZkpType(e.target.value as any)}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 transition-all"
+                      >
+                        <option value="age">Age Verification</option>
+                        <option value="credential">Credential Validity</option>
+                        <option value="rank">University Rank</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-zinc-500 uppercase mb-1 block">
+                        Proof JSON
+                      </label>
+                      <textarea
+                        placeholder='{"proof": {...}, "publicSignals": [...] }'
+                        value={zkpProof}
+                        onChange={(e) => setZkpProof(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 transition-all font-mono h-32 resize-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  disabled={isVerifying || (verificationType === "credential" ? !verificationId : !zkpProof)}
                   className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isVerifying ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    "Verify Credential"
+                    "Verify"
                   )}
                 </button>
               </form>
@@ -281,7 +398,7 @@ export default function EmployerDashboard() {
             </div>
 
             {/* Stats */}
-            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+            <div className="p-6 rounded-2xl bg-white/0.02 border border-white/5">
               <h3 className="font-bold text-sm text-zinc-400 uppercase mb-4">
                 Hiring Stats
               </h3>
