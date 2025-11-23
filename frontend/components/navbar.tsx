@@ -46,6 +46,7 @@ export function Navbar() {
         student: [
           { label: "Dashboard", href: "/student/dashboard" },
           { label: "My Institutes", href: "/student/institutes" },
+          { label: "Inventory", href: "/student/inventory" },
         ],
         admin: [
           { label: "Dashboard", href: "/admin/dashboard" },

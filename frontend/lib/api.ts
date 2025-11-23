@@ -211,6 +211,12 @@ export const enrollmentService = {
     });
   },
 
+  getEnrolledStudents: async () => {
+    return fetchAPI<EnrolledStudent[]>("/enrollments/students", {
+      method: "GET",
+    });
+  },
+
   // 2. Request to Join Institute
   requestEnrollment: async (instituteId: string, token: string) => {
     return fetchAPI<Enrollment>("/enrollments/request", {
@@ -313,6 +319,8 @@ export const adminService = {
     }
   },
 
+  
+
   // ACTION 1: Register Issuer (Step 1)
   registerIssuer: async (walletAddress: string) => {
     return fetchAPI<{ success: boolean; message: string }>(
@@ -361,4 +369,25 @@ export interface UserProfile {
     name: string;
     isAccredited: boolean;
   };
+}
+
+export const instituteService = {
+  // Fetch only accredited institutes for the public/student dropdown
+  getAccreditedInstitutes: async (): Promise<APIResponse<Institute[]>> => {
+    console.log("Fetching accredited institutes...");
+    
+    const response = await fetchAPI<Institute[]>("/enrollments/institutes", {
+      method: "GET",
+    });
+    
+    return response;
+  },
+};
+
+export interface EnrolledStudent {
+  _id: string;
+  name: string;
+  email: string;
+  walletAddress?: string;
+  enrolledAt: string; // or joinedAt
 }
