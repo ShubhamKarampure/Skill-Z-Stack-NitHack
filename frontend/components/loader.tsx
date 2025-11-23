@@ -16,7 +16,7 @@ export const Loader = ({ onComplete }: { onComplete?: () => void }) => {
 
   // 1. Handle Progress Counter and Text Cycling
   useEffect(() => {
-    const duration = 2500; // Total load time in ms
+    const duration = 1000; // Total load time in ms
     const intervalTime = 30;
     const steps = duration / intervalTime;
     const increment = 100 / steps;

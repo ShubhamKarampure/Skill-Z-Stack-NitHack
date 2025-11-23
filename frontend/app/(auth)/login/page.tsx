@@ -51,10 +51,7 @@ export default function LoginPage() {
     // Everyone uses the same password now
     setPassword(DEMO_PASSWORD);
 
-    toast({
-      title: "Demo Account Selected",
-      description: `Loaded credentials for ${selected?.role}`,
-    });
+   
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -85,11 +82,7 @@ export default function LoginPage() {
         const path = redirectMap[role] || "/";
         setTargetPath(path);
 
-        toast({
-          title: "Login Successful",
-          description: "Initializing your dashboard environment...",
-          className: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
-        });
+        
 
         setShowSuccessLoader(true);
       } else {
