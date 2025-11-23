@@ -36,6 +36,7 @@ export function Navbar() {
       if (user.instituteData?.isAccredited) {
         currentLinks.push(
           { label: "Issue Credentials", href: "/institute/issue" },
+          { label: "Issued", href: "/institute/issued" },
           { label: "Admissions", href: "/institute/admissions" },
           { label: "Library", href: "/institute/credentials" }
         );

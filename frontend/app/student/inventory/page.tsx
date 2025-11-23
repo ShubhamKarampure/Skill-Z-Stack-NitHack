@@ -232,9 +232,12 @@ export default function InventoryPage() {
               };
 
               // If metadataURI exists, fetch it to get the full metadata (image, name, etc.)
-              if (cred.metadataURI) {
+              // Check both top-level (blockchain) and nested metadata (database) for the URI
+              const uri = cred.metadataURI || cred.metadata?.metadataURI;
+              
+              if (uri) {
                 try {
-                   const ipfsUrl = resolveIPFS(cred.metadataURI);
+                   const ipfsUrl = resolveIPFS(uri);
                    if (ipfsUrl) {
                      const metaRes = await fetch(ipfsUrl);
                      if (metaRes.ok) {

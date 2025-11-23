@@ -78,6 +78,7 @@ async function fetchAPI<T>(
 
   try {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
+      'cache': 'no-cache',
       ...options,
       headers,
     });
@@ -154,6 +155,23 @@ export const credentialService = {
     metadata?: any;
   }) => {
     return fetchAPI("/credentials/issue", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  getIssuedCredentials: async () => {
+    return fetchAPI<Credential[]>("/credentials/issued", {
+      method: "GET",
+    });
+  },
+
+  revokeCredential: async (data: {
+    tokenId: string;
+    issuerPrivateKey: string;
+    reason: string;
+  }) => {
+    return fetchAPI("/credentials/revoke", {
       method: "POST",
       body: JSON.stringify(data),
     });

@@ -113,13 +113,31 @@ export const getHolderCredentials = async (req, res) => {
     const tokenIds = await credentialService.getHolderCredentials(address);
 
     // Get details for each
-    const credentials = await Promise.all(
-      tokenIds.map(async (tokenId) => {
+    const credentials = [];
+    for (const tokenId of tokenIds) {
+      try {
         const onChainData = await credentialService.getCredential(tokenId);
         const metadata = await CredentialModel.findOne({ tokenId });
-        return { ...onChainData, metadata };
-      })
-    );
+        
+        // Only include credentials that have metadata in our DB
+        // This filters out "Unknown Credential" ghosts that exist on-chain but not in DB
+        if (metadata) {
+          credentials.push({ ...onChainData, metadata });
+        }
+      } catch (err) {
+        console.warn(`Skipping credential ${tokenId} due to error:`, err.message);
+        // Optionally, try to fetch just from DB if blockchain fails
+        const metadata = await CredentialModel.findOne({ tokenId });
+        if (metadata) {
+           credentials.push({ 
+             tokenId, 
+             status: 'SYNC_ERROR', 
+             isRevoked: true,
+             metadata 
+           });
+        }
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -203,6 +221,32 @@ export const getInstituteTemplates = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch credential templates',
+      error: error.message
+    });
+  }
+};
+
+export const getIssuedCredentials = async (req, res) => {
+  try {
+    const issuerAddress = req.user.walletAddress.toLowerCase();
+    
+    // Find credentials where the issuer is the current user
+    // We exclude "templates" (where issuer == holder) if we want only issued certs to students
+    // But for now, let's just get everything issued by this address
+    const credentials = await CredentialModel.find({
+      issuer: issuerAddress,
+      holder: { $ne: issuerAddress } // Exclude self-issued templates
+    }).sort({ issuedAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data: credentials
+    });
+  } catch (error) {
+    console.error('Get Issued Credentials Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get issued credentials',
       error: error.message
     });
   }
