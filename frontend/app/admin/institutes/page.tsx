@@ -41,6 +41,7 @@ export default function AdminMembersPage() {
         const sortedData = response.data.sort((a, b) =>
           a.name.localeCompare(b.name)
         );
+        console.log(sortedData)
         setMembers(sortedData);
       } else {
         toast({
