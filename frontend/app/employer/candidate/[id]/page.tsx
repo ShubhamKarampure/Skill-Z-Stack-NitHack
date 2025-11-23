@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -10,7 +10,6 @@ import {
   FileJson,
   Copy,
   CheckCircle2,
-  XCircle,
   User,
   Briefcase,
   GraduationCap,
@@ -48,8 +47,8 @@ const Aurora = () => (
   </div>
 );
 
-// Developer-provided image path (will be transformed by your environment into a URL)
-const VERIFICATION_DECOR_IMAGE = "";
+// Use the developer-provided local path (will be transformed to a usable URL by your environment)
+const VERIFICATION_DECOR_IMAGE = "/mnt/data/6953a4c3-e77e-4722-9e4b-ef9c9a7e7760.png";
 
 export default function CandidateProfile() {
   const params = useParams();
@@ -59,24 +58,33 @@ export default function CandidateProfile() {
   const [credentials, setCredentials] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<"credentials" | "zkp">("credentials");
+  const [activeTab, setActiveTab] = useState<"zkp" | "tamper">("zkp");
   const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof ZKP_TEMPLATES | null>("age");
 
-  // age input is editable by user (used to build publicSignals shown in textarea)
+  // age input (editable) -> used in publicSignals / simulated checks
   const [ageThreshold, setAgeThreshold] = useState("18");
   const [zkpInput, setZkpInput] = useState(JSON.stringify({ ...ZKP_TEMPLATES.age.template, publicSignals: [ageThreshold] }, null, 2));
   const [isVerifying, setIsVerifying] = useState(false);
 
-  // Map tokenId -> full backend response object (used to render inline panel)
-  const [verificationDetailsById, setVerificationDetailsById] = useState<Record<string, any>>({});
-
-  const [credentialRoot, setCredentialRoot] = useState("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
+  // credential merkle root (from file upload or user input)
+  const [credentialRoot, setCredentialRoot] = useState<string>("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
   const [isCalculatingRoot, setIsCalculatingRoot] = useState(false);
 
-  // Hidden internal threshold used internally in simulated verification (the user controls the publicSignals input)
+  // Inline verification responses mapped by tokenId
+  const [verificationDetailsById, setVerificationDetailsById] = useState<Record<string, any>>({});
+
+  // ----- Tamper-check state -----
+  // NOTE: this now APPENDS newly selected files to the existing list rather than replacing it.
+  const [tamperFiles, setTamperFiles] = useState<File[]>([]);
+  const [tamperPreviews, setTamperPreviews] = useState<string[]>([]);
+  const [tamperResults, setTamperResults] = useState<{ idx: number; hash: string; tampered: boolean }[]>([]);
+  const [isVerifyingTamper, setIsVerifyingTamper] = useState(false);
+
+  // Hidden internal threshold used in age verification logic
   const HIDDEN_AGE_THRESHOLD = 22;
 
-  React.useEffect(() => {
+  // fetch user + credentials
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const userRes = await userService.getUserById(params.id as string);
@@ -87,7 +95,7 @@ export default function CandidateProfile() {
             name: user.name,
             role: "Student",
             walletAddress: user.walletAddress,
-            avatar: user.name.substring(0, 2).toUpperCase(),
+            avatar: user.name?.substring(0, 2).toUpperCase() || "NA",
             bio: user.studentData?.bio || "No bio provided.",
             email: user.email,
             location: user.studentData?.location || "Unknown",
@@ -103,9 +111,8 @@ export default function CandidateProfile() {
                   id: c.tokenId,
                   title: c.metadata?.name || CREDENTIAL_TYPES[c.credentialType] || "Credential",
                   issuer: c.issuer,
-                  date: c.issuedAt ? new Date(c.issuedAt).toLocaleDateString() : "Invalid Date",
+                  date: c.issuedAt ? new Date(c.issuedAt).toLocaleDateString() : "",
                   type: CREDENTIAL_TYPES[c.credentialType] || "Certificate",
-                  // start as Unverified: user must click Verify
                   status: c.isRevoked ? "Revoked" : "Unverified",
                 }))
               );
@@ -123,64 +130,70 @@ export default function CandidateProfile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
-  // Keep zkpInput synced when selected template or ageThreshold changes
-  React.useEffect(() => {
+  // keep zkpInput in sync when template or ageThreshold changes
+  useEffect(() => {
     if (!selectedTemplate) return;
     const template = JSON.parse(JSON.stringify(ZKP_TEMPLATES[selectedTemplate].template));
-    if (selectedTemplate === "age") {
-      template.publicSignals = [ageThreshold];
-    }
+    if (selectedTemplate === "age") template.publicSignals = [ageThreshold];
+    if (selectedTemplate === "credential") template.publicSignals = [credentialRoot];
     setZkpInput(JSON.stringify(template, null, 2));
-  }, [selectedTemplate, ageThreshold]);
+  }, [selectedTemplate, ageThreshold, credentialRoot]);
 
   // ---------- helpers ----------
-  const sha256 = async (message: string) => {
-    const msgBuffer = new TextEncoder().encode(message);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+  const sha256Hex = async (buffer: ArrayBuffer) => {
+    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
     return "0x" + hashHex;
   };
 
-  const calculateMerkleRoot = async (leaves: string[]) => {
-    if (leaves.length === 0) return "0x0";
-    let currentLevel = leaves;
-    while (currentLevel.length > 1) {
-      const nextLevel: string[] = [];
-      for (let i = 0; i < currentLevel.length; i += 2) {
-        if (i + 1 < currentLevel.length) {
-          const combined = currentLevel[i] + currentLevel[i + 1].slice(2);
-          nextLevel.push(await sha256(combined));
-        } else {
-          nextLevel.push(currentLevel[i]);
-        }
-      }
-      currentLevel = nextLevel;
-    }
-    return currentLevel[0];
+  const hashString = async (s: string) => {
+    const enc = new TextEncoder().encode(s);
+    return await sha256Hex(enc.buffer);
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // simple merkle root calc
+  const calculateMerkleRoot = async (leaves: string[]) => {
+    if (leaves.length === 0) return "0x0";
+    let current = leaves.slice();
+    while (current.length > 1) {
+      const next: string[] = [];
+      for (let i = 0; i < current.length; i += 2) {
+        if (i + 1 < current.length) {
+          const combined = current[i] + current[i + 1].slice(2);
+          next.push(await hashString(combined));
+        } else {
+          next.push(current[i]);
+        }
+      }
+      current = next;
+    }
+    return current[0];
+  };
+
+  const handleCredentialFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     setIsCalculatingRoot(true);
     try {
       const files = Array.from(e.target.files);
-      const fileHashes = await Promise.all(
-        files.map(async (file) => {
-          const text = await file.text();
-          return await sha256(text);
+      const hashes = await Promise.all(
+        files.map(async (f) => {
+          const text = await f.text();
+          return await hashString(text);
         })
       );
-      const root = await calculateMerkleRoot(fileHashes);
+      const root = await calculateMerkleRoot(hashes);
       setCredentialRoot(root);
-    } catch (error) {
-      console.error("Error calculating Merkle root:", error);
+    } catch (err) {
+      console.error("error calc merkle root", err);
     } finally {
       setIsCalculatingRoot(false);
+      // reset file input so user can re-select same file if needed
+      if (e.target) e.target.value = "";
     }
   };
 
-  // Evaluate backend response; uses hidden threshold logic for age proofs when requested
+  // evaluate backend response + hidden age rule
   const evaluateVerification = (res: any, opts?: { enforceAgeRule?: boolean }) => {
     const verificationObj = res?.verification || res?.data?.verification || res?.data || res;
     if (!verificationObj) return { ok: false, status: "Failed", verificationObj: null };
@@ -193,10 +206,8 @@ export default function CandidateProfile() {
       verificationObj.isRevoked === false &&
       verificationObj.issuerAccredited === true;
 
-    const quickFail =
-      verificationObj.isValid === false || verificationObj.isActive === false || verificationObj.isRevoked === true;
+    const quickFail = verificationObj.isValid === false || verificationObj.isActive === false || verificationObj.isRevoked === true;
 
-    // Age rule (internal): if candidateAge detected and > HIDDEN_AGE_THRESHOLD => fail
     if (opts?.enforceAgeRule) {
       let candidateAge: number | null = null;
       if (typeof verificationObj.age === "number") candidateAge = verificationObj.age;
@@ -220,11 +231,10 @@ export default function CandidateProfile() {
     return { ok: false, status: "Failed", verificationObj };
   };
 
-  // Verify a single credential via backend — saves response into verificationDetailsById[tokenId]
+  // Verify a single credential via backend (saves response under verificationDetailsById)
   const verifyCredential = async (tokenId: string) => {
     if (!zkpInput) return;
     setIsVerifying(true);
-
     try {
       const proofData = JSON.parse(zkpInput);
       const proofType = proofData.proofType || "age";
@@ -233,26 +243,20 @@ export default function CandidateProfile() {
 
       const res = await verifierService.verifyZKProof(tokenId, proofType, proof, publicSignals);
 
-      // Save response for inline rendering under that credential
       setVerificationDetailsById((prev) => ({ ...prev, [String(tokenId)]: res }));
 
-      // Evaluate (apply age rule when proofType === 'age')
-      const { ok, status, verificationObj } = evaluateVerification(res, { enforceAgeRule: proofType === "age" });
+      const { ok, verificationObj } = evaluateVerification(res, { enforceAgeRule: proofType === "age" });
 
-      // Update credential status in UI
       setCredentials((prev) =>
         prev.map((c) => {
           if (String(c.id) === String(tokenId) || String(c.id) === String(res.tokenId)) {
-            return {
-              ...c,
-              status: verificationObj?.isRevoked ? "Revoked" : ok ? "Verified" : "Failed",
-            };
+            return { ...c, status: verificationObj?.isRevoked ? "Revoked" : ok ? "Verified" : "Failed" };
           }
           return c;
         })
       );
     } catch (err) {
-      console.error("Credential verify failed", err);
+      console.error("verifyCredential error", err);
       setVerificationDetailsById((prev) => ({ ...prev, [String(tokenId)]: { error: String(err) } }));
       setCredentials((prev) => prev.map((c) => (String(c.id) === String(tokenId) ? { ...c, status: "Failed" } : c)));
     } finally {
@@ -260,11 +264,9 @@ export default function CandidateProfile() {
     }
   };
 
-  // ---------- Simulated (temp) verification for Age tab ----------
-  // This does not call backend: it builds a fake verification object using the age publicSignal (or ageThreshold)
-  // and applies the internal rule: if age > 22 => fail, otherwise succeed.
+  // Simulated age verification (no backend) - used by "Quick Age Check"
   const simulateAgeVerification = async (tokenId: string) => {
-    // parse local publicSignals (from zkpInput) to extract age if present; otherwise use ageThreshold state
+    // read age from zkpInput.publicSignals or ageThreshold
     let signalAge: number | null = null;
     try {
       const parsed = JSON.parse(zkpInput);
@@ -274,75 +276,96 @@ export default function CandidateProfile() {
         if (!Number.isNaN(asNum)) signalAge = asNum;
       }
     } catch (e) {
-      // fallback below
+      // ignore
     }
     if (signalAge === null) {
-      const asNum = Number(ageThreshold);
-      if (!Number.isNaN(asNum)) signalAge = asNum;
+      const a = Number(ageThreshold);
+      if (!Number.isNaN(a)) signalAge = a;
     }
-
-    // Build a fake response structure that looks like backend verification
     const age = signalAge ?? -1;
-    const passesAgeRule = age <= HIDDEN_AGE_THRESHOLD;
-    // Compose simulated verification object
+    const passes = age <= HIDDEN_AGE_THRESHOLD;
+
     const simulated = {
       tokenId,
       verification: {
-        isValid: passesAgeRule ? true : false,
+        isValid: passes,
         exists: true,
         isActive: true,
         isExpired: false,
         isRevoked: false,
         issuerAccredited: true,
-        // include publicSignals and candidateAge so evaluateVerification can reuse them
         publicSignals: [String(age)],
         age,
       },
     };
 
-    // Save simulated response
     setVerificationDetailsById((prev) => ({ ...prev, [String(tokenId)]: simulated }));
 
-    // Evaluate using same evaluator (apply age rule)
-    const { ok, status, verificationObj } = evaluateVerification(simulated, { enforceAgeRule: true });
+    const { ok, verificationObj } = evaluateVerification(simulated, { enforceAgeRule: true });
 
-    // Update the credential status in UI based on simulated result
     setCredentials((prev) =>
       prev.map((c) => {
         if (String(c.id) === String(tokenId)) {
-          return {
-            ...c,
-            status: verificationObj?.isRevoked ? "Revoked" : ok ? "Verified" : "Failed",
-          };
+          return { ...c, status: verificationObj?.isRevoked ? "Revoked" : ok ? "Verified" : "Failed" };
         }
         return c;
       })
     );
   };
 
-  // ---------- rendering ----------
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-      </div>
-    );
-  }
+  // ---------- Tamper check logic ----------
+  // Append newly selected images to existing list (instead of replacing)
+  const onTamperFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
 
-  if (!candidate) {
-    return (
-      <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Candidate Not Found</h2>
-          <button onClick={() => router.back()} className="text-indigo-400 hover:underline">
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
+    // Create new previews for the newly selected files
+    const newPreviews = files.map((f) => URL.createObjectURL(f));
 
-  // Render inline verification panel (matches earlier visual)
+    // Append files and previews
+    setTamperFiles((prev) => [...prev, ...files]);
+    setTamperPreviews((prev) => [...prev, ...newPreviews]);
+
+    // Reset previous results (we'll recompute on Verify)
+    setTamperResults([]);
+
+    // Reset the file input so users can re-select the same file later if needed
+    if (e.target) e.target.value = "";
+  };
+
+  const verifyTamperImages = async () => {
+    if (!tamperFiles.length) return;
+    setIsVerifyingTamper(true);
+    try {
+      const buffers = await Promise.all(tamperFiles.map((f) => f.arrayBuffer()));
+      const hashes = await Promise.all(buffers.map((b) => sha256Hex(b)));
+      const baseline = hashes[0];
+      const results = hashes.map((h, idx) => ({ idx, hash: h, tampered: h !== baseline }));
+      setTamperResults(results);
+    } catch (err) {
+      console.error("verifyTamperImages error", err);
+      setTamperResults([]);
+    } finally {
+      setIsVerifyingTamper(false);
+    }
+  };
+
+  const clearTamper = () => {
+    // revoke previews
+    tamperPreviews.forEach((p) => URL.revokeObjectURL(p));
+    setTamperFiles([]);
+    setTamperPreviews([]);
+    setTamperResults([]);
+  };
+
+  // Clean up object URLs on unmount
+  useEffect(() => {
+    return () => {
+      tamperPreviews.forEach((p) => URL.revokeObjectURL(p));
+    };
+  }, [tamperPreviews]);
+
+  // ---------- rendering helpers ----------
   const renderVerificationPanel = (tokenId: string) => {
     const raw = verificationDetailsById[String(tokenId)];
     if (!raw) return null;
@@ -366,12 +389,11 @@ export default function CandidateProfile() {
       verificationObj.isRevoked === false &&
       verificationObj.issuerAccredited === true;
 
-    // helper used for coloring boolean fields correctly (true = green, false = red, undefined = neutral)
     const boolClass = (k: string) => {
       if (!verificationObj) return "text-zinc-400";
       const v = verificationObj[k];
       if (typeof v === "undefined") return "text-zinc-400";
-      return v === true ? "text-green-300" : "text-red-400"; // false -> red
+      return v === true ? "text-green-300" : "text-red-400"; // false => red
     };
 
     const field = (k: string) => {
@@ -396,8 +418,9 @@ export default function CandidateProfile() {
             <div className="text-xs text-zinc-400">{passed ? "All checks passed" : "One or more checks failed"}</div>
           </div>
 
-          {/* decorative image (local path; transformed by your environment) */}
-          {/* <img src={VERIFICATION_DECOR_IMAGE} alt="verification-decor" className="ml-auto hidden md:block w-28 h-12 object-contain opacity-60" /> */}
+          {VERIFICATION_DECOR_IMAGE && (
+            <img src={VERIFICATION_DECOR_IMAGE} alt="verification-decor" className="ml-auto hidden md:block w-28 h-12 object-contain opacity-60" />
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -440,6 +463,28 @@ export default function CandidateProfile() {
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  if (!candidate) {
+    return (
+      <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Candidate Not Found</h2>
+          <button onClick={() => router.back()} className="text-indigo-400 hover:underline">
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- final render ----------
   return (
     <main className="min-h-screen font-sans text-white selection:bg-indigo-500/30">
       <Aurora />
@@ -487,175 +532,218 @@ export default function CandidateProfile() {
           <div className="lg:col-span-2">
             <div className="flex gap-4 mb-6 border-b border-white/10 pb-1">
               <button
-                onClick={() => setActiveTab("credentials")}
-                className={`pb-3 px-2 text-sm font-bold transition-all relative ${
-                  activeTab === "credentials" ? "text-indigo-400" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                Credentials
-                {activeTab === "credentials" && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-400" />}
-              </button>
-
-              <button
                 onClick={() => setActiveTab("zkp")}
                 className={`pb-3 px-2 text-sm font-bold transition-all relative ${
                   activeTab === "zkp" ? "text-indigo-400" : "text-zinc-400 hover:text-white"
                 }`}
               >
-                ZKP Verification
+                ZKP
                 {activeTab === "zkp" && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-400" />}
+              </button>
+
+              <button
+                onClick={() => setActiveTab("tamper")}
+                className={`pb-3 px-2 text-sm font-bold transition-all relative ${
+                  activeTab === "tamper" ? "text-indigo-400" : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Tamper Check
+                {activeTab === "tamper" && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-400" />}
               </button>
             </div>
 
-            {activeTab === "credentials" ? (
-              <div className="space-y-4">
-                {credentials.map((cred) => (
-                  <div key={cred.id} className="space-y-2">
-                    <div className="bg-white/0.02 border border-white/5 rounded-xl p-5 flex items-center justify-between hover:border-indigo-500/30 transition-all group">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-indigo-500/10 rounded-lg text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
-                          {cred.type === "Degree" ? <GraduationCap className="w-6 h-6" /> : <Award className="w-6 h-6" />}
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-lg group-hover:text-indigo-300 transition-colors">{cred.title}</h3>
-                          <p className="text-sm text-zinc-400">
-                            {cred.issuer} • {cred.date}
-                          </p>
-                          <p className="text-xs text-zinc-500 mt-1 font-mono truncate">{String(cred.id)}</p>
-                        </div>
-                      </div>
+            {activeTab === "zkp" ? (
+              // ZKP tab: contains Age and Credential Ownership merged + credential list with per-credential Verify
+              <div className="space-y-6">
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-white/0.02 border border-white/5 rounded-2xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-lg flex items-center gap-2">
+                      <FileJson className="w-5 h-5 text-indigo-400" /> Verify (Age & Credential Ownership)
+                    </h3>
+                    <button onClick={() => navigator.clipboard.writeText(zkpInput)} className="text-xs flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors">
+                      <Copy className="w-3 h-3" /> Copy Template
+                    </button>
+                  </div>
 
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold
-                            ${cred.status === "Revoked" ? "text-red-400 bg-red-400/10" : ""}
-                            ${cred.status === "Verified" ? "text-green-400 bg-green-400/10" : ""}
-                            ${cred.status === "Failed" ? "text-red-300 bg-white/3" : ""}
-                            ${cred.status === "Unverified" ? "text-zinc-300 bg-white/2" : ""}
-                          `}
-                        >
-                          <ShieldCheck className="w-3 h-3" />
-                          {cred.status}
-                        </div>
-
-                        <button
-                          onClick={() => verifyCredential(String(cred.id))}
-                          disabled={isVerifying}
-                          className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-md transition-all disabled:opacity-50"
-                        >
-                          {isVerifying ? "Verifying..." : "Verify"}
-                        </button>
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    {/* Age input */}
+                    <div className="p-4 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                      <label className="text-xs font-bold text-indigo-300 uppercase mb-2 block">Age (public signal)</label>
+                      <input
+                        type="number"
+                        value={ageThreshold}
+                        onChange={(e) => setAgeThreshold(e.target.value)}
+                        className="w-full bg-black/40 border border-indigo-500/30 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-500 transition-all"
+                      />
+                      <p className="text-xs text-zinc-400 mt-2">This value is used for age proof public signals.</p>
                     </div>
 
-                    {/* Inline verification panel for this credential (shown after clicking Verify) */}
-                    {verificationDetailsById[String(cred.id)] && <div className="px-1">{renderVerificationPanel(String(cred.id))}</div>}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {(Object.keys(ZKP_TEMPLATES) as Array<keyof typeof ZKP_TEMPLATES>).map((key) => (
-                    <button
-                      key={key}
-                      onClick={() => setSelectedTemplate(key)}
-                      className={`p-4 rounded-xl border text-left transition-all ${
-                        selectedTemplate === key ? "bg-indigo-600/20 border-indigo-500" : "bg-white/0.02 border-white/5 hover:border-white/20"
-                      }`}
-                    >
-                      <div className="mb-2 text-indigo-400">
-                        <Lock className="w-6 h-6" />
+                    {/* Credential merkle root + upload */}
+                    <div className="p-4 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                      <label className="text-xs font-bold text-indigo-300 uppercase mb-2 block">Credential Merkle Root & Upload</label>
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <div className="flex items-center justify-center w-full p-3 border-2 border-dashed border-indigo-500/30 rounded-lg hover:bg-indigo-500/10 transition-colors">
+                            <div className="flex items-center gap-2 text-sm text-indigo-300">
+                              <Upload className="w-4 h-4" />
+                              <span>Upload Credential Files</span>
+                            </div>
+                            <input type="file" multiple className="hidden" onChange={handleCredentialFilesUpload} />
+                          </div>
+                        </label>
+
+                        <div className="relative">
+                          <input type="text" value={credentialRoot} onChange={(e) => setCredentialRoot(e.target.value)} className="w-full bg-black/40 border border-indigo-500/30 rounded-lg p-3 text-white font-mono text-xs focus:outline-none focus:border-indigo-500 transition-all pr-10" placeholder="0x..." />
+                          {isCalculatingRoot && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                              <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <h3 className="font-bold text-sm mb-1">{ZKP_TEMPLATES[key].title}</h3>
-                      <p className="text-xs text-zinc-400 line-clamp-2">{ZKP_TEMPLATES[key].description}</p>
-                    </button>
+                      <p className="text-xs text-zinc-400 mt-2">Upload credential files to calculate the Merkle root or enter it manually.</p>
+                    </div>
+                  </div>
+
+                  <details className="group">
+                    <summary className="flex items-center gap-2 text-xs font-bold text-zinc-500 uppercase cursor-pointer hover:text-zinc-300 transition-colors mb-2 select-none">
+                      <ChevronRight className="w-4 h-4 group-open:rotate-90 transition-transform" /> View Raw Proof JSON
+                    </summary>
+                    <textarea value={zkpInput} readOnly className="w-full h-32 bg-black/40 border border-white/10 rounded-xl p-4 text-xs font-mono text-zinc-400 focus:outline-none resize-none" />
+                  </details>
+                </motion.div>
+
+                {/* Credentials list: per-credential Verify (uses same uploaded files / merkle input) */}
+                <div className="space-y-4">
+                  {credentials.map((cred) => (
+                    <div key={cred.id} className="space-y-2">
+                      <div className="bg-white/0.02 border border-white/5 rounded-xl p-5 flex items-center justify-between hover:border-indigo-500/30 transition-all group">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-indigo-500/10 rounded-lg text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
+                            {cred.type === "Degree" ? <GraduationCap className="w-6 h-6" /> : <Award className="w-6 h-6" />}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-lg group-hover:text-indigo-300 transition-colors">{cred.title}</h3>
+                            <p className="text-sm text-zinc-400">
+                              {cred.issuer} • {cred.date}
+                            </p>
+                            <p className="text-xs text-zinc-500 mt-1 font-mono truncate">{String(cred.id)}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold
+                              ${cred.status === "Revoked" ? "text-red-400 bg-red-400/10" : ""}
+                              ${cred.status === "Verified" ? "text-green-400 bg-green-400/10" : ""}
+                              ${cred.status === "Failed" ? "text-red-300 bg-white/3" : ""}
+                              ${cred.status === "Unverified" ? "text-zinc-300 bg-white/2" : ""}
+                            `}
+                          >
+                            <ShieldCheck className="w-3 h-3" />
+                            {cred.status}
+                          </div>
+
+                          <div className="flex gap-2">
+                            {/* normal backend verify */}
+                            <button
+                              onClick={() => verifyCredential(String(cred.id))}
+                              disabled={isVerifying}
+                              className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-md transition-all disabled:opacity-50"
+                            >
+                              {isVerifying ? "Verifying..." : "Verify"}
+                            </button>
+
+                            {/* quick/simulated age verify (useful for testing age logic) */}
+                            <button
+                              onClick={() => simulateAgeVerification(String(cred.id))}
+                              disabled={isVerifying}
+                              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-md transition-all disabled:opacity-50"
+                            >
+                              Quick Age Check
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {verificationDetailsById[String(cred.id)] && <div className="px-1">{renderVerificationPanel(String(cred.id))}</div>}
+                    </div>
                   ))}
                 </div>
+              </div>
+            ) : (
+              // Tamper Check tab
+              <div className="space-y-6">
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-white/0.02 border border-white/5 rounded-2xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-lg flex items-center gap-2">
+                      <FileJson className="w-5 h-5 text-indigo-400" /> Tamper Check
+                    </h3>
+                  </div>
 
-                {selectedTemplate && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white/0.02 border border-white/5 rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-bold text-lg flex items-center gap-2">
-                        <FileJson className="w-5 h-5 text-indigo-400" /> Verify {ZKP_TEMPLATES[selectedTemplate].title}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => navigator.clipboard.writeText(zkpInput)} className="text-xs flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors">
-                          <Copy className="w-3 h-3" /> Copy Template
-                        </button>
+                  <div className="p-4 bg-indigo-500/10 rounded-xl border border-indigo-500/20 mb-4">
+                    <label className="text-xs font-bold text-indigo-300 uppercase mb-2 block">Upload Images </label>
 
+                    <div className="flex items-center gap-3 mb-3">
+                      {/* Beautified upload: dashed card that appends files to the list */}
+                      <label
+                        className="flex items-center gap-3 cursor-pointer bg-black/20 px-4 py-2 rounded-lg border-2 border-dashed border-indigo-500/30 hover:bg-indigo-500/10 transition-colors"
+                        title="Click to add images (appends to existing list)"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Upload className="w-4 h-4 text-indigo-300" />
+                          <div className="text-sm text-indigo-300">Add Images</div>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={onTamperFilesChange}
+                          className="hidden"
+                        />
+                        <div className="ml-3 text-xxs text-zinc-400 font-mono">{tamperFiles.length > 0 ? `${tamperFiles.length} total` : "No images"}</div>
+                      </label>
 
-                        {selectedTemplate === "age" && (
-                          <button
-                            onClick={() => {
-                              const first = credentials?.[0]?.id;
-                              if (first) simulateAgeVerification(String(first));
-                            }}
-                            disabled={isVerifying || credentials.length === 0}
-                            className="text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-md font-bold"
-                          >
-                            Verify
-                          </button>
-                        )}
-                      </div>
+                      {/* Option A: enable verify when >= 1 image */}
+                      <button
+                        onClick={verifyTamperImages}
+                        disabled={isVerifyingTamper || tamperFiles.length === 0}
+                        className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-md transition-all disabled:opacity-50"
+                      >
+                        {isVerifyingTamper ? "Verifying..." : "Verify Images"}
+                      </button>
+
+                      <button onClick={clearTamper} className="px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white text-xs font-bold rounded-md transition-all">
+                        Clear
+                      </button>
                     </div>
 
-                    <div className="space-y-4">
-                      {selectedTemplate === "age" && (
-                        <div className="p-4 bg-indigo-500/10 rounded-xl border border-indigo-500/20 mb-4">
-                          <label className="text-xs font-bold text-indigo-300 uppercase mb-2 block">Minimum Age Requirement</label>
-                          <input
-                            type="number"
-                            value={ageThreshold}
-                            onChange={(e) => setAgeThreshold(e.target.value)}
-                            className="w-full bg-black/40 border border-indigo-500/30 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-500 transition-all"
-                          />
-                          <p className="text-xs text-zinc-400 mt-2">Enter the minimum age to use for proof generation.</p>
-                        </div>
-                      )}
+                    <p className="text-xs text-zinc-400 mb-3">Upload one or more images. Different SHA-256 hashes are marked "Tampered".</p>
 
-                      {selectedTemplate === "credential" && (
-                        <div className="p-4 bg-indigo-500/10 rounded-xl border border-indigo-500/20 mb-4">
-                          <label className="text-xs font-bold text-indigo-300 uppercase mb-2 block">Credential Merkle Root</label>
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-3">
-                              <label className="flex-1 cursor-pointer">
-                                <div className="flex items-center justify-center w-full p-3 border-2 border-dashed border-indigo-500/30 rounded-lg hover:bg-indigo-500/10 transition-colors">
-                                  <div className="flex items-center gap-2 text-sm text-indigo-300">
-                                    <Upload className="w-4 h-4" />
-                                    <span>Upload Credential Files</span>
-                                  </div>
-                                  <input type="file" multiple className="hidden" onChange={handleFileUpload} />
-                                </div>
-                              </label>
-                            </div>
-
-                            <div className="relative">
-                              <input type="text" value={credentialRoot} onChange={(e) => setCredentialRoot(e.target.value)} className="w-full bg-black/40 border border-indigo-500/30 rounded-lg p-3 text-white font-mono text-xs focus:outline-none focus:border-indigo-500 transition-all pr-10" placeholder="0x..." />
-                              {isCalculatingRoot && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                  <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                                </div>
-                              )}
-                            </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {tamperPreviews.map((p, i) => {
+                        const res = tamperResults.find((r) => r.idx === i);
+                        const label = res ? (res.tampered ? "Tampered" : "Not tampered") : "Pending";
+                        const colorClass = res ? (res.tampered ? "text-red-400" : "text-green-400") : "text-zinc-300";
+                        return (
+                          <div key={i} className="bg-black/20 rounded p-3 text-center">
+                            <img src={p} alt={`img-${i}`} className="w-full h-24 object-cover rounded mb-2" />
+                            <div className={`text-xs font-mono ${colorClass}`}>{label}</div>
+                            <div className="text-xxs mt-1 text-zinc-400 truncate">{res?.hash?.slice(0, 12) ?? "—"}</div>
+                            <div className="text-xxs text-zinc-500 mt-1">#{i + 1}</div>
                           </div>
-                          <p className="text-xs text-zinc-400 mt-2">Upload credential files to calculate the Merkle root, or enter it manually.</p>
-                        </div>
-                      )}
-
-                      <details className="group">
-                        <summary className="flex items-center gap-2 text-xs font-bold text-zinc-500 uppercase cursor-pointer hover:text-zinc-300 transition-colors mb-2 select-none">
-                          <ChevronRight className="w-4 h-4 group-open:rotate-90 transition-transform" /> View Raw Proof JSON
-                        </summary>
-                        <textarea value={zkpInput} readOnly className="w-full h-32 bg-black/40 border border-white/10 rounded-xl p-4 text-xs font-mono text-zinc-400 focus:outline-none resize-none" />
-                      </details>
-
-                      <div className="text-xs text-zinc-400">
-                        Use the <strong>Verify</strong> button on a credential in the Credentials tab to run verification for that credential.
-                      </div>
+                        );
+                      })}
                     </div>
-                  </motion.div>
-                )}
+                  </div>
+
+                  <details className="group">
+                    <summary className="flex items-center gap-2 text-xs font-bold text-zinc-500 uppercase cursor-pointer hover:text-zinc-300 transition-colors mb-2 select-none">
+                      <ChevronRight className="w-4 h-4 group-open:rotate-90 transition-transform" /> View Tamper Results JSON
+                    </summary>
+                    <pre className="bg-black/40 p-3 rounded text-xs max-h-48 overflow-auto">{JSON.stringify(tamperResults, null, 2)}</pre>
+                  </details>
+                </motion.div>
               </div>
             )}
           </div>
