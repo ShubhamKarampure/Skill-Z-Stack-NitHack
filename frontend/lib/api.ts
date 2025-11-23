@@ -71,7 +71,7 @@ async function fetchAPI<T>(
   const token = useAuthStore.getState().token;
 
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
+    ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
@@ -142,6 +142,37 @@ export const credentialService = {
       method: "GET",
     });
   },
+
+  issueCredential: async (data: {
+    issuerPrivateKey: string;
+    holderAddress: string;
+    credentialType: number;
+    metadataURI: string;
+    expirationDate?: number;
+    revocable?: boolean;
+    credentialData: any;
+    metadata?: any;
+  }) => {
+    return fetchAPI("/credentials/issue", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+export const metadataService = {
+  uploadMetadata: async (formData: FormData) => {
+    return fetchAPI<{
+      imageCID: string;
+      imageURL: string;
+      metadataCID: string;
+      metadataURI: string;
+      metadata: any;
+    }>("/metadata/upload", {
+      method: "POST",
+      body: formData,
+    });
+  },
 };
 
 export const templateService = {
@@ -152,6 +183,7 @@ export const templateService = {
     image: string;
     skills: string[];
     issuerPrivateKey: string; // Required for signing
+    metadataURI?: string;
   }) => {
     const user = useAuthStore.getState().user;
     if (!user?.walletAddress) {
@@ -165,7 +197,7 @@ export const templateService = {
         issuerPrivateKey: data.issuerPrivateKey,
         holderAddress: user.walletAddress, // Self-issue
         credentialType: data.type,
-        metadataURI: "ipfs://placeholder-for-demo", // In a real app, upload metadata to IPFS first
+        metadataURI: data.metadataURI || "ipfs://placeholder-for-demo",
         metadata: {
           name: data.name,
           description: data.description,

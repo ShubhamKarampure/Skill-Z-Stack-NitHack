@@ -17,8 +17,10 @@ import {
   Loader2,
 } from "lucide-react";
 import { CredentialType } from "@/lib/types";
-import { templateService } from "@/lib/api";
+import { templateService, metadataService } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/lib/store";
+import { getPrivateKey } from "@/lib/wallet-constants";
 
 interface CredentialTemplate {
   id: string;
@@ -38,13 +40,21 @@ export default function CredentialsLibrary() {
   const { toast } = useToast();
 
   // Form State for creation
-  const [newCred, setNewCred] = useState({
+  const [newCred, setNewCred] = useState<{
+    name: string;
+    description: string;
+    type: CredentialType;
+    image: string;
+    skills: string;
+    file: File | null;
+  }>({
     name: "",
     description: "",
     type: CredentialType.DEGREE,
     image: "",
     skills: "",
-    issuerPrivateKey: "", // Added for signing
+    file: null,
+    // issuerPrivateKey: "", // Removed in favor of auto-lookup
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -79,40 +89,90 @@ export default function CredentialsLibrary() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    
+    const user = useAuthStore.getState().user;
+    const privateKey = user?.walletAddress ? getPrivateKey(user.walletAddress) : null;
 
-    const res = await templateService.createTemplate({
-      name: newCred.name,
-      description: newCred.description,
-      type: newCred.type,
-      image: newCred.image || "https://via.placeholder.com/400",
-      skills: newCred.skills.split(",").map((s) => s.trim()),
-      issuerPrivateKey: newCred.issuerPrivateKey,
-    });
-
-    if (res.success) {
+    if (!privateKey) {
       toast({
-        title: "Success",
-        description: "Credential template created successfully",
-      });
-      setIsCreateOpen(false);
-      setNewCred({
-        name: "",
-        description: "",
-        type: CredentialType.DEGREE,
-        image: "",
-        skills: "",
-        issuerPrivateKey: "",
-      });
-      fetchTemplates(); // Refresh list
-    } else {
-      toast({
-        title: "Error",
-        description: res.message || "Failed to create template",
+        title: "Wallet Error",
+        description: "Could not find a private key for your connected wallet.",
         variant: "destructive",
       });
+      return;
     }
-    setIsSubmitting(false);
+
+    if (!newCred.file) {
+      toast({
+        title: "Missing File",
+        description: "Please upload an image for the credential.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // 1. Upload Metadata
+      const formData = new FormData();
+      formData.append("name", newCred.name);
+      formData.append("description", newCred.description);
+      formData.append("credentialType", newCred.type.toString());
+      formData.append("file", newCred.file);
+      
+      const additionalData = {
+        skills: newCred.skills.split(",").map((s) => s.trim()),
+      };
+      formData.append("additionalData", JSON.stringify(additionalData));
+
+      const uploadRes = await metadataService.uploadMetadata(formData);
+
+      if (!uploadRes.success || !uploadRes.data) {
+        throw new Error(uploadRes.message || "Failed to upload metadata");
+      }
+
+      const { metadataURI, imageURL } = uploadRes.data;
+
+      // 2. Create Template (Issue Credential)
+      const res = await templateService.createTemplate({
+        name: newCred.name,
+        description: newCred.description,
+        type: newCred.type,
+        image: imageURL,
+        skills: newCred.skills.split(",").map((s) => s.trim()),
+        issuerPrivateKey: privateKey,
+        metadataURI: metadataURI,
+      });
+
+      if (res.success) {
+        toast({
+          title: "Success",
+          description: "Credential template created successfully",
+        });
+        setIsCreateOpen(false);
+        setNewCred({
+          name: "",
+          description: "",
+          type: CredentialType.DEGREE,
+          image: "",
+          skills: "",
+          file: null,
+        });
+        fetchTemplates(); // Refresh list
+      } else {
+        throw new Error(res.message || "Failed to create template");
+      }
+    } catch (error: any) {
+      console.error("Creation error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create template",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getTypeColor = (type: CredentialType) => {
@@ -360,15 +420,16 @@ export default function CredentialsLibrary() {
 
                   <div>
                     <label className="text-xs font-bold text-zinc-400 uppercase flex mb-2 items-center gap-2">
-                      <ImageIcon className="w-3 h-3" /> Image URL
+                      <ImageIcon className="w-3 h-3" /> Credential Image
                     </label>
                     <input
-                      value={newCred.image}
-                      onChange={(e) =>
-                        setNewCred({ ...newCred, image: e.target.value })
-                      }
-                      className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm focus:border-blue-500 outline-none transition-colors"
-                      placeholder="https://..."
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setNewCred({ ...newCred, file });
+                      }}
+                      className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm focus:border-blue-500 outline-none transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20"
                     />
                   </div>
                 </div>
@@ -403,22 +464,13 @@ export default function CredentialsLibrary() {
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-zinc-400 uppercase flex mb-2 items-center gap-2">
-                    <Key className="w-3 h-3" /> Issuer Private Key (For Demo)
+                {/* Private Key Input - REMOVED (Auto-handled) */}
+                <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                  <label className="text-xs font-bold text-zinc-400 uppercase flex mb-1 items-center gap-2">
+                    <Key className="w-3 h-3" /> Issuer Wallet
                   </label>
-                  <input
-                    required
-                    type="password"
-                    value={newCred.issuerPrivateKey}
-                    onChange={(e) =>
-                      setNewCred({ ...newCred, issuerPrivateKey: e.target.value })
-                    }
-                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm focus:border-blue-500 outline-none transition-colors font-mono"
-                    placeholder="0x..."
-                  />
-                  <p className="text-xs text-zinc-500 mt-1">
-                    Required to sign the transaction on the blockchain.
+                  <p className="text-xs text-zinc-500">
+                    Transaction will be signed automatically using your connected wallet's key.
                   </p>
                 </div>
 

@@ -12,14 +12,10 @@ import { validateTokenId, validateAddress } from '../middleware/validation.js';
 
 const router = express.Router();
 
-// Public routes
-router.get('/:tokenId', validateTokenId, getCredential);
-router.get('/holder/:address', validateAddress, getHolderCredentials);
-
 // Protected routes - Institute only
 router.post('/issue', authenticate, requireRole(['institute', 'admin']), issueCredential);
 router.post('/revoke', authenticate, requireRole(['institute', 'admin']), revokeCredential);
-router.get('/templates', authenticate, requireRole(['institute', 'admin']), getInstituteTemplates); // Add this
+router.get('/templates', authenticate, requireRole(['institute', 'admin']), getInstituteTemplates);
 
 // Get credentials for authenticated user (student)
 router.get('/my/credentials', authenticate, async (req, res) => {
@@ -31,5 +27,9 @@ router.get('/my/credentials', authenticate, async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
+// Public routes
+router.get('/:tokenId', validateTokenId, getCredential);
+router.get('/holder/:address', validateAddress, getHolderCredentials);
 
 export default router;
