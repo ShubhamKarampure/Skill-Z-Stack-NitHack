@@ -61,12 +61,14 @@ export default function IssuePage() {
       try {
         // Fetch Students
         const enrollRes = await enrollmentService.getEnrolledStudents();
+        console.log("enrolled :",enrollRes)
         if (enrollRes.success && Array.isArray((enrollRes as any).students)) {
           setStudents((enrollRes as any).students);
         }
 
         // Fetch Templates
         const tempRes = await templateService.getTemplates();
+        console.log("templates : ",tempRes)
         if (tempRes.success && tempRes.data) {
           const mapped: CredentialTemplate[] = tempRes.data.map((item: any) => ({
             id: item.tokenId,
