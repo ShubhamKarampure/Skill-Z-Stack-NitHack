@@ -15,8 +15,8 @@ import {
   Briefcase,
   ShieldAlert,
 } from "lucide-react";
-import { authService } from "@/app/lib/api";
-import { useAuthStore } from "@/app/lib/store";
+import { authService } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
 
 const Aurora = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-[#09090b]">

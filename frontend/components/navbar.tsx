@@ -12,7 +12,7 @@ import {
   User,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuthStore } from "@/app/lib/store";
+import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 
 export function Navbar() {

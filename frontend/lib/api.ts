@@ -1,5 +1,5 @@
 import { useAuthStore, User } from "./store";
-import { APIResponse, Credential, CredentialType } from "./types"; 
+import { APIResponse, Credential, CredentialType } from "./types";
 
 // --- CONFIGURATION ---
 const BASE_URL =

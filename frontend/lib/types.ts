@@ -1,19 +1,46 @@
-import { User } from "./store";
+// --- ENUMS & TYPES ---
 
-// --- RESPONSE INTERFACES ---
 export interface APIResponse<T = any> {
   success: boolean;
-  message?: string;
+  message: string;
   data?: T;
-  token?: string;
-  user?: User;
+  error?: any;
+  statusCode?: number;
 }
 
-// --- CREDENTIAL TYPES ---
 export enum CredentialType {
   DEGREE = 0,
   CERTIFICATE = 1,
   BADGE = 2,
+}
+
+export enum NodeStatus {
+  OWNED = "OWNED",
+  VERIFYING = "VERIFYING",
+  GHOST = "GHOST",
+}
+
+export type NodeCategory =
+  | "Frontend"
+  | "Backend"
+  | "Design"
+  | "DevOps"
+  | "Core";
+
+// --- INTERFACES ---
+
+export interface ConstellationNode {
+  id: string;
+  name: string;
+  type?: CredentialType;
+  status: NodeStatus;
+  category: NodeCategory;
+  relatedIds: string[];
+  description?: string;
+  logoSlug?: string;
+  // Optional coordinates for pre-calculated layouts
+  x?: number;
+  y?: number;
 }
 
 export interface CredentialMetadata {
