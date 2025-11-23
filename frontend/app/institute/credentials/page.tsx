@@ -65,6 +65,7 @@ export default function CredentialsLibrary() {
   const fetchTemplates = async () => {
     setIsLoading(true);
     const res = await templateService.getTemplates();
+    console.log(res)
     if (res.success && res.data) {
       // Map backend data to frontend model
       const mapped: CredentialTemplate[] = res.data.map((item: any) => ({

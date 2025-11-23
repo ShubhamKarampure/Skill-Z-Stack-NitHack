@@ -20,15 +20,16 @@ const Aurora = () => (
   </div>
 );
 
-// --- MAIN PAGE COMPONENT ---
+// --- UPDATED DEMO ACCOUNTS TO MATCH YOUR SEEDER ---
 const DEMO_ACCOUNTS = [
-  { email: "alice.student@example.com", role: "Student" },
-  { email: "idfc@example.com", role: "Employer" },
-  { email: "nits@example.com", role: "Admin" },
-  { email: "spit@example.com", role: "Institute" },
+  { email: "student1@demo.com", role: "Student" },
+  { email: "employer1@demo.com", role: "Employer" },
+  { email: "admin1@gmail.com", role: "Admin" },
+  { email: "institute1@demo.com", role: "Institute" },
 ];
 
-const DEMO_PASSWORD = "Password123";
+// Global password set to "password"
+const DEMO_PASSWORD = "password";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,9 +39,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(""); // Kept for inline alert fallback, optional
+  const [error, setError] = useState("");
 
-  // New state for handling the full-screen loader
   const [showSuccessLoader, setShowSuccessLoader] = useState(false);
   const [targetPath, setTargetPath] = useState("/");
 
@@ -48,12 +48,8 @@ export default function LoginPage() {
     const selected = DEMO_ACCOUNTS.find((acc) => acc.email === demoEmail);
 
     setEmail(demoEmail);
-
-    if (selected?.role.toLowerCase() === "student") {
-      setPassword("111111");
-    } else {
-      setPassword(DEMO_PASSWORD);
-    }
+    // Everyone uses the same password now
+    setPassword(DEMO_PASSWORD);
 
     toast({
       title: "Demo Account Selected",
@@ -66,6 +62,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
+    // Defaults to DEMO_PASSWORD if the field is left blank
     const finalPassword = password || DEMO_PASSWORD;
 
     try {
@@ -95,7 +92,6 @@ export default function LoginPage() {
         });
 
         setShowSuccessLoader(true);
-        // Trigger the full screen loader
       } else {
         const msg = response.message || "Invalid email or password";
         setError(msg);
@@ -118,14 +114,12 @@ export default function LoginPage() {
     }
   };
 
-  // Called when the Loader finishes its animation
   const handleLoaderComplete = () => {
     router.push(targetPath);
   };
 
   return (
     <>
-      {/* Conditionally render the Loader on top of everything */}
       <AnimatePresence>
         {showSuccessLoader && (
           <motion.div
@@ -164,7 +158,6 @@ export default function LoginPage() {
 
           <div className="bg-white/[0.03] border border-white/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl">
             <form onSubmit={handleLogin} className="space-y-5">
-              {/* Optional: Keep inline error for immediate visual feedback near form */}
               {error && (
                 <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-sm text-red-400">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
