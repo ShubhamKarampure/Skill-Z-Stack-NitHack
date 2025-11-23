@@ -102,7 +102,7 @@ export default function EmployerDashboard() {
     try {
       if (verificationType === "zkp") {
         const proofData = JSON.parse(zkpProof);
-        const res = await verifierService.verifyZKProof(zkpType, proofData.proof, proofData.publicSignals);
+        const res = await verifierService.verifyZKProof(verificationId, zkpType, proofData.proof, proofData.publicSignals);
         if (res.success && res.data?.isValid) {
           setVerificationResult("success");
         } else {

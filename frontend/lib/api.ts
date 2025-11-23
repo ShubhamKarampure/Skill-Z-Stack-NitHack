@@ -249,10 +249,10 @@ export const templateService = {
 };
 
 export const verifierService = {
-  verifyZKProof: async (proofType: string, proof: any, publicSignals: any) => {
-    return fetchAPI<{ isValid: boolean }>("/verifier/verify-zkp", {
-      method: "POST",
-      body: JSON.stringify({ proofType, proof, publicSignals }),
+  verifyZKProof: async (tokenId: string, proofType: string, proof: any, publicSignals: any) => {
+    return fetchAPI<{ isValid: boolean }>(`/verify/verify/${tokenId}`, {
+      method: "GET",
+      // body: JSON.stringify({ proofType, proof, publicSignals }),
     });
   },
 };
