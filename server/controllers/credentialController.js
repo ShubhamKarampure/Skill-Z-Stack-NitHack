@@ -85,9 +85,11 @@ export const getCredential = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      credential: {
-        ...credential,
-        metadata
+      data: {
+        credential: {
+          ...credential,
+          metadata
+        }
       }
     });
 
@@ -119,8 +121,10 @@ export const getHolderCredentials = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      count: credentials.length,
-      credentials
+      data: {
+        count: credentials.length,
+        credentials
+      }
     });
 
   } catch (error) {

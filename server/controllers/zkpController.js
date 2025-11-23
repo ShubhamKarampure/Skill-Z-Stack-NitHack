@@ -41,7 +41,9 @@ export const verifyProof = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            isValid
+            data: {
+                isValid
+            }
         });
 
     } catch (error) {

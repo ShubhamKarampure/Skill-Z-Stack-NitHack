@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -16,7 +16,7 @@ import {
   ChevronRight,
   FileJson,
 } from "lucide-react";
-import { verifierService } from "@/lib/api";
+import { verifierService, userService } from "@/lib/api";
 
 // --- TYPES ---
 interface Candidate {
@@ -28,34 +28,6 @@ interface Candidate {
   matchScore: number;
 }
 
-// --- MOCK DATA ---
-const MOCK_CANDIDATES: Candidate[] = [
-  {
-    id: "1",
-    name: "Alex Chen",
-    role: "Frontend Developer",
-    walletAddress: "0x7f8...a3c2",
-    verifiedSkills: ["React.js", "TypeScript", "Next.js"],
-    matchScore: 98,
-  },
-  {
-    id: "2",
-    name: "Sarah Jones",
-    role: "Smart Contract Eng",
-    walletAddress: "0x3a2...b1b9",
-    verifiedSkills: ["Solidity", "Hardhat", "Ethers.js"],
-    matchScore: 92,
-  },
-  {
-    id: "3",
-    name: "Mike Ross",
-    role: "Product Designer",
-    walletAddress: "0x99c...d2e1",
-    verifiedSkills: ["Figma", "UI/UX", "Prototyping"],
-    matchScore: 85,
-  },
-];
-
 // --- COMPONENTS ---
 const Aurora = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-[#09090b]">
@@ -65,7 +37,13 @@ const Aurora = () => (
 );
 
 export default function EmployerDashboard() {
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [isLoadingCandidates, setIsLoadingCandidates] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCandidates, setTotalCandidates] = useState(0);
+  
   const [verificationId, setVerificationId] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<
@@ -74,6 +52,44 @@ export default function EmployerDashboard() {
   const [verificationType, setVerificationType] = useState<"credential" | "zkp">("credential");
   const [zkpProof, setZkpProof] = useState("");
   const [zkpType, setZkpType] = useState<"age" | "credential" | "rank">("age");
+
+  const fetchCandidates = async (page: number, search: string = "") => {
+    setIsLoadingCandidates(true);
+    try {
+      const res = await userService.getCandidates(page, 5, search);
+      if (res.success && res.data?.users) {
+        const mappedCandidates = res.data.users.map((user: any) => ({
+          id: user._id || user.id,
+          name: user.name,
+          role: "Student", // Default role
+          walletAddress: user.walletAddress,
+          verifiedSkills: user.studentData?.skills || ["Blockchain", "Web3"], // Mock skills if not present
+          matchScore: Math.floor(Math.random() * 20) + 80, // Mock score
+        }));
+        setCandidates(mappedCandidates);
+        setTotalPages(res.data.totalPages || 1);
+        setTotalCandidates(res.data.total || 0);
+      }
+    } catch (error) {
+      console.error("Failed to fetch candidates", error);
+    } finally {
+      setIsLoadingCandidates(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchCandidates(currentPage, searchTerm);
+  }, [currentPage]);
+
+  // Debounce search
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentPage(1); // Reset to page 1 on new search
+      fetchCandidates(1, searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,12 +131,6 @@ export default function EmployerDashboard() {
     }
   };
 
-  const filteredCandidates = MOCK_CANDIDATES.filter(
-    (c) =>
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <main className="min-h-screen font-sans text-white selection:bg-indigo-500/30">
       <Aurora />
@@ -160,7 +170,7 @@ export default function EmployerDashboard() {
             </div>
 
             <div className="space-y-4">
-              {filteredCandidates.map((candidate) => (
+              {candidates.map((candidate) => (
                 <motion.div
                   key={candidate.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -215,6 +225,30 @@ export default function EmployerDashboard() {
                 </motion.div>
               ))}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-8">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-bold hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-zinc-400">
+                  Page <span className="text-white font-bold">{currentPage}</span> of{" "}
+                  <span className="text-white font-bold">{totalPages}</span>
+                </span>
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-bold hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
 
           {/* RIGHT COLUMN: Verification Tool */}

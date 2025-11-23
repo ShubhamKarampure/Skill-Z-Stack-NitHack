@@ -19,68 +19,7 @@ import {
   ChevronRight,
   Upload,
 } from "lucide-react";
-import { verifierService } from "@/lib/api";
-
-// --- MOCK DATA (Shared with Dashboard) ---
-const MOCK_CANDIDATES = [
-  {
-    id: "1",
-    name: "Alex Chen",
-    role: "Frontend Developer",
-    walletAddress: "0x7f8...a3c2",
-    avatar: "AC",
-    bio: "Passionate frontend developer with 5 years of experience in React and Web3.",
-    email: "alex.chen@example.com",
-    location: "San Francisco, CA",
-  },
-  {
-    id: "2",
-    name: "Sarah Jones",
-    role: "Smart Contract Eng",
-    walletAddress: "0x3a2...b1b9",
-    avatar: "SJ",
-    bio: "Solidity expert specializing in DeFi protocols and security audits.",
-    email: "sarah.jones@example.com",
-    location: "New York, NY",
-  },
-  {
-    id: "3",
-    name: "Mike Ross",
-    role: "Product Designer",
-    walletAddress: "0x99c...d2e1",
-    avatar: "MR",
-    bio: "UI/UX designer focused on creating intuitive decentralized applications.",
-    email: "mike.ross@example.com",
-    location: "Remote",
-  },
-];
-
-const MOCK_CREDENTIALS = [
-  {
-    id: "101",
-    title: "Advanced React Patterns",
-    issuer: "TechCertified Academy",
-    date: "2024-11-15",
-    type: "Certificate",
-    status: "Verified",
-  },
-  {
-    id: "102",
-    title: "Solidity Developer Bootcamp",
-    issuer: "ConsenSys",
-    date: "2024-08-20",
-    type: "Certificate",
-    status: "Verified",
-  },
-  {
-    id: "103",
-    title: "Computer Science Degree",
-    issuer: "Stanford University",
-    date: "2023-06-10",
-    type: "Degree",
-    status: "Verified",
-  },
-];
+import { verifierService, userService, credentialService } from "@/lib/api";
 
 // --- ZKP TEMPLATES ---
 const ZKP_TEMPLATES = {
@@ -135,9 +74,75 @@ const Aurora = () => (
 export default function CandidateProfile() {
   const params = useParams();
   const router = useRouter();
-  const candidate = MOCK_CANDIDATES.find((c) => c.id === params.id);
+  
+  const [candidate, setCandidate] = useState<any>(null);
+  const [credentials, setCredentials] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState<"credentials" | "zkp">("credentials");
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userRes = await userService.getUserById(params.id as string);
+        if (userRes.success && userRes.data?.user) {
+            const user = userRes.data.user as any;
+            setCandidate({
+                id: user.id || user._id,
+                name: user.name,
+                role: "Student", // Default
+                walletAddress: user.walletAddress,
+                avatar: user.name.substring(0, 2).toUpperCase(),
+                bio: user.studentData?.bio || "No bio provided.",
+                email: user.email,
+                location: user.studentData?.location || "Unknown",
+            });
+
+            // Fetch credentials
+            if (user.walletAddress) {
+                const credRes = await credentialService.getCredentialsByAddress(user.walletAddress);
+                if (credRes.success && credRes.data?.credentials) {
+                    setCredentials(credRes.data.credentials.map((c: any) => ({
+                        id: c.tokenId,
+                        title: c.metadata?.name || c.credentialTypeName,
+                        issuer: c.issuer,
+                        date: new Date(c.issuedAt).toLocaleDateString(),
+                        type: c.credentialTypeName,
+                        status: c.status === "ACTIVE" ? "Verified" : "Revoked",
+                    })));
+                }
+            }
+        }
+      } catch (error) {
+        console.error("Failed to fetch candidate data", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (params.id) {
+        fetchData();
+    }
+  }, [params.id]);
+
+  if (isLoading) {
+      return (
+        <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        </div>
+      );
+  }
+
+  if (!candidate) {
+      return (
+        <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2">Candidate Not Found</h2>
+            <button onClick={() => router.back()} className="text-indigo-400 hover:underline">Go Back</button>
+          </div>
+        </div>
+      );
+  }
   const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof ZKP_TEMPLATES | null>(null);
   const [zkpInput, setZkpInput] = useState("");
   const [verificationResult, setVerificationResult] = useState<"success" | "error" | null>(null);
@@ -330,7 +335,7 @@ export default function CandidateProfile() {
 
           {activeTab === "credentials" ? (
             <div className="space-y-4">
-              {MOCK_CREDENTIALS.map((cred) => (
+              {credentials.map((cred) => (
                 <div key={cred.id} className="bg-white/0.02 border border-white/5 rounded-xl p-5 flex items-center justify-between hover:border-indigo-500/30 transition-all group">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-indigo-500/10 rounded-lg text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
