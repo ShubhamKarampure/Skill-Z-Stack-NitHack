@@ -46,21 +46,24 @@ const userSchema = new Schema(
       credentials: [{
         type: String  // Token IDs
       }],
-      instituteId: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-      },
-      isVerifiedByInstitute: {
-        type: Boolean,
-        default: false
-      },
-      graduationYear: Number,
-      major: String,
-      gpa: Number,
-      zkpProofs: [{
-        proofType: String,
-        proofHash: String,
-        createdAt: Date
+
+      // Array of institutes the student is enrolled in
+      enrollments: [{
+        instituteId: {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+          required: true
+        },
+        instituteName: String,
+        instituteWalletAddress: String,
+        enrolledAt: {
+          type: Date,
+          default: Date.now
+        },
+        isActive: {
+          type: Boolean,
+          default: true
+        }
       }]
     },
 
@@ -86,6 +89,26 @@ const userSchema = new Schema(
       issuedCredentials: [{
         type: String  // Token IDs
       }],
+
+      // Array of students enrolled in this institute
+      enrolledStudents: [{
+        studentId: {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+          required: true
+        },
+        studentName: String,
+        studentWalletAddress: String,
+        enrolledAt: {
+          type: Date,
+          default: Date.now
+        },
+        isActive: {
+          type: Boolean,
+          default: true
+        }
+      }],
+
       instituteMetadata: {
         description: String,
         address: String,
@@ -133,11 +156,55 @@ const userSchema = new Schema(
 userSchema.index({ email: 1 });
 userSchema.index({ walletAddress: 1 });
 userSchema.index({ role: 1 });
+userSchema.index({ 'studentData.enrollments.instituteId': 1 });
+userSchema.index({ 'instituteData.enrolledStudents.studentId': 1 });
 
 // Virtual for credential count
 userSchema.virtual('credentialCount').get(function () {
   return this.studentData?.credentials?.length || 0;
 });
+
+// Virtual for enrollment count
+userSchema.virtual('enrollmentCount').get(function () {
+  return this.studentData?.enrollments?.length || 0;
+});
+
+// Virtual for enrolled student count (for institutes)
+userSchema.virtual('enrolledStudentCount').get(function () {
+  return this.instituteData?.enrolledStudents?.length || 0;
+});
+
+// Instance method: Check if student is enrolled in a specific institute
+userSchema.methods.isEnrolledIn = function (instituteId) {
+  if (!this.studentData?.enrollments) return false;
+
+  return this.studentData.enrollments.some(
+    enrollment => enrollment.instituteId.toString() === instituteId.toString() && enrollment.isActive
+  );
+};
+
+// Instance method: Get active enrollments
+userSchema.methods.getActiveEnrollments = function () {
+  if (!this.studentData?.enrollments) return [];
+
+  return this.studentData.enrollments.filter(enrollment => enrollment.isActive);
+};
+
+// Instance method: Check if institute has enrolled a specific student
+userSchema.methods.hasEnrolledStudent = function (studentId) {
+  if (!this.instituteData?.enrolledStudents) return false;
+
+  return this.instituteData.enrolledStudents.some(
+    student => student.studentId.toString() === studentId.toString() && student.isActive
+  );
+};
+
+// Instance method: Get active enrolled students (for institutes)
+userSchema.methods.getActiveStudents = function () {
+  if (!this.instituteData?.enrolledStudents) return [];
+
+  return this.instituteData.enrolledStudents.filter(student => student.isActive);
+};
 
 const UserModel = mongoose.model('User', userSchema);
 
