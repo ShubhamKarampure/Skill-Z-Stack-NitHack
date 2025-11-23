@@ -43,12 +43,6 @@ if (process.env.NODE_ENV === 'production') {
   app.use(devLogger);
 }
 
-// Rate limiting
-app.use(rateLimiter({
-  windowMs: 15 * 60 * 1000,
-  maxRequests: 100
-}));
-
 // ================================
 // Database Connection
 // ================================
