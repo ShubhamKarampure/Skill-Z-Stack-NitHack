@@ -113,57 +113,6 @@ const ToastContainer = ({ toasts }: { toasts: Toast[] }) => (
   </div>
 );
 
-const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  return (
-    <nav className="fixed top-0 w-full z-40 bg-[#09090b]/80 backdrop-blur-md border-b border-white/5">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2 font-bold text-xl tracking-tighter cursor-pointer">
-          <div className="w-8 h-8 bg-gradient-to-tr from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center text-white">
-            Z
-          </div>
-          <span>
-            Skill-Z{" "}
-            <span className="text-xs font-normal text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded ml-2 border border-emerald-500/20">
-              DAO
-            </span>
-          </span>
-        </div>
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-          <a href="/governance/dashboard" className="hover:text-white transition-colors">
-            Dashboard
-          </a>
-          <a href="#" className="text-white">
-            Members
-          </a>
-        </div>
-        <div className="hidden md:flex items-center gap-4">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-sm font-medium">
-            <Wallet className="w-4 h-4 text-emerald-400" />
-            <span>0xDAO...Admin</span>
-          </button>
-        </div>
-        <button
-          className="md:hidden p-2 text-zinc-400"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          {isMenuOpen ? <X /> : <Menu />}
-        </button>
-      </div>
-      {isMenuOpen && (
-        <div className="md:hidden absolute w-full bg-[#09090b] border-b border-white/10 p-4 flex flex-col gap-4 shadow-xl">
-          <a href="/governance" className="text-zinc-400 font-medium">
-            Proposals
-          </a>
-          <a href="#" className="text-white font-medium">
-            Members
-          </a>
-        </div>
-      )}
-    </nav>
-  );
-};
-
 // --- ADD MODAL ---
 const AddMemberModal = ({
   isOpen,
@@ -355,7 +304,6 @@ export default function MembersPage() {
   return (
     <main className="min-h-screen bg-[#09090b] text-white font-sans overflow-x-hidden selection:bg-emerald-500/30">
       <Aurora />
-      <Navbar />
       <ToastContainer toasts={toasts} />
 
       <RevokeModal

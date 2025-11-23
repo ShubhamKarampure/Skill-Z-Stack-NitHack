@@ -7,13 +7,12 @@ import {
     updateProfile
 } from '../controllers/authController.js';
 import { authenticate } from '../middleware/auth.js';
-import { validateRegister, validateLogin } from '../middleware/validation.js';
 
 const router = express.Router();
 
 // Public routes
-router.post('/register', validateRegister, register);
-router.post('/login', validateLogin, login);
+router.post('/register', register);
+router.post('/login', login);
 
 // Protected routes (require authentication)
 router.get('/profile', authenticate, getProfile);

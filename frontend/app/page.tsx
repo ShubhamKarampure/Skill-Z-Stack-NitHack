@@ -26,7 +26,7 @@ import {
   Award,
   Star,
 } from "lucide-react";
-import { Navbar } from "@/components/navbar";
+import { Navbar } from "@/components/landing-navbar";
 // --- TYPES ---
 
 interface BaseProps {

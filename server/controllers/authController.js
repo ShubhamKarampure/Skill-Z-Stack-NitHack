@@ -6,6 +6,7 @@ import { getWeb3 } from '../blockchain/utils/provider.js';
 
 export const register = async (req, res) => {
   try {
+    
     const { name, email, password, role, walletAddress } = req.body;
 
     // Validation

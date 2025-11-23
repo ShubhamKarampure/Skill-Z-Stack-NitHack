@@ -421,7 +421,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.20+commit.a1b79de6\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"accreditationDate\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"accreditedBy\",\"type\":\"address\"}],\"name\":\"IssuerAccredited\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reactivationDate\",\"type\":\"uint256\"}],\"name\":\"IssuerReactivated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"registrationDate\",\"type\":\"uint256\"}],\"name\":\"IssuerRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"revocationDate\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"revokedBy\",\"type\":\"address\"}],\"name\":\"IssuerRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"suspensionDate\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"IssuerSuspended\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"newName\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"updateDate\",\"type\":\"uint256\"}],\"name\":\"IssuerUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"accreditIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAccreditedIssuerCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllAccreditedIssuers\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"getIssuer\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"isAccredited\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"accreditationDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalIssued\",\"type\":\"uint256\"}],\"internalType\":\"struct CredentialTypes.Issuer\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"getIssuerCredentialCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"incrementIssuerCredentialCount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"isAccredited\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"isRegistered\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"isSuspended\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"reactivateIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"metadataURI\",\"type\":\"string\"}],\"name\":\"registerIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"revokeIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"suspendIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"newName\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"newMetadataURI\",\"type\":\"string\"}],\"name\":\"updateIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Interface for the Issuer Registry contract Manages issuer accreditation and validation\",\"kind\":\"dev\",\"methods\":{\"accreditIssuer(address)\":{\"details\":\"Accredit an issuer (grant permission to issue credentials)\",\"params\":{\"issuerAddress\":\"Address of the issuer to accredit\"}},\"getAccreditedIssuerCount()\":{\"details\":\"Get total number of accredited issuers\",\"returns\":{\"_0\":\"Count of accredited issuers\"}},\"getAllAccreditedIssuers()\":{\"details\":\"Get all accredited issuers\",\"returns\":{\"_0\":\"Array of accredited issuer addresses\"}},\"getIssuer(address)\":{\"details\":\"Get issuer information\",\"params\":{\"issuerAddress\":\"Address of the issuer\"},\"returns\":{\"_0\":\"Issuer struct with all details\"}},\"getIssuerCredentialCount(address)\":{\"details\":\"Get total credentials issued by an issuer\",\"params\":{\"issuerAddress\":\"Address of the issuer\"},\"returns\":{\"_0\":\"Total number of credentials issued\"}},\"incrementIssuerCredentialCount(address)\":{\"details\":\"Increment credential count for an issuer\",\"params\":{\"issuerAddress\":\"Address of the issuer\"}},\"isAccredited(address)\":{\"details\":\"Check if an issuer is accredited\",\"params\":{\"issuerAddress\":\"Address to check\"},\"returns\":{\"_0\":\"True if accredited and active, false otherwise\"}},\"isRegistered(address)\":{\"details\":\"Check if an issuer is registered (may not be accredited)\",\"params\":{\"issuerAddress\":\"Address to check\"},\"returns\":{\"_0\":\"True if registered, false otherwise\"}},\"isSuspended(address)\":{\"details\":\"Check if issuer is suspended\",\"params\":{\"issuerAddress\":\"Address to check\"},\"returns\":{\"_0\":\"True if suspended, false otherwise\"}},\"reactivateIssuer(address)\":{\"details\":\"Reactivate a suspended issuer\",\"params\":{\"issuerAddress\":\"Address of the issuer to reactivate\"}},\"registerIssuer(address,string,string)\":{\"details\":\"Register a new issuer (pending accreditation)\",\"params\":{\"issuerAddress\":\"Ethereum address of the issuer\",\"metadataURI\":\"IPFS CID containing issuer details\",\"name\":\"Name of the issuing institution\"}},\"revokeIssuer(address,string)\":{\"details\":\"Revoke issuer accreditation\",\"params\":{\"issuerAddress\":\"Address of the issuer to revoke\",\"reason\":\"Reason for revocation\"}},\"suspendIssuer(address,string)\":{\"details\":\"Suspend issuer temporarily\",\"params\":{\"issuerAddress\":\"Address of the issuer to suspend\",\"reason\":\"Reason for suspension\"}},\"updateIssuer(address,string,string)\":{\"details\":\"Update issuer information\",\"params\":{\"issuerAddress\":\"Address of the issuer\",\"newMetadataURI\":\"New metadata URI\",\"newName\":\"New name for the issuer\"}}},\"title\":\"IIssuer\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/interfaces/IIssuer.sol\":\"IIssuer\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/interfaces/IIssuer.sol\":{\"keccak256\":\"0x082011028a33e2f740c53e4e50c35bfbb8860f7f446932ac4defbcdd3d338f58\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://690d010fc251d06eb969fcbd0ed924f72c19d029e13146a2f50dbb9b08cf71ff\",\"dweb:/ipfs/QmRhhYkTTpeXrDDqjTRR241aFVGhUUX83HKBeULtwwcppY\"]},\"project:/contracts/libraries/CredentialTypes.sol\":{\"keccak256\":\"0x9f2310f35c896c461e6fee1447551a77d1db055f6739d2ba8afa32b6ac30bdd6\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://390154af9aed5c1da3928aac0aa1be35978bb5a14ad8fde583741e75da895acc\",\"dweb:/ipfs/Qmc4atnmhUyNXdFXp6L6MARAb7Hg57dewceR9y8gf2qQjn\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.20+commit.a1b79de6\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"accreditationDate\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"accreditedBy\",\"type\":\"address\"}],\"name\":\"IssuerAccredited\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reactivationDate\",\"type\":\"uint256\"}],\"name\":\"IssuerReactivated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"registrationDate\",\"type\":\"uint256\"}],\"name\":\"IssuerRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"revocationDate\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"revokedBy\",\"type\":\"address\"}],\"name\":\"IssuerRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"suspensionDate\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"IssuerSuspended\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"newName\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"updateDate\",\"type\":\"uint256\"}],\"name\":\"IssuerUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"accreditIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAccreditedIssuerCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllAccreditedIssuers\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"getIssuer\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"isAccredited\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"accreditationDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalIssued\",\"type\":\"uint256\"}],\"internalType\":\"struct CredentialTypes.Issuer\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"getIssuerCredentialCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"incrementIssuerCredentialCount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"isAccredited\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"isRegistered\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"isSuspended\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"reactivateIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"metadataURI\",\"type\":\"string\"}],\"name\":\"registerIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"revokeIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"suspendIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"newName\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"newMetadataURI\",\"type\":\"string\"}],\"name\":\"updateIssuer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Interface for the Issuer Registry contract Manages issuer accreditation and validation\",\"kind\":\"dev\",\"methods\":{\"accreditIssuer(address)\":{\"details\":\"Accredit an issuer (grant permission to issue credentials)\",\"params\":{\"issuerAddress\":\"Address of the issuer to accredit\"}},\"getAccreditedIssuerCount()\":{\"details\":\"Get total number of accredited issuers\",\"returns\":{\"_0\":\"Count of accredited issuers\"}},\"getAllAccreditedIssuers()\":{\"details\":\"Get all accredited issuers\",\"returns\":{\"_0\":\"Array of accredited issuer addresses\"}},\"getIssuer(address)\":{\"details\":\"Get issuer information\",\"params\":{\"issuerAddress\":\"Address of the issuer\"},\"returns\":{\"_0\":\"Issuer struct with all details\"}},\"getIssuerCredentialCount(address)\":{\"details\":\"Get total credentials issued by an issuer\",\"params\":{\"issuerAddress\":\"Address of the issuer\"},\"returns\":{\"_0\":\"Total number of credentials issued\"}},\"incrementIssuerCredentialCount(address)\":{\"details\":\"Increment credential count for an issuer\",\"params\":{\"issuerAddress\":\"Address of the issuer\"}},\"isAccredited(address)\":{\"details\":\"Check if an issuer is accredited\",\"params\":{\"issuerAddress\":\"Address to check\"},\"returns\":{\"_0\":\"True if accredited and active, false otherwise\"}},\"isRegistered(address)\":{\"details\":\"Check if an issuer is registered (may not be accredited)\",\"params\":{\"issuerAddress\":\"Address to check\"},\"returns\":{\"_0\":\"True if registered, false otherwise\"}},\"isSuspended(address)\":{\"details\":\"Check if issuer is suspended\",\"params\":{\"issuerAddress\":\"Address to check\"},\"returns\":{\"_0\":\"True if suspended, false otherwise\"}},\"reactivateIssuer(address)\":{\"details\":\"Reactivate a suspended issuer\",\"params\":{\"issuerAddress\":\"Address of the issuer to reactivate\"}},\"registerIssuer(address,string,string)\":{\"details\":\"Register a new issuer (pending accreditation)\",\"params\":{\"issuerAddress\":\"Ethereum address of the issuer\",\"metadataURI\":\"IPFS CID containing issuer details\",\"name\":\"Name of the issuing institution\"}},\"revokeIssuer(address,string)\":{\"details\":\"Revoke issuer accreditation\",\"params\":{\"issuerAddress\":\"Address of the issuer to revoke\",\"reason\":\"Reason for revocation\"}},\"suspendIssuer(address,string)\":{\"details\":\"Suspend issuer temporarily\",\"params\":{\"issuerAddress\":\"Address of the issuer to suspend\",\"reason\":\"Reason for suspension\"}},\"updateIssuer(address,string,string)\":{\"details\":\"Update issuer information\",\"params\":{\"issuerAddress\":\"Address of the issuer\",\"newMetadataURI\":\"New metadata URI\",\"newName\":\"New name for the issuer\"}}},\"title\":\"IIssuer\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/interfaces/IIssuer.sol\":\"IIssuer\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/interfaces/IIssuer.sol\":{\"keccak256\":\"0x9bad578bc0cb8c2ed291d80c92214f43509e741bcb0a42b9427f67b5b63aa8a0\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://80e8bc9f6de9eda213304d141d1064a5ef8a08ef1b8056c7b850274ca799dde4\",\"dweb:/ipfs/QmV4o4csCenWkA3h2sA4Hi7xb4rbPqjLxq1TWeSukD4puL\"]},\"project:/contracts/libraries/CredentialTypes.sol\":{\"keccak256\":\"0xb9e8b9ad05915b4ff5c0e7361f444cbb4b6b3a29edcb514f4fe7510dc98167f1\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://63a193ac19d95b9dbacf158fca6f77fece6dc7c12d742579bb749231bda53c8e\",\"dweb:/ipfs/QmRWYioZw7xUGWg6uKLpPyMMrahDUujg1cXCTQnanNpgZX\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -429,8 +429,8 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\nimport \"../libraries/CredentialTypes.sol\";\r\n\r\n/**\r\n * @title IIssuer\r\n * @dev Interface for the Issuer Registry contract\r\n * Manages issuer accreditation and validation\r\n */\r\ninterface IIssuer {\r\n    // Events\r\n    event IssuerRegistered(\r\n        address indexed issuerAddress,\r\n        string name,\r\n        uint256 registrationDate\r\n    );\r\n\r\n    event IssuerAccredited(\r\n        address indexed issuerAddress,\r\n        uint256 accreditationDate,\r\n        address indexed accreditedBy\r\n    );\r\n\r\n    event IssuerRevoked(\r\n        address indexed issuerAddress,\r\n        uint256 revocationDate,\r\n        string reason,\r\n        address indexed revokedBy\r\n    );\r\n\r\n    event IssuerUpdated(\r\n        address indexed issuerAddress,\r\n        string newName,\r\n        uint256 updateDate\r\n    );\r\n\r\n    event IssuerSuspended(\r\n        address indexed issuerAddress,\r\n        uint256 suspensionDate,\r\n        string reason\r\n    );\r\n\r\n    event IssuerReactivated(\r\n        address indexed issuerAddress,\r\n        uint256 reactivationDate\r\n    );\r\n\r\n    /**\r\n     * @dev Register a new issuer (pending accreditation)\r\n     * @param issuerAddress Ethereum address of the issuer\r\n     * @param name Name of the issuing institution\r\n     * @param metadataURI IPFS CID containing issuer details\r\n     */\r\n    function registerIssuer(\r\n        address issuerAddress,\r\n        string memory name,\r\n        string memory metadataURI\r\n    ) external;\r\n\r\n    /**\r\n     * @dev Accredit an issuer (grant permission to issue credentials)\r\n     * @param issuerAddress Address of the issuer to accredit\r\n     */\r\n    function accreditIssuer(address issuerAddress) external;\r\n\r\n    /**\r\n     * @dev Revoke issuer accreditation\r\n     * @param issuerAddress Address of the issuer to revoke\r\n     * @param reason Reason for revocation\r\n     */\r\n    function revokeIssuer(address issuerAddress, string memory reason) external;\r\n\r\n    /**\r\n     * @dev Suspend issuer temporarily\r\n     * @param issuerAddress Address of the issuer to suspend\r\n     * @param reason Reason for suspension\r\n     */\r\n    function suspendIssuer(\r\n        address issuerAddress,\r\n        string memory reason\r\n    ) external;\r\n\r\n    /**\r\n     * @dev Reactivate a suspended issuer\r\n     * @param issuerAddress Address of the issuer to reactivate\r\n     */\r\n    function reactivateIssuer(address issuerAddress) external;\r\n\r\n    /**\r\n     * @dev Update issuer information\r\n     * @param issuerAddress Address of the issuer\r\n     * @param newName New name for the issuer\r\n     * @param newMetadataURI New metadata URI\r\n     */\r\n    function updateIssuer(\r\n        address issuerAddress,\r\n        string memory newName,\r\n        string memory newMetadataURI\r\n    ) external;\r\n\r\n    /**\r\n     * @dev Check if an issuer is accredited\r\n     * @param issuerAddress Address to check\r\n     * @return True if accredited and active, false otherwise\r\n     */\r\n    function isAccredited(address issuerAddress) external view returns (bool);\r\n\r\n    /**\r\n     * @dev Check if an issuer is registered (may not be accredited)\r\n     * @param issuerAddress Address to check\r\n     * @return True if registered, false otherwise\r\n     */\r\n    function isRegistered(address issuerAddress) external view returns (bool);\r\n\r\n    /**\r\n     * @dev Get issuer information\r\n     * @param issuerAddress Address of the issuer\r\n     * @return Issuer struct with all details\r\n     */\r\n    function getIssuer(\r\n        address issuerAddress\r\n    ) external view returns (CredentialTypes.Issuer memory);\r\n\r\n    /**\r\n     * @dev Get all accredited issuers\r\n     * @return Array of accredited issuer addresses\r\n     */\r\n    function getAllAccreditedIssuers() external view returns (address[] memory);\r\n\r\n    /**\r\n     * @dev Get total number of accredited issuers\r\n     * @return Count of accredited issuers\r\n     */\r\n    function getAccreditedIssuerCount() external view returns (uint256);\r\n\r\n    /**\r\n     * @dev Get total credentials issued by an issuer\r\n     * @param issuerAddress Address of the issuer\r\n     * @return Total number of credentials issued\r\n     */\r\n    function getIssuerCredentialCount(\r\n        address issuerAddress\r\n    ) external view returns (uint256);\r\n\r\n    /**\r\n     * @dev Increment credential count for an issuer\r\n     * @param issuerAddress Address of the issuer\r\n     */\r\n    function incrementIssuerCredentialCount(address issuerAddress) external;\r\n\r\n    /**\r\n     * @dev Check if issuer is suspended\r\n     * @param issuerAddress Address to check\r\n     * @return True if suspended, false otherwise\r\n     */\r\n    function isSuspended(address issuerAddress) external view returns (bool);\r\n}\r\n",
-  "sourcePath": "E:\\Projects\\NIT Hacks\\NITHACKS_BLOCKCHAIN\\blockchain\\contracts\\interfaces\\IIssuer.sol",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\nimport \"../libraries/CredentialTypes.sol\";\n\n/**\n * @title IIssuer\n * @dev Interface for the Issuer Registry contract\n * Manages issuer accreditation and validation\n */\ninterface IIssuer {\n    // Events\n    event IssuerRegistered(\n        address indexed issuerAddress,\n        string name,\n        uint256 registrationDate\n    );\n\n    event IssuerAccredited(\n        address indexed issuerAddress,\n        uint256 accreditationDate,\n        address indexed accreditedBy\n    );\n\n    event IssuerRevoked(\n        address indexed issuerAddress,\n        uint256 revocationDate,\n        string reason,\n        address indexed revokedBy\n    );\n\n    event IssuerUpdated(\n        address indexed issuerAddress,\n        string newName,\n        uint256 updateDate\n    );\n\n    event IssuerSuspended(\n        address indexed issuerAddress,\n        uint256 suspensionDate,\n        string reason\n    );\n\n    event IssuerReactivated(\n        address indexed issuerAddress,\n        uint256 reactivationDate\n    );\n\n    /**\n     * @dev Register a new issuer (pending accreditation)\n     * @param issuerAddress Ethereum address of the issuer\n     * @param name Name of the issuing institution\n     * @param metadataURI IPFS CID containing issuer details\n     */\n    function registerIssuer(\n        address issuerAddress,\n        string memory name,\n        string memory metadataURI\n    ) external;\n\n    /**\n     * @dev Accredit an issuer (grant permission to issue credentials)\n     * @param issuerAddress Address of the issuer to accredit\n     */\n    function accreditIssuer(address issuerAddress) external;\n\n    /**\n     * @dev Revoke issuer accreditation\n     * @param issuerAddress Address of the issuer to revoke\n     * @param reason Reason for revocation\n     */\n    function revokeIssuer(address issuerAddress, string memory reason) external;\n\n    /**\n     * @dev Suspend issuer temporarily\n     * @param issuerAddress Address of the issuer to suspend\n     * @param reason Reason for suspension\n     */\n    function suspendIssuer(\n        address issuerAddress,\n        string memory reason\n    ) external;\n\n    /**\n     * @dev Reactivate a suspended issuer\n     * @param issuerAddress Address of the issuer to reactivate\n     */\n    function reactivateIssuer(address issuerAddress) external;\n\n    /**\n     * @dev Update issuer information\n     * @param issuerAddress Address of the issuer\n     * @param newName New name for the issuer\n     * @param newMetadataURI New metadata URI\n     */\n    function updateIssuer(\n        address issuerAddress,\n        string memory newName,\n        string memory newMetadataURI\n    ) external;\n\n    /**\n     * @dev Check if an issuer is accredited\n     * @param issuerAddress Address to check\n     * @return True if accredited and active, false otherwise\n     */\n    function isAccredited(address issuerAddress) external view returns (bool);\n\n    /**\n     * @dev Check if an issuer is registered (may not be accredited)\n     * @param issuerAddress Address to check\n     * @return True if registered, false otherwise\n     */\n    function isRegistered(address issuerAddress) external view returns (bool);\n\n    /**\n     * @dev Get issuer information\n     * @param issuerAddress Address of the issuer\n     * @return Issuer struct with all details\n     */\n    function getIssuer(\n        address issuerAddress\n    ) external view returns (CredentialTypes.Issuer memory);\n\n    /**\n     * @dev Get all accredited issuers\n     * @return Array of accredited issuer addresses\n     */\n    function getAllAccreditedIssuers() external view returns (address[] memory);\n\n    /**\n     * @dev Get total number of accredited issuers\n     * @return Count of accredited issuers\n     */\n    function getAccreditedIssuerCount() external view returns (uint256);\n\n    /**\n     * @dev Get total credentials issued by an issuer\n     * @param issuerAddress Address of the issuer\n     * @return Total number of credentials issued\n     */\n    function getIssuerCredentialCount(\n        address issuerAddress\n    ) external view returns (uint256);\n\n    /**\n     * @dev Increment credential count for an issuer\n     * @param issuerAddress Address of the issuer\n     */\n    function incrementIssuerCredentialCount(address issuerAddress) external;\n\n    /**\n     * @dev Check if issuer is suspended\n     * @param issuerAddress Address to check\n     * @return True if suspended, false otherwise\n     */\n    function isSuspended(address issuerAddress) external view returns (bool);\n}\n",
+  "sourcePath": "/home/shubham/dev/hackathon/NITHACKS_BLOCKCHAIN/blockchain/contracts/interfaces/IIssuer.sol",
   "ast": {
     "absolutePath": "project:/contracts/interfaces/IIssuer.sol",
     "exportedSymbols": {
@@ -454,7 +454,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:23:30"
+        "src": "32:23:30"
       },
       {
         "absolutePath": "project:/contracts/libraries/CredentialTypes.sol",
@@ -464,7 +464,7 @@
         "nodeType": "ImportDirective",
         "scope": 8719,
         "sourceUnit": 9045,
-        "src": "60:42:30",
+        "src": "57:42:30",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -477,7 +477,7 @@
         "documentation": {
           "id": 8561,
           "nodeType": "StructuredDocumentation",
-          "src": "106:127:30",
+          "src": "101:123:30",
           "text": " @title IIssuer\n @dev Interface for the Issuer Registry contract\n Manages issuer accreditation and validation"
         },
         "fullyImplemented": false,
@@ -486,7 +486,7 @@
           8718
         ],
         "name": "IIssuer",
-        "nameLocation": "245:7:30",
+        "nameLocation": "235:7:30",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
@@ -494,7 +494,7 @@
             "eventSelector": "edfcb15df1f43eb469a84558fa52a8868c69c2e6fd8401734c111c1cb68e05f2",
             "id": 8569,
             "name": "IssuerRegistered",
-            "nameLocation": "281:16:30",
+            "nameLocation": "269:16:30",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 8568,
@@ -506,10 +506,10 @@
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "324:13:30",
+                  "nameLocation": "311:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8569,
-                  "src": "308:29:30",
+                  "src": "295:29:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -520,7 +520,7 @@
                     "id": 8562,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "308:7:30",
+                    "src": "295:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -535,10 +535,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "name",
-                  "nameLocation": "355:4:30",
+                  "nameLocation": "341:4:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8569,
-                  "src": "348:11:30",
+                  "src": "334:11:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -549,7 +549,7 @@
                     "id": 8564,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "348:6:30",
+                    "src": "334:6:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -563,10 +563,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "registrationDate",
-                  "nameLocation": "378:16:30",
+                  "nameLocation": "363:16:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8569,
-                  "src": "370:24:30",
+                  "src": "355:24:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -577,7 +577,7 @@
                     "id": 8566,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "370:7:30",
+                    "src": "355:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -586,16 +586,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "297:104:30"
+              "src": "285:100:30"
             },
-            "src": "275:127:30"
+            "src": "263:123:30"
           },
           {
             "anonymous": false,
             "eventSelector": "422de057aff2ba37780f06d677a96598d41c28a411b76277b459f8428456ee39",
             "id": 8577,
             "name": "IssuerAccredited",
-            "nameLocation": "416:16:30",
+            "nameLocation": "398:16:30",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 8576,
@@ -607,10 +607,10 @@
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "459:13:30",
+                  "nameLocation": "440:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8577,
-                  "src": "443:29:30",
+                  "src": "424:29:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -621,7 +621,7 @@
                     "id": 8570,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "443:7:30",
+                    "src": "424:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -636,10 +636,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "accreditationDate",
-                  "nameLocation": "491:17:30",
+                  "nameLocation": "471:17:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8577,
-                  "src": "483:25:30",
+                  "src": "463:25:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -650,7 +650,7 @@
                     "id": 8572,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "483:7:30",
+                    "src": "463:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -664,10 +664,10 @@
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "accreditedBy",
-                  "nameLocation": "535:12:30",
+                  "nameLocation": "514:12:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8577,
-                  "src": "519:28:30",
+                  "src": "498:28:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -678,7 +678,7 @@
                     "id": 8574,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "519:7:30",
+                    "src": "498:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -688,16 +688,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "432:122:30"
+              "src": "414:118:30"
             },
-            "src": "410:145:30"
+            "src": "392:141:30"
           },
           {
             "anonymous": false,
             "eventSelector": "a8d27343a0ed8058711dbc608d3741f5b37a9a49b17a3d2dac84883631e8c54a",
             "id": 8587,
             "name": "IssuerRevoked",
-            "nameLocation": "569:13:30",
+            "nameLocation": "545:13:30",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 8586,
@@ -709,10 +709,10 @@
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "609:13:30",
+                  "nameLocation": "584:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8587,
-                  "src": "593:29:30",
+                  "src": "568:29:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -723,7 +723,7 @@
                     "id": 8578,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "593:7:30",
+                    "src": "568:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -738,10 +738,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "revocationDate",
-                  "nameLocation": "641:14:30",
+                  "nameLocation": "615:14:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8587,
-                  "src": "633:22:30",
+                  "src": "607:22:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -752,7 +752,7 @@
                     "id": 8580,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "633:7:30",
+                    "src": "607:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -766,10 +766,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "reason",
-                  "nameLocation": "673:6:30",
+                  "nameLocation": "646:6:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8587,
-                  "src": "666:13:30",
+                  "src": "639:13:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -780,7 +780,7 @@
                     "id": 8582,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "666:6:30",
+                    "src": "639:6:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -794,10 +794,10 @@
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "revokedBy",
-                  "nameLocation": "706:9:30",
+                  "nameLocation": "678:9:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8587,
-                  "src": "690:25:30",
+                  "src": "662:25:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -808,7 +808,7 @@
                     "id": 8584,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "690:7:30",
+                    "src": "662:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -818,16 +818,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "582:140:30"
+              "src": "558:135:30"
             },
-            "src": "563:160:30"
+            "src": "539:155:30"
           },
           {
             "anonymous": false,
             "eventSelector": "49d7050509df71dc8af3265cc6fdbbfdf64759391989ded09833f87800d749d2",
             "id": 8595,
             "name": "IssuerUpdated",
-            "nameLocation": "737:13:30",
+            "nameLocation": "706:13:30",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 8594,
@@ -839,10 +839,10 @@
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "777:13:30",
+                  "nameLocation": "745:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8595,
-                  "src": "761:29:30",
+                  "src": "729:29:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -853,7 +853,7 @@
                     "id": 8588,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "761:7:30",
+                    "src": "729:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -868,10 +868,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "newName",
-                  "nameLocation": "808:7:30",
+                  "nameLocation": "775:7:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8595,
-                  "src": "801:14:30",
+                  "src": "768:14:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -882,7 +882,7 @@
                     "id": 8590,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "801:6:30",
+                    "src": "768:6:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -896,10 +896,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "updateDate",
-                  "nameLocation": "834:10:30",
+                  "nameLocation": "800:10:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8595,
-                  "src": "826:18:30",
+                  "src": "792:18:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -910,7 +910,7 @@
                     "id": 8592,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "826:7:30",
+                    "src": "792:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -919,16 +919,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "750:101:30"
+              "src": "719:97:30"
             },
-            "src": "731:121:30"
+            "src": "700:117:30"
           },
           {
             "anonymous": false,
             "eventSelector": "791f1dc83ced94100346d5b9a222e99bf2d7737bde05bf96377bf1da8daa2c65",
             "id": 8603,
             "name": "IssuerSuspended",
-            "nameLocation": "866:15:30",
+            "nameLocation": "829:15:30",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 8602,
@@ -940,10 +940,10 @@
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "908:13:30",
+                  "nameLocation": "870:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8603,
-                  "src": "892:29:30",
+                  "src": "854:29:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -954,7 +954,7 @@
                     "id": 8596,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "892:7:30",
+                    "src": "854:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -969,10 +969,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "suspensionDate",
-                  "nameLocation": "940:14:30",
+                  "nameLocation": "901:14:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8603,
-                  "src": "932:22:30",
+                  "src": "893:22:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -983,7 +983,7 @@
                     "id": 8598,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "932:7:30",
+                    "src": "893:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -997,10 +997,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "reason",
-                  "nameLocation": "972:6:30",
+                  "nameLocation": "932:6:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8603,
-                  "src": "965:13:30",
+                  "src": "925:13:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1011,7 +1011,7 @@
                     "id": 8600,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "965:6:30",
+                    "src": "925:6:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -1020,16 +1020,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "881:104:30"
+              "src": "844:100:30"
             },
-            "src": "860:126:30"
+            "src": "823:122:30"
           },
           {
             "anonymous": false,
             "eventSelector": "bbac641da8ffcc509ce22b19dd0148b9563c9ee610dd9daeac2135fc6014a822",
             "id": 8609,
             "name": "IssuerReactivated",
-            "nameLocation": "1000:17:30",
+            "nameLocation": "957:17:30",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 8608,
@@ -1041,10 +1041,10 @@
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "1044:13:30",
+                  "nameLocation": "1000:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8609,
-                  "src": "1028:29:30",
+                  "src": "984:29:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1055,7 +1055,7 @@
                     "id": 8604,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1028:7:30",
+                    "src": "984:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1070,10 +1070,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "reactivationDate",
-                  "nameLocation": "1076:16:30",
+                  "nameLocation": "1031:16:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8609,
-                  "src": "1068:24:30",
+                  "src": "1023:24:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1084,7 +1084,7 @@
                     "id": 8606,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1068:7:30",
+                    "src": "1023:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1093,15 +1093,15 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1017:82:30"
+              "src": "974:79:30"
             },
-            "src": "994:106:30"
+            "src": "951:103:30"
           },
           {
             "documentation": {
               "id": 8610,
               "nodeType": "StructuredDocumentation",
-              "src": "1108:245:30",
+              "src": "1060:240:30",
               "text": " @dev Register a new issuer (pending accreditation)\n @param issuerAddress Ethereum address of the issuer\n @param name Name of the issuing institution\n @param metadataURI IPFS CID containing issuer details"
             },
             "functionSelector": "63e41021",
@@ -1110,7 +1110,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "registerIssuer",
-            "nameLocation": "1368:14:30",
+            "nameLocation": "1314:14:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8617,
@@ -1121,10 +1121,10 @@
                   "id": 8612,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "1401:13:30",
+                  "nameLocation": "1346:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8619,
-                  "src": "1393:21:30",
+                  "src": "1338:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1135,7 +1135,7 @@
                     "id": 8611,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1393:7:30",
+                    "src": "1338:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1149,10 +1149,10 @@
                   "id": 8614,
                   "mutability": "mutable",
                   "name": "name",
-                  "nameLocation": "1439:4:30",
+                  "nameLocation": "1383:4:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8619,
-                  "src": "1425:18:30",
+                  "src": "1369:18:30",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1163,7 +1163,7 @@
                     "id": 8613,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1425:6:30",
+                    "src": "1369:6:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -1176,10 +1176,10 @@
                   "id": 8616,
                   "mutability": "mutable",
                   "name": "metadataURI",
-                  "nameLocation": "1468:11:30",
+                  "nameLocation": "1411:11:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8619,
-                  "src": "1454:25:30",
+                  "src": "1397:25:30",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1190,7 +1190,7 @@
                     "id": 8615,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1454:6:30",
+                    "src": "1397:6:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -1199,16 +1199,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1382:104:30"
+              "src": "1328:100:30"
             },
             "returnParameters": {
               "id": 8618,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1495:0:30"
+              "src": "1437:0:30"
             },
             "scope": 8718,
-            "src": "1359:137:30",
+            "src": "1305:133:30",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
@@ -1217,7 +1217,7 @@
             "documentation": {
               "id": 8620,
               "nodeType": "StructuredDocumentation",
-              "src": "1504:147:30",
+              "src": "1444:144:30",
               "text": " @dev Accredit an issuer (grant permission to issue credentials)\n @param issuerAddress Address of the issuer to accredit"
             },
             "functionSelector": "9bc24c65",
@@ -1226,7 +1226,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "accreditIssuer",
-            "nameLocation": "1666:14:30",
+            "nameLocation": "1602:14:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8623,
@@ -1237,10 +1237,10 @@
                   "id": 8622,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "1689:13:30",
+                  "nameLocation": "1625:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8625,
-                  "src": "1681:21:30",
+                  "src": "1617:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1251,7 +1251,7 @@
                     "id": 8621,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1681:7:30",
+                    "src": "1617:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1261,16 +1261,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1680:23:30"
+              "src": "1616:23:30"
             },
             "returnParameters": {
               "id": 8624,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1712:0:30"
+              "src": "1648:0:30"
             },
             "scope": 8718,
-            "src": "1657:56:30",
+            "src": "1593:56:30",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
@@ -1279,7 +1279,7 @@
             "documentation": {
               "id": 8626,
               "nodeType": "StructuredDocumentation",
-              "src": "1721:158:30",
+              "src": "1655:154:30",
               "text": " @dev Revoke issuer accreditation\n @param issuerAddress Address of the issuer to revoke\n @param reason Reason for revocation"
             },
             "functionSelector": "2b43c5f1",
@@ -1288,7 +1288,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "revokeIssuer",
-            "nameLocation": "1894:12:30",
+            "nameLocation": "1823:12:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8631,
@@ -1299,10 +1299,10 @@
                   "id": 8628,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "1915:13:30",
+                  "nameLocation": "1844:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8633,
-                  "src": "1907:21:30",
+                  "src": "1836:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1313,7 +1313,7 @@
                     "id": 8627,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1907:7:30",
+                    "src": "1836:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1327,10 +1327,10 @@
                   "id": 8630,
                   "mutability": "mutable",
                   "name": "reason",
-                  "nameLocation": "1944:6:30",
+                  "nameLocation": "1873:6:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8633,
-                  "src": "1930:20:30",
+                  "src": "1859:20:30",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1341,7 +1341,7 @@
                     "id": 8629,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1930:6:30",
+                    "src": "1859:6:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -1350,16 +1350,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1906:45:30"
+              "src": "1835:45:30"
             },
             "returnParameters": {
               "id": 8632,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1960:0:30"
+              "src": "1889:0:30"
             },
             "scope": 8718,
-            "src": "1885:76:30",
+            "src": "1814:76:30",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
@@ -1368,7 +1368,7 @@
             "documentation": {
               "id": 8634,
               "nodeType": "StructuredDocumentation",
-              "src": "1969:158:30",
+              "src": "1896:154:30",
               "text": " @dev Suspend issuer temporarily\n @param issuerAddress Address of the issuer to suspend\n @param reason Reason for suspension"
             },
             "functionSelector": "59d9ef24",
@@ -1377,7 +1377,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "suspendIssuer",
-            "nameLocation": "2142:13:30",
+            "nameLocation": "2064:13:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8639,
@@ -1388,10 +1388,10 @@
                   "id": 8636,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "2174:13:30",
+                  "nameLocation": "2095:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8641,
-                  "src": "2166:21:30",
+                  "src": "2087:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1402,7 +1402,7 @@
                     "id": 8635,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2166:7:30",
+                    "src": "2087:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1416,10 +1416,10 @@
                   "id": 8638,
                   "mutability": "mutable",
                   "name": "reason",
-                  "nameLocation": "2212:6:30",
+                  "nameLocation": "2132:6:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8641,
-                  "src": "2198:20:30",
+                  "src": "2118:20:30",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1430,7 +1430,7 @@
                     "id": 8637,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2198:6:30",
+                    "src": "2118:6:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -1439,16 +1439,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2155:70:30"
+              "src": "2077:67:30"
             },
             "returnParameters": {
               "id": 8640,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "2234:0:30"
+              "src": "2153:0:30"
             },
             "scope": 8718,
-            "src": "2133:102:30",
+            "src": "2055:99:30",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
@@ -1457,7 +1457,7 @@
             "documentation": {
               "id": 8642,
               "nodeType": "StructuredDocumentation",
-              "src": "2243:120:30",
+              "src": "2160:117:30",
               "text": " @dev Reactivate a suspended issuer\n @param issuerAddress Address of the issuer to reactivate"
             },
             "functionSelector": "1b76637e",
@@ -1466,7 +1466,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "reactivateIssuer",
-            "nameLocation": "2378:16:30",
+            "nameLocation": "2291:16:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8645,
@@ -1477,10 +1477,10 @@
                   "id": 8644,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "2403:13:30",
+                  "nameLocation": "2316:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8647,
-                  "src": "2395:21:30",
+                  "src": "2308:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1491,7 +1491,7 @@
                     "id": 8643,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2395:7:30",
+                    "src": "2308:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1501,16 +1501,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2394:23:30"
+              "src": "2307:23:30"
             },
             "returnParameters": {
               "id": 8646,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "2426:0:30"
+              "src": "2339:0:30"
             },
             "scope": 8718,
-            "src": "2369:58:30",
+            "src": "2282:58:30",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
@@ -1519,7 +1519,7 @@
             "documentation": {
               "id": 8648,
               "nodeType": "StructuredDocumentation",
-              "src": "2435:196:30",
+              "src": "2346:191:30",
               "text": " @dev Update issuer information\n @param issuerAddress Address of the issuer\n @param newName New name for the issuer\n @param newMetadataURI New metadata URI"
             },
             "functionSelector": "451c3671",
@@ -1528,7 +1528,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "updateIssuer",
-            "nameLocation": "2646:12:30",
+            "nameLocation": "2551:12:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8655,
@@ -1539,10 +1539,10 @@
                   "id": 8650,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "2677:13:30",
+                  "nameLocation": "2581:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8657,
-                  "src": "2669:21:30",
+                  "src": "2573:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1553,7 +1553,7 @@
                     "id": 8649,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2669:7:30",
+                    "src": "2573:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1567,10 +1567,10 @@
                   "id": 8652,
                   "mutability": "mutable",
                   "name": "newName",
-                  "nameLocation": "2715:7:30",
+                  "nameLocation": "2618:7:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8657,
-                  "src": "2701:21:30",
+                  "src": "2604:21:30",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1581,7 +1581,7 @@
                     "id": 8651,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2701:6:30",
+                    "src": "2604:6:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -1594,10 +1594,10 @@
                   "id": 8654,
                   "mutability": "mutable",
                   "name": "newMetadataURI",
-                  "nameLocation": "2747:14:30",
+                  "nameLocation": "2649:14:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8657,
-                  "src": "2733:28:30",
+                  "src": "2635:28:30",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1608,7 +1608,7 @@
                     "id": 8653,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2733:6:30",
+                    "src": "2635:6:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -1617,16 +1617,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2658:110:30"
+              "src": "2563:106:30"
             },
             "returnParameters": {
               "id": 8656,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "2777:0:30"
+              "src": "2678:0:30"
             },
             "scope": 8718,
-            "src": "2637:141:30",
+            "src": "2542:137:30",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
@@ -1635,7 +1635,7 @@
             "documentation": {
               "id": 8658,
               "nodeType": "StructuredDocumentation",
-              "src": "2786:167:30",
+              "src": "2685:163:30",
               "text": " @dev Check if an issuer is accredited\n @param issuerAddress Address to check\n @return True if accredited and active, false otherwise"
             },
             "functionSelector": "2d598d7b",
@@ -1644,7 +1644,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "isAccredited",
-            "nameLocation": "2968:12:30",
+            "nameLocation": "2862:12:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8661,
@@ -1655,10 +1655,10 @@
                   "id": 8660,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "2989:13:30",
+                  "nameLocation": "2883:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8665,
-                  "src": "2981:21:30",
+                  "src": "2875:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1669,7 +1669,7 @@
                     "id": 8659,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2981:7:30",
+                    "src": "2875:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1679,7 +1679,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2980:23:30"
+              "src": "2874:23:30"
             },
             "returnParameters": {
               "id": 8664,
@@ -1693,7 +1693,7 @@
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
                   "scope": 8665,
-                  "src": "3027:4:30",
+                  "src": "2921:4:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1704,7 +1704,7 @@
                     "id": 8662,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3027:4:30",
+                    "src": "2921:4:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1713,10 +1713,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3026:6:30"
+              "src": "2920:6:30"
             },
             "scope": 8718,
-            "src": "2959:74:30",
+            "src": "2853:74:30",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
@@ -1725,7 +1725,7 @@
             "documentation": {
               "id": 8666,
               "nodeType": "StructuredDocumentation",
-              "src": "3041:180:30",
+              "src": "2933:176:30",
               "text": " @dev Check if an issuer is registered (may not be accredited)\n @param issuerAddress Address to check\n @return True if registered, false otherwise"
             },
             "functionSelector": "c3c5a547",
@@ -1734,7 +1734,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "isRegistered",
-            "nameLocation": "3236:12:30",
+            "nameLocation": "3123:12:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8669,
@@ -1745,10 +1745,10 @@
                   "id": 8668,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "3257:13:30",
+                  "nameLocation": "3144:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8673,
-                  "src": "3249:21:30",
+                  "src": "3136:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1759,7 +1759,7 @@
                     "id": 8667,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3249:7:30",
+                    "src": "3136:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1769,7 +1769,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3248:23:30"
+              "src": "3135:23:30"
             },
             "returnParameters": {
               "id": 8672,
@@ -1783,7 +1783,7 @@
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
                   "scope": 8673,
-                  "src": "3295:4:30",
+                  "src": "3182:4:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1794,7 +1794,7 @@
                     "id": 8670,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3295:4:30",
+                    "src": "3182:4:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1803,10 +1803,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3294:6:30"
+              "src": "3181:6:30"
             },
             "scope": 8718,
-            "src": "3227:74:30",
+            "src": "3114:74:30",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
@@ -1815,7 +1815,7 @@
             "documentation": {
               "id": 8674,
               "nodeType": "StructuredDocumentation",
-              "src": "3309:146:30",
+              "src": "3194:142:30",
               "text": " @dev Get issuer information\n @param issuerAddress Address of the issuer\n @return Issuer struct with all details"
             },
             "functionSelector": "fef03da3",
@@ -1824,7 +1824,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "getIssuer",
-            "nameLocation": "3470:9:30",
+            "nameLocation": "3350:9:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8677,
@@ -1835,10 +1835,10 @@
                   "id": 8676,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "3498:13:30",
+                  "nameLocation": "3377:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8682,
-                  "src": "3490:21:30",
+                  "src": "3369:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1849,7 +1849,7 @@
                     "id": 8675,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3490:7:30",
+                    "src": "3369:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1859,7 +1859,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3479:39:30"
+              "src": "3359:37:30"
             },
             "returnParameters": {
               "id": 8681,
@@ -1873,7 +1873,7 @@
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
                   "scope": 8682,
-                  "src": "3542:29:30",
+                  "src": "3420:29:30",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1887,15 +1887,15 @@
                       "id": 8678,
                       "name": "CredentialTypes.Issuer",
                       "nameLocations": [
-                        "3542:15:30",
-                        "3558:6:30"
+                        "3420:15:30",
+                        "3436:6:30"
                       ],
                       "nodeType": "IdentifierPath",
                       "referencedDeclaration": 8917,
-                      "src": "3542:22:30"
+                      "src": "3420:22:30"
                     },
                     "referencedDeclaration": 8917,
-                    "src": "3542:22:30",
+                    "src": "3420:22:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_struct$_Issuer_$8917_storage_ptr",
                       "typeString": "struct CredentialTypes.Issuer"
@@ -1904,10 +1904,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3541:31:30"
+              "src": "3419:31:30"
             },
             "scope": 8718,
-            "src": "3461:112:30",
+            "src": "3341:110:30",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
@@ -1916,7 +1916,7 @@
             "documentation": {
               "id": 8683,
               "nodeType": "StructuredDocumentation",
-              "src": "3581:105:30",
+              "src": "3457:102:30",
               "text": " @dev Get all accredited issuers\n @return Array of accredited issuer addresses"
             },
             "functionSelector": "0e848d77",
@@ -1925,13 +1925,13 @@
             "kind": "function",
             "modifiers": [],
             "name": "getAllAccreditedIssuers",
-            "nameLocation": "3701:23:30",
+            "nameLocation": "3573:23:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8684,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "3724:2:30"
+              "src": "3596:2:30"
             },
             "returnParameters": {
               "id": 8688,
@@ -1945,7 +1945,7 @@
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
                   "scope": 8689,
-                  "src": "3750:16:30",
+                  "src": "3622:16:30",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1957,7 +1957,7 @@
                       "id": 8685,
                       "name": "address",
                       "nodeType": "ElementaryTypeName",
-                      "src": "3750:7:30",
+                      "src": "3622:7:30",
                       "stateMutability": "nonpayable",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -1966,7 +1966,7 @@
                     },
                     "id": 8686,
                     "nodeType": "ArrayTypeName",
-                    "src": "3750:9:30",
+                    "src": "3622:9:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
                       "typeString": "address[]"
@@ -1975,10 +1975,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3749:18:30"
+              "src": "3621:18:30"
             },
             "scope": 8718,
-            "src": "3692:76:30",
+            "src": "3564:76:30",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
@@ -1987,7 +1987,7 @@
             "documentation": {
               "id": 8690,
               "nodeType": "StructuredDocumentation",
-              "src": "3776:108:30",
+              "src": "3646:105:30",
               "text": " @dev Get total number of accredited issuers\n @return Count of accredited issuers"
             },
             "functionSelector": "75fdc4ed",
@@ -1996,13 +1996,13 @@
             "kind": "function",
             "modifiers": [],
             "name": "getAccreditedIssuerCount",
-            "nameLocation": "3899:24:30",
+            "nameLocation": "3765:24:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8691,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "3923:2:30"
+              "src": "3789:2:30"
             },
             "returnParameters": {
               "id": 8694,
@@ -2016,7 +2016,7 @@
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
                   "scope": 8695,
-                  "src": "3949:7:30",
+                  "src": "3815:7:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2027,7 +2027,7 @@
                     "id": 8692,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3949:7:30",
+                    "src": "3815:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2036,10 +2036,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3948:9:30"
+              "src": "3814:9:30"
             },
             "scope": 8718,
-            "src": "3890:68:30",
+            "src": "3756:68:30",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
@@ -2048,7 +2048,7 @@
             "documentation": {
               "id": 8696,
               "nodeType": "StructuredDocumentation",
-              "src": "3966:169:30",
+              "src": "3830:165:30",
               "text": " @dev Get total credentials issued by an issuer\n @param issuerAddress Address of the issuer\n @return Total number of credentials issued"
             },
             "functionSelector": "9c353f19",
@@ -2057,7 +2057,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "getIssuerCredentialCount",
-            "nameLocation": "4150:24:30",
+            "nameLocation": "4009:24:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8699,
@@ -2068,10 +2068,10 @@
                   "id": 8698,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "4193:13:30",
+                  "nameLocation": "4051:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8703,
-                  "src": "4185:21:30",
+                  "src": "4043:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2082,7 +2082,7 @@
                     "id": 8697,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4185:7:30",
+                    "src": "4043:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2092,7 +2092,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4174:39:30"
+              "src": "4033:37:30"
             },
             "returnParameters": {
               "id": 8702,
@@ -2106,7 +2106,7 @@
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
                   "scope": 8703,
-                  "src": "4237:7:30",
+                  "src": "4094:7:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2117,7 +2117,7 @@
                     "id": 8700,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4237:7:30",
+                    "src": "4094:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2126,10 +2126,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4236:9:30"
+              "src": "4093:9:30"
             },
             "scope": 8718,
-            "src": "4141:105:30",
+            "src": "4000:103:30",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
@@ -2138,7 +2138,7 @@
             "documentation": {
               "id": 8704,
               "nodeType": "StructuredDocumentation",
-              "src": "4254:117:30",
+              "src": "4109:114:30",
               "text": " @dev Increment credential count for an issuer\n @param issuerAddress Address of the issuer"
             },
             "functionSelector": "ae026523",
@@ -2147,7 +2147,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "incrementIssuerCredentialCount",
-            "nameLocation": "4386:30:30",
+            "nameLocation": "4237:30:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8707,
@@ -2158,10 +2158,10 @@
                   "id": 8706,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "4425:13:30",
+                  "nameLocation": "4276:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8709,
-                  "src": "4417:21:30",
+                  "src": "4268:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2172,7 +2172,7 @@
                     "id": 8705,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4417:7:30",
+                    "src": "4268:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2182,16 +2182,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4416:23:30"
+              "src": "4267:23:30"
             },
             "returnParameters": {
               "id": 8708,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "4448:0:30"
+              "src": "4299:0:30"
             },
             "scope": 8718,
-            "src": "4377:72:30",
+            "src": "4228:72:30",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
@@ -2200,7 +2200,7 @@
             "documentation": {
               "id": 8710,
               "nodeType": "StructuredDocumentation",
-              "src": "4457:151:30",
+              "src": "4306:147:30",
               "text": " @dev Check if issuer is suspended\n @param issuerAddress Address to check\n @return True if suspended, false otherwise"
             },
             "functionSelector": "232e0e9a",
@@ -2209,7 +2209,7 @@
             "kind": "function",
             "modifiers": [],
             "name": "isSuspended",
-            "nameLocation": "4623:11:30",
+            "nameLocation": "4467:11:30",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 8713,
@@ -2220,10 +2220,10 @@
                   "id": 8712,
                   "mutability": "mutable",
                   "name": "issuerAddress",
-                  "nameLocation": "4643:13:30",
+                  "nameLocation": "4487:13:30",
                   "nodeType": "VariableDeclaration",
                   "scope": 8717,
-                  "src": "4635:21:30",
+                  "src": "4479:21:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2234,7 +2234,7 @@
                     "id": 8711,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4635:7:30",
+                    "src": "4479:7:30",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2244,7 +2244,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4634:23:30"
+              "src": "4478:23:30"
             },
             "returnParameters": {
               "id": 8716,
@@ -2258,7 +2258,7 @@
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
                   "scope": 8717,
-                  "src": "4681:4:30",
+                  "src": "4525:4:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2269,7 +2269,7 @@
                     "id": 8714,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4681:4:30",
+                    "src": "4525:4:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -2278,17 +2278,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4680:6:30"
+              "src": "4524:6:30"
             },
             "scope": 8718,
-            "src": "4614:73:30",
+            "src": "4458:73:30",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           }
         ],
         "scope": 8719,
-        "src": "235:4455:30",
+        "src": "225:4308:30",
         "usedErrors": [],
         "usedEvents": [
           8569,
@@ -2300,7 +2300,7 @@
         ]
       }
     ],
-    "src": "33:4659:30"
+    "src": "32:4502:30"
   },
   "compiler": {
     "name": "solc",
@@ -2308,7 +2308,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.16",
-  "updatedAt": "2025-11-22T14:27:16.544Z",
+  "updatedAt": "2025-11-22T20:06:33.631Z",
   "devdoc": {
     "details": "Interface for the Issuer Registry contract Manages issuer accreditation and validation",
     "kind": "dev",
