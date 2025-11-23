@@ -1,0 +1,21 @@
+{
+  "network": "development",
+  "admin": "0xd29D5e3D8813ac2Fb7403d123d061E6047f34E1E",
+  "IssuerRegistry": "0x63F03E97e3DfC99d4c9364C747eb7309071b06f0",
+  "CredentialNFT": "0x1E782DD9f21f760a589C7036bf6F37CC273169b7",
+  "RevocationRegistry": "0xe1C9B12a355Ca4a6c16A07674dF5B10c27361091",
+  "CredentialVerifier": "0x73Fd0Aa2E230f51a5edfBfa409466d3461702Db3",
+  "deployedAt": "2025-11-23T04:33:22.168Z",
+  "governance": {
+    "Timelock": "0xCFBa3c5E0DeA1db23fC1e6560D88e5a96053f6D8",
+    "IssuerDAO": "0x116dE23B903B383fDbb37503aB4A7029075b07f7",
+    "GovernanceHelper": "0xE4B8F14d0bF6D26D581EAeB30Fce3b4C2ABB0B92"
+  },
+  "zkp": {
+    "AgeVerifier": "0xDE3A974830280a8019394A23852a5E271A5B7E4b",
+    "CredentialProofVerifier": "0x2d0067a7C66f54E55387850Da245ECd897Cae4A2",
+    "UniversityRankVerifier": "0x30E275A6fc4ad482aA23d9904FbA909Fc01bC5D1",
+    "ZKPVerifier": "0x88493759B6D2E758a84e3C1096fAa95412DCe6Cf",
+    "SelectiveDisclosure": "0xb5E95AD2bba33E0b3C9d4457109955Fc0dAB4B9f"
+  }
+}
