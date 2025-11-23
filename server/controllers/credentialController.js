@@ -230,12 +230,9 @@ export const getIssuedCredentials = async (req, res) => {
   try {
     const issuerAddress = req.user.walletAddress.toLowerCase();
     
-    // Find credentials where the issuer is the current user
-    // We exclude "templates" (where issuer == holder) if we want only issued certs to students
-    // But for now, let's just get everything issued by this address
     const credentials = await CredentialModel.find({
       issuer: issuerAddress,
-      holder: { $ne: issuerAddress } // Exclude self-issued templates
+      holder: { $ne: issuerAddress } 
     }).sort({ issuedAt: -1 });
 
     return res.status(200).json({
