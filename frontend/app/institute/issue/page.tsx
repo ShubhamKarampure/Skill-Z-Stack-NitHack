@@ -38,6 +38,7 @@ interface CredentialTemplate {
   type: CredentialType;
   image: string;
   skills: string[];
+  metadataURI: string;
 }
 
 export default function IssuePage() {
@@ -74,6 +75,7 @@ export default function IssuePage() {
             type: item.credentialType,
             image: item.metadata?.image || "",
             skills: item.metadata?.skills || [],
+            metadataURI: item.metadataURI || "",
           }));
           setTemplates(mapped);
         }
@@ -141,22 +143,15 @@ export default function IssuePage() {
           issuerPrivateKey: privateKey,
           holderAddress: student.studentWalletAddress,
           credentialType: selectedTemplate.type,
-          metadataURI: "ipfs://QmWLP6UwK2hDU9yA6XzRK42pd2RhG4UjrDDNWw2ywJCGxg", // Using the hash from user request as placeholder/default
+          metadataURI: selectedTemplate.metadataURI,
           expirationDate: 0,
           revocable: true,
           credentialData: {
             name: selectedTemplate.name,
-            major: "Computer Science", // Defaulting based on request, could be dynamic
-            graduationYear: new Date().getFullYear(),
-            gpa: 3.8, // Defaulting based on request
+            major: "Computer Science",
+            graduationYear: 2024,
+            gpa: 3.8,
           },
-          metadata: {
-            name: selectedTemplate.name,
-            description: selectedTemplate.description,
-            image: selectedTemplate.image,
-            skills: selectedTemplate.skills,
-            // Add other metadata fields as needed
-          }
         };
 
         const res = await credentialService.issueCredential(payload);

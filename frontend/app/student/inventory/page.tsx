@@ -17,42 +17,9 @@ import {
   Calendar,
   Hash,
 } from "lucide-react";
-
-// --- TYPES (Matched to Mongoose Model) ---
-enum CredentialType {
-  DEGREE = 0,
-  CERTIFICATE = 1,
-  BADGE = 2,
-}
-
-interface CredentialMetadata {
-  name: string;
-  description: string;
-  image: string;
-  major?: string;
-  graduationYear?: number;
-  gpa?: number;
-  honors?: string;
-  skills?: string[];
-  achievements?: string[];
-}
-
-interface Credential {
-  tokenId: string;
-  holder: string;
-  issuer: string;
-  credentialType: CredentialType;
-  credentialTypeName: "DEGREE" | "CERTIFICATE" | "BADGE";
-  metadataURI: string;
-  metadata: CredentialMetadata;
-  transactionHash: string;
-  blockNumber?: number;
-  isRevoked: boolean;
-  revocationReason?: string;
-  revokedAt?: string;
-  expirationDate?: string;
-  issuedAt: string;
-}
+import { credentialService } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
+import { Credential, CredentialType } from "@/lib/types";
 
 interface Toast {
   id: number;
@@ -60,125 +27,262 @@ interface Toast {
   type: "success" | "info" | "loading";
 }
 
-// --- MOCK DATA ---
-const INITIAL_DATA: Credential[] = [
-  {
-    tokenId: "1001",
-    holder: "0xUser",
-    issuer: "University of Tech",
-    credentialType: CredentialType.DEGREE,
-    credentialTypeName: "DEGREE",
-    metadataURI: "ipfs://Qm...",
-    transactionHash: "0x123456789abcdef...",
-    issuedAt: "2023-06-15T00:00:00Z",
-    isRevoked: false,
-    metadata: {
-      name: "B.S. Computer Science",
-      description: "Bachelor of Science in CS",
-      image: "",
-      major: "Computer Science",
-      graduationYear: 2023,
-      gpa: 3.8,
-      skills: ["Algorithms", "Data Structures"],
-    },
-  },
-  {
-    tokenId: "1002",
-    holder: "0xUser",
-    issuer: "TechCertified Academy",
-    credentialType: CredentialType.CERTIFICATE,
-    credentialTypeName: "CERTIFICATE",
-    metadataURI: "ipfs://Qm...",
-    transactionHash: "0x987654321fedcba...",
-    issuedAt: "2024-01-20T00:00:00Z",
-    isRevoked: false,
-    metadata: {
-      name: "Full Stack Development",
-      description: "MERN Stack Bootcamp",
-      image: "",
-      skills: ["MongoDB", "Express", "React", "Node"],
-    },
-  },
-  {
-    tokenId: "1003",
-    holder: "0xUser",
-    issuer: "Hackathon DAO",
-    credentialType: CredentialType.BADGE,
-    credentialTypeName: "BADGE",
-    metadataURI: "ipfs://Qm...",
-    transactionHash: "0xbadbadbad...",
-    issuedAt: "2023-12-05T00:00:00Z",
-    isRevoked: true,
-    revocationReason: "Violation of Hackathon Rules",
-    revokedAt: "2023-12-10T00:00:00Z",
-    metadata: {
-      name: "Code Wizard",
-      description: "Fastest deployment",
-      image: "",
-    },
-  },
-];
-
 const resolveIPFS = (url?: string) => {
   if (!url) return null;
   if (url.startsWith("ipfs://")) {
     return url.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
   }
-  return url; // Return as is if it's already http
+  // Handle raw CIDs or other IPFS formats if necessary
+  if (!url.startsWith("http") && (url.startsWith("Qm") || url.startsWith("bafy"))) {
+    return `https://gateway.pinata.cloud/ipfs/${url}`;
+  }
+  return url;
 };
 
 const CATEGORIES = ["All", "Degree", "Certificate", "Badge", "Revoked"];
+
+const CredentialCard = ({ cred, index }: { cred: Credential; index: number }) => {
+  const [imgError, setImgError] = useState(false);
+  
+  const getCredentialStyles = (type: CredentialType) => {
+    switch (type) {
+      case CredentialType.DEGREE:
+        return {
+          icon: GraduationCap,
+          color: "text-pink-400",
+          bg: "bg-pink-500/10",
+          border: "border-pink-500/20",
+          label: "Degree",
+        };
+      case CredentialType.CERTIFICATE:
+        return {
+          icon: FileBadge,
+          color: "text-blue-400",
+          bg: "bg-blue-500/10",
+          border: "border-blue-500/20",
+          label: "Certificate",
+        };
+      case CredentialType.BADGE:
+        return {
+          icon: Award,
+          color: "text-amber-400",
+          bg: "bg-amber-500/10",
+          border: "border-amber-500/20",
+          label: "Badge",
+        };
+      default:
+        return {
+          icon: Award,
+          color: "text-zinc-400",
+          bg: "bg-zinc-500/10",
+          border: "border-zinc-500/20",
+          label: "Credential",
+        };
+    }
+  };
+
+  const style = getCredentialStyles(cred.credentialType);
+  const Icon = style.icon;
+  const imageUrl = resolveIPFS(cred.metadata.image);
+  console.log("Credential Image URL:", imageUrl);
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!imageUrl) return;
+    
+    fetch(imageUrl)
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${cred.metadata.name.replace(/\s+/g, '_')}_credential.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(console.error);
+  };
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.3, delay: index * 0.1 }}
+      whileHover={{ y: -5 }}
+      className={`group relative overflow-hidden rounded-2xl bg-zinc-900/50 border border-white/5 hover:border-white/20 transition-all cursor-pointer ${
+        cred.isRevoked ? "opacity-75 grayscale" : ""
+      }`}
+    >
+      {/* Image Header */}
+      <div className="h-48 w-full overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent z-10" />
+        {imageUrl && !imgError ? (
+          <img
+            src={imageUrl}
+            alt={cred.metadata.name}
+            loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div
+            className={`w-full h-full flex items-center justify-center ${style.bg}`}
+          >
+            <Icon className={`w-16 h-16 ${style.color} opacity-50`} />
+          </div>
+        )}
+
+        <div
+          className={`absolute top-4 right-4 z-20 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 backdrop-blur-md border ${style.bg} ${style.color} ${style.border}`}
+        >
+          <Icon className="w-4 h-4" />
+          {style.label}
+        </div>
+      </div>
+
+      <div className="p-6 relative z-20 -mt-12">
+        <div className="bg-zinc-900/90 backdrop-blur-xl border border-white/10 p-4 rounded-xl shadow-xl">
+          <h3 className="text-lg font-bold mb-2 group-hover:text-blue-400 transition-colors line-clamp-1">
+            {cred.metadata.name}
+          </h3>
+          <p className="text-zinc-400 text-sm line-clamp-2 mb-4 h-10">
+            {cred.metadata.description}
+          </p>
+
+          <div className="flex items-center justify-between pt-4 border-t border-white/5">
+            <div className="flex items-center gap-2 text-xs text-zinc-500">
+              <div className="w-4 h-4 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500" />
+              <span className="truncate max-w-[100px]" title={cred.issuer}>
+                {cred.issuer}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {!cred.isRevoked && imageUrl && !imgError && (
+                <button
+                  onClick={handleDownload}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+                  title="Download Credential"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              )}
+              
+              {cred.isRevoked ? (
+                <span className="text-xs font-bold text-red-400 flex items-center gap-1">
+                  <ShieldAlert className="w-3 h-3" /> Revoked
+                </span>
+              ) : (
+                <a
+                  href={`https://sepolia.etherscan.io/tx/${cred.transactionHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded hover:bg-emerald-400/20 transition-colors flex items-center gap-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Hash className="w-3 h-3" /> On-Chain
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 // --- COMPONENT ---
 export default function InventoryPage() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [inventoryData, setInventoryData] =
-    useState<Credential[]>(INITIAL_DATA);
-  const [filteredData, setFilteredData] = useState<Credential[]>(INITIAL_DATA);
+  const [inventoryData, setInventoryData] = useState<Credential[]>([]);
+  const [filteredData, setFilteredData] = useState<Credential[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load additional credentials from LocalStorage (Simulating blockchain fetch)
+  const { user } = useAuthStore();
+
+  // Fetch Credentials from Blockchain/Backend
   useEffect(() => {
-    const storedIssued = JSON.parse(
-      localStorage.getItem("skill-z-issued-credentials") || "[]"
-    );
+    const fetchCredentials = async () => {
+      if (!user?.walletAddress) {
+        setIsLoading(false);
+        return;
+      }
 
-    if (storedIssued.length > 0) {
-      const newCreds: Credential[] = storedIssued.map((c: any) => ({
-        tokenId: c.tokenId || Math.floor(Math.random() * 100000).toString(),
-        holder: "0xUser",
-        issuer: "TechCertified Academy",
-        credentialType: c.credentialType || CredentialType.CERTIFICATE,
-        credentialTypeName: "CERTIFICATE",
-        metadataURI: "ipfs://mock",
-        transactionHash: c.transactionHash || "0x...",
-        issuedAt: c.issuedDate || new Date().toISOString(),
-        isRevoked: false,
-        metadata: {
-          name: c.title,
-          description: "Issued via Dashboard Simulation",
-          image: "",
-          skills: ["Pending"],
-        },
-      }));
+      try {
+        setIsLoading(true);
+        const response = await credentialService.getCredentialsByAddress(user.walletAddress);
+        
+        if (response.success && response.data) {
+          // Enrich credentials with IPFS data
+          const enrichedCredentials = await Promise.all(
+            response.data.credentials.map(async (cred: any) => {
+              // Start with existing metadata from DB (handling nested structure if present)
+              let metadata = {
+                name: "Unknown Credential",
+                description: "No description available",
+                image: "",
+                skills: [],
+                ...(cred.metadata?.metadata || cred.metadata || {})
+              };
 
-      // Merge & Dedupe
-      const allCreds = [...INITIAL_DATA, ...newCreds];
-      const uniqueCreds = allCreds.filter(
-        (v, i, a) => a.findIndex((v2) => v2.tokenId === v.tokenId) === i
-      );
-      setInventoryData(uniqueCreds);
-    }
-  }, []);
+              // If metadataURI exists, fetch it to get the full metadata (image, name, etc.)
+              if (cred.metadataURI) {
+                try {
+                   const ipfsUrl = resolveIPFS(cred.metadataURI);
+                   if (ipfsUrl) {
+                     const metaRes = await fetch(ipfsUrl);
+                     if (metaRes.ok) {
+                       const metaJson = await metaRes.json();
+                       // Merge IPFS data over DB data
+                       metadata = { ...metadata, ...metaJson };
+                     }
+                   }
+                } catch (e) {
+                  console.error("Failed to fetch IPFS metadata for", cred.tokenId, e);
+                }
+              }
+              
+              // Ensure we have the top-level fields expected by UI
+              return {
+                ...cred,
+                metadata: metadata,
+                // Map other fields if necessary (e.g. issuer is in cred.issuer)
+                issuer: cred.issuer || cred.metadata?.issuer,
+                transactionHash: cred.transactionHash || cred.metadata?.transactionHash,
+                isRevoked: cred.isRevoked || cred.metadata?.isRevoked,
+              };
+            })
+          );
+          
+          setInventoryData(enrichedCredentials);
+        } else {
+          console.error("Failed to fetch credentials:", response.message);
+          // Fallback to empty or show error
+        }
+      } catch (error) {
+        console.error("Error fetching credentials:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCredentials();
+  }, [user?.walletAddress]);
+
 
   // Filter Logic
   useEffect(() => {
     const filtered = inventoryData.filter((item) => {
       const matchesSearch =
-        item.metadata.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.issuer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.tokenId.includes(searchTerm);
+        (item.metadata?.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (item.issuer?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (item.tokenId?.includes(searchTerm) || false);
 
       let matchesCategory = true;
       if (selectedCategory === "Degree")
@@ -329,172 +433,19 @@ export default function InventoryPage() {
         </motion.div>
 
         {/* Credentials Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AnimatePresence mode="popLayout">
-            {filteredData.map((cred, idx) => {
-              const style = getCredentialStyles(cred.credentialType);
-              const Icon = style.icon;
-              const imageUrl = resolveIPFS(cred.metadata.image); // Resolve the image
-
-              return (
-                <motion.div
-                  layout
-                  key={cred.tokenId}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2, delay: idx * 0.05 }}
-                  className={`group relative rounded-2xl bg-[#09090b] border transition-all flex flex-col justify-between overflow-hidden ${
-                    cred.isRevoked
-                      ? "border-red-500/30"
-                      : "border-white/10 hover:border-cyan-500/30 hover:shadow-[0_0_30px_-10px_rgba(6,182,212,0.15)]"
-                  }`}
-                >
-                  {/* --- 1. IMAGE HEADER SECTION --- */}
-                  <div className="relative h-40 w-full bg-white/5 overflow-hidden">
-                    {imageUrl ? (
-                      // IF IMAGE EXISTS: Show Image
-                      <>
-                        <img
-                          src={imageUrl}
-                          alt={cred.metadata.name}
-                          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${
-                            cred.isRevoked ? "grayscale opacity-50" : ""
-                          }`}
-                          onError={(e) => {
-                            // Fallback if image fails to load
-                            e.currentTarget.style.display = "none";
-                            // You might want to trigger a state here to show icon instead
-                          }}
-                        />
-                        {/* Gradient Overlay so text below pops */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-transparent" />
-
-                        {/* Type Badge (Floating on top of image) */}
-                        <div className="absolute top-3 right-3">
-                          <span
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border backdrop-blur-md shadow-lg ${style.bg} ${style.border} ${style.color}`}
-                          >
-                            {style.label}
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      // IF NO IMAGE: Show Big Icon Pattern
-                      <div
-                        className={`w-full h-full flex items-center justify-center ${style.bg} relative overflow-hidden`}
-                      >
-                        {/* Decorative Background Icon */}
-                        <Icon
-                          className={`absolute -bottom-4 -right-4 w-32 h-32 opacity-10 rotate-12 ${style.color}`}
-                        />
-
-                        {/* Center Icon */}
-                        <div
-                          className={`w-16 h-16 rounded-2xl border ${style.border} flex items-center justify-center backdrop-blur-sm bg-black/20`}
-                        >
-                          <Icon className={`w-8 h-8 ${style.color}`} />
-                        </div>
-
-                        {/* Type Badge */}
-                        <div className="absolute top-3 right-3">
-                          <span
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${style.bg} ${style.border} ${style.color}`}
-                          >
-                            {style.label}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* --- 2. CONTENT SECTION --- */}
-                  <div className="p-6 pt-2 flex-1 flex flex-col">
-                    {/* Issuer info (moved up for hierarchy) */}
-                    <div className="flex items-center gap-2 mb-2">
-                      {/* Small issuer logo placeholder */}
-                      <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500" />
-                      <p className="text-xs text-zinc-400 font-medium">
-                        {cred.issuer}
-                      </p>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-white mb-2 leading-tight group-hover:text-cyan-100 transition-colors">
-                      {cred.metadata.name}
-                    </h3>
-
-                    {/* Description line clamped */}
-                    <p className="text-sm text-zinc-500 mb-4 line-clamp-2 flex-1">
-                      {cred.metadata.description}
-                    </p>
-
-                    {/* Metadata Tags */}
-                    <div className="flex flex-wrap gap-2 mt-auto">
-                      {cred.metadata.gpa && (
-                        <span className="text-xs px-2 py-1 rounded bg-white/5 text-zinc-300 border border-white/5 font-mono">
-                          GPA: {cred.metadata.gpa}
-                        </span>
-                      )}
-                      {cred.metadata.skills?.slice(0, 2).map((skill, i) => (
-                        <span
-                          key={i}
-                          className="text-xs px-2 py-1 rounded bg-white/5 text-zinc-300 border border-white/5"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* --- 3. FOOTER SECTION --- */}
-                  <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between bg-white/[0.01]">
-                    <div className="flex gap-2">
-                      <button className="p-2 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
-                        <Download className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
-                        <Share2 className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="text-right">
-                      {cred.isRevoked ? (
-                        <span className="flex items-center gap-1 text-xs text-red-400 font-bold">
-                          <ShieldAlert className="w-3 h-3" /> Revoked
-                        </span>
-                      ) : (
-                        <a
-                          href={`https://sepolia.etherscan.io/tx/${cred.transactionHash}`}
-                          target="_blank"
-                          className="flex items-center gap-1 text-[10px] text-zinc-500 hover:text-cyan-400 font-mono transition-colors"
-                        >
-                          <Hash className="w-3 h-3" />{" "}
-                          {cred.tokenId.slice(0, 6)}...
-                          <ExternalLink className="w-3 h-3 ml-1" />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Revoked Overlay remains the same */}
-                  {cred.isRevoked && (
-                    // ... keep existing overlay code
-                    <div className="absolute inset-0 z-20 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 text-center">
-                      <div>
-                        <div className="text-red-400 font-bold mb-2 flex items-center justify-center gap-2">
-                          <ShieldAlert className="w-5 h-5" /> Revoked
-                        </div>
-                        <p className="text-sm text-zinc-300">
-                          Reason: {cred.revocationReason}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence mode="popLayout">
+              {filteredData.map((cred, idx) => (
+                <CredentialCard key={cred.tokenId} cred={cred} index={idx} />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </main>
   );

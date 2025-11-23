@@ -90,6 +90,14 @@ class CredentialService {
     async getHolderCredentials(holderAddress) {
         try {
             const contract = this._getContract();
+            
+            // Verify contract exists
+            const web3 = getWeb3();
+            const code = await web3.eth.getCode(contract.options.address);
+            if (code === '0x') {
+                throw new Error(`Contract not deployed at ${contract.options.address}`);
+            }
+
             const tokenIds = await contract.methods.getHolderCredentials(holderAddress).call();
             return tokenIds.map(id => id.toString());
         } catch (error) {
