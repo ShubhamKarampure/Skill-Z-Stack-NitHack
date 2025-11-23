@@ -119,7 +119,7 @@ export default function CandidateProfile() {
                         issuer: c.issuer,
                         date: new Date(c.issuedAt).toLocaleDateString(),
                         type: CREDENTIAL_TYPES[c.credentialType] || "Certificate",
-                        status: c.status === "ACTIVE" ? "Verified" : "Revoked",
+                        status: c.isRevoked == false ? "Revoked" : "Verified",
                     })));
                 }
             }
