@@ -15,13 +15,14 @@ const Aurora = () => (
   </div>
 );
 
-const DEMO_EMAILS = [
-  "student@demo.com",
-  "employer@demo.com",
-  "admin@demo.com",
-  "institute@demo.com",
+const DEMO_ACCOUNTS = [
+  { email: "alice.student@example.com", role: "Student" },
+  { email: "idfc@example.com", role: "Employer" },
+  { email: "nits@example.com", role: "Admin" },
+  { email: "spit@example.com", role: "Institute" },
 ];
-const DEMO_PASSWORD = "password";
+
+const DEMO_PASSWORD = "Password123";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,9 +33,17 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // ⭐ Updated to give only students "use client"
   const handleSelectDemo = (demoEmail: string) => {
+    const selected = DEMO_ACCOUNTS.find((acc) => acc.email === demoEmail);
+
     setEmail(demoEmail);
-    setPassword(DEMO_PASSWORD);
+
+    if (selected?.role.toLowerCase() === "student") {
+      setPassword("111111");
+    } else {
+      setPassword(DEMO_PASSWORD);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -104,14 +113,14 @@ export default function LoginPage() {
                 Quick Demo Login
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {DEMO_EMAILS.map((demoEmail) => (
+                {DEMO_ACCOUNTS.map((account) => (
                   <button
-                    key={demoEmail}
+                    key={account.email}
                     type="button"
-                    onClick={() => handleSelectDemo(demoEmail)}
+                    onClick={() => handleSelectDemo(account.email)}
                     className="text-xs px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-blue-500/30 text-zinc-300 transition-all"
                   >
-                    {demoEmail.split("@")[0]}
+                    {account.role}
                   </button>
                 ))}
               </div>
