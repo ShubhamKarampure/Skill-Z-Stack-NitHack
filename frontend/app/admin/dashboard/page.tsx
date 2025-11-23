@@ -24,7 +24,7 @@ const Aurora = () => (
 );
 
 const StatCard = ({ title, value, icon: Icon, color }: any) => (
-  <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm hover:border-white/10 transition-colors">
+  <div className="p-6 rounded-2xl bg-white/0.02 border border-white/5 backdrop-blur-sm hover:border-white/10 transition-colors">
     <div className="flex justify-between items-start mb-4">
       <div className={`p-3 rounded-xl bg-${color}-500/10 text-${color}-400`}>
         <Icon className="w-6 h-6" />
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
         <div className="mb-10">
           <h1 className="text-4xl font-bold tracking-tight mb-2">
             Admin{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-purple-600">
               Overview
             </span>
           </h1>
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Recent Activity Graph Placeholder */}
-            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 h-64 flex flex-col items-center justify-center text-zinc-500">
+            <div className="p-6 rounded-2xl bg-white/0.02 border border-white/5 h-64 flex flex-col items-center justify-center text-zinc-500">
               <Activity className="w-8 h-8 mb-2 opacity-50" />
               <p className="text-sm">
                 Network Activity Chart would render here
@@ -156,7 +156,7 @@ export default function AdminDashboard() {
             <h2 className="text-xl font-bold flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-blue-400" /> Node Status
             </h2>
-            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
+            <div className="p-6 rounded-2xl bg-white/0.02 border border-white/5 space-y-4">
               <div className="flex justify-between items-center pb-4 border-b border-white/5">
                 <span className="text-sm text-zinc-400">Indexer</span>
                 <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
@@ -177,7 +177,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/20">
+            <div className="p-6 rounded-2xl bg-linear-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/20">
               <h3 className="font-bold mb-2">Smart Contract v2.1</h3>
               <p className="text-sm text-zinc-400 mb-4">
                 The governance contract is running the latest stable version.

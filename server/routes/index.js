@@ -8,6 +8,7 @@ import metadataRoutes from './metadataRoutes.js';
 import userRoutes from './userRoutes.js';
 import blockchainRoutes from './blockchainRoutes.js';
 import enrollmentRoutes from './enrollmentRoutes.js'; // NEW
+import credentialTemplateRoutes from './credentialTemplateRoutes.js';
 
 const router = express.Router();
 
@@ -29,5 +30,6 @@ router.use('/metadata', metadataRoutes);
 router.use('/users', userRoutes);
 router.use('/blockchain', blockchainRoutes);
 router.use('/enrollments', enrollmentRoutes); // NEW
+router.use('/templates', credentialTemplateRoutes);
 
 export default router;

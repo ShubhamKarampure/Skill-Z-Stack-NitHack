@@ -177,7 +177,7 @@ export default function AdminMembersPage() {
           <div>
             <h1 className="text-4xl font-bold tracking-tight mb-2">
               Manage{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-600">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-teal-600">
                 Issuers
               </span>
             </h1>
@@ -203,14 +203,14 @@ export default function AdminMembersPage() {
                 placeholder="Search institutes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full md:w-64 bg-white/[0.05] border border-white/10 rounded-full py-2 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="w-full md:w-64 bg-white/0.05 border border-white/10 rounded-full py-2 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
         </div>
 
         {/* MAIN TABLE */}
-        <div className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
+        <div className="bg-white/0.02 border border-white/5 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-white/5 text-xs uppercase text-zinc-400 border-b border-white/5">
@@ -247,11 +247,11 @@ export default function AdminMembersPage() {
                     return (
                       <tr
                         key={member.id}
-                        className="group hover:bg-white/[0.01] transition-colors"
+                        className="group hover:bg-white/0.01 transition-colors"
                       >
                         <td className="p-6">
                           <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-900/20 to-teal-900/20 border border-white/10 flex items-center justify-center text-emerald-400">
+                            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-emerald-900/20 to-teal-900/20 border border-white/10 flex items-center justify-center text-emerald-400">
                               <Building2 className="w-5 h-5" />
                             </div>
                             <div>

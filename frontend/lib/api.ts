@@ -144,6 +144,27 @@ export const credentialService = {
   },
 };
 
+export const templateService = {
+  createTemplate: async (data: any) => {
+    return fetchAPI("/templates", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  getTemplates: async () => {
+    return fetchAPI("/templates", {
+      method: "GET",
+    });
+  },
+
+  deleteTemplate: async (id: string) => {
+    return fetchAPI(`/templates/${id}`, {
+      method: "DELETE",
+    });
+  },
+};
+
 export const verifierService = {
   verifyZKProof: async (proofType: string, proof: any, publicSignals: any) => {
     return fetchAPI<{ isValid: boolean }>("/verifier/verify-zkp", {
