@@ -80,6 +80,16 @@ export default function CandidateProfile() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState<"credentials" | "zkp">("credentials");
+  const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof ZKP_TEMPLATES | null>(null);
+  const [zkpInput, setZkpInput] = useState("");
+  const [verificationResult, setVerificationResult] = useState<"success" | "error" | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  
+  // Form states
+  const [ageThreshold, setAgeThreshold] = useState("18");
+  const [credentialRoot, setCredentialRoot] = useState("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
+  const [maxRank, setMaxRank] = useState("100");
+  const [isCalculatingRoot, setIsCalculatingRoot] = useState(false);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -102,12 +112,13 @@ export default function CandidateProfile() {
             if (user.walletAddress) {
                 const credRes = await credentialService.getCredentialsByAddress(user.walletAddress);
                 if (credRes.success && credRes.data?.credentials) {
+                    const CREDENTIAL_TYPES = ["Degree", "Certificate", "Badge"];
                     setCredentials(credRes.data.credentials.map((c: any) => ({
                         id: c.tokenId,
-                        title: c.metadata?.name || c.credentialTypeName,
+                        title: c.metadata?.name || CREDENTIAL_TYPES[c.credentialType] || "Credential",
                         issuer: c.issuer,
                         date: new Date(c.issuedAt).toLocaleDateString(),
-                        type: c.credentialTypeName,
+                        type: CREDENTIAL_TYPES[c.credentialType] || "Certificate",
                         status: c.status === "ACTIVE" ? "Verified" : "Revoked",
                     })));
                 }
@@ -125,34 +136,22 @@ export default function CandidateProfile() {
     }
   }, [params.id]);
 
-  if (isLoading) {
-      return (
-        <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-        </div>
-      );
-  }
-
-  if (!candidate) {
-      return (
-        <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2">Candidate Not Found</h2>
-            <button onClick={() => router.back()} className="text-indigo-400 hover:underline">Go Back</button>
-          </div>
-        </div>
-      );
-  }
-  const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof ZKP_TEMPLATES | null>(null);
-  const [zkpInput, setZkpInput] = useState("");
-  const [verificationResult, setVerificationResult] = useState<"success" | "error" | null>(null);
-  const [isVerifying, setIsVerifying] = useState(false);
-  
-  // Form states
-  const [ageThreshold, setAgeThreshold] = useState("18");
-  const [credentialRoot, setCredentialRoot] = useState("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
-  const [maxRank, setMaxRank] = useState("100");
-  const [isCalculatingRoot, setIsCalculatingRoot] = useState(false);
+  // Update JSON when inputs change
+  React.useEffect(() => {
+    if (!selectedTemplate) return;
+    
+    const template = JSON.parse(JSON.stringify(ZKP_TEMPLATES[selectedTemplate].template));
+    
+    if (selectedTemplate === 'age') {
+      template.publicSignals = [ageThreshold];
+    } else if (selectedTemplate === 'credential') {
+      template.publicSignals = [credentialRoot];
+    } else if (selectedTemplate === 'rank') {
+      template.publicSignals = [maxRank];
+    }
+    
+    setZkpInput(JSON.stringify(template, null, 2));
+  }, [selectedTemplate, ageThreshold, credentialRoot, maxRank]);
 
   // Helper function to hash data using SHA-256
   const sha256 = async (message: string) => {
@@ -205,29 +204,23 @@ export default function CandidateProfile() {
     }
   };
 
-  // Update JSON when inputs change
-  React.useEffect(() => {
-    if (!selectedTemplate) return;
-    
-    const template = JSON.parse(JSON.stringify(ZKP_TEMPLATES[selectedTemplate].template));
-    
-    if (selectedTemplate === 'age') {
-      template.publicSignals = [ageThreshold];
-    } else if (selectedTemplate === 'credential') {
-      template.publicSignals = [credentialRoot];
-    } else if (selectedTemplate === 'rank') {
-      template.publicSignals = [maxRank];
-    }
-    
-    setZkpInput(JSON.stringify(template, null, 2));
-  }, [selectedTemplate, ageThreshold, credentialRoot, maxRank]);
+  if (isLoading) {
+      return (
+        <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        </div>
+      );
+  }
 
   if (!candidate) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        <p>Candidate not found</p>
-      </div>
-    );
+      return (
+        <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2">Candidate Not Found</h2>
+            <button onClick={() => router.back()} className="text-indigo-400 hover:underline">Go Back</button>
+          </div>
+        </div>
+      );
   }
 
   const handleCopyTemplate = (type: keyof typeof ZKP_TEMPLATES) => {
