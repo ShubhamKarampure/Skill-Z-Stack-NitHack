@@ -86,8 +86,6 @@ export default function LoginPage() {
         };
 
         const path = redirectMap[role] || "/";
-        setShowSuccessLoader(true);
-        
         setTargetPath(path);
 
         toast({
@@ -96,6 +94,7 @@ export default function LoginPage() {
           className: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
         });
 
+        setShowSuccessLoader(true);
         // Trigger the full screen loader
       } else {
         const msg = response.message || "Invalid email or password";
