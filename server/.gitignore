@@ -1,3 +1,4 @@
 node_modules/
 .env
 blockchain/abis/development_addresses.json
+blockchain/config/development_addresses.json
