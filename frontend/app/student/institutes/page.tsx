@@ -1,55 +1,76 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Building2,
   Plus,
   Key,
-  Mail,
+  Hash,
   CheckCircle,
   Loader2,
-  Search,
+  Clock,
+  AlertCircle,
 } from "lucide-react";
-
-interface Institute {
-  id: string;
-  name: string;
-  status: "active" | "pending";
-  joinedAt?: string;
-}
+import { enrollmentService, Enrollment } from "@/lib/api";
 
 export default function StudentInstitutes() {
-  const [institutes, setInstitutes] = useState<Institute[]>([
-    {
-      id: "1",
-      name: "TechCertified Academy",
-      status: "active",
-      joinedAt: "2023-09-01",
-    },
-  ]);
+  // State
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Form State
-  const [formData, setFormData] = useState({ email: "", token: "" });
+  const [formData, setFormData] = useState({ instituteId: "", token: "" });
 
-  const handleJoinRequest = (e: React.FormEvent) => {
+  // 1. FETCH ENROLLMENTS ON LOAD
+  const fetchEnrollments = async () => {
+    setIsLoadingData(true);
+    try {
+      const response = await enrollmentService.getMyEnrollments();
+      if (response.success && response.data) {
+        setEnrollments(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch enrollments", error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEnrollments();
+  }, []);
+
+  // 2. HANDLE JOIN REQUEST
+  const handleJoinRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
+    setErrorMsg(null);
 
-    // SIMULATE API CALL
-    setTimeout(() => {
-      const newInst: Institute = {
-        id: Math.random().toString(),
-        name: "Requested Institute (Pending)", // In real app, fetch name via token
-        status: "pending",
-      };
-      setInstitutes([...institutes, newInst]);
-      setIsLoading(false);
-      setIsModalOpen(false);
-      setFormData({ email: "", token: "" });
-    }, 1500);
+    try {
+      const response = await enrollmentService.requestEnrollment(
+        formData.instituteId,
+        formData.token
+      );
+
+      if (response.success) {
+        // Refresh list and close modal
+        await fetchEnrollments();
+        setIsModalOpen(false);
+        setFormData({ instituteId: "", token: "" });
+      } else {
+        setErrorMsg(response.message || "Failed to join institute");
+      }
+    } catch (error) {
+      setErrorMsg("Network error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -71,59 +92,91 @@ export default function StudentInstitutes() {
           </button>
         </div>
 
-        {/* List */}
-        <div className="grid gap-4">
-          {institutes.map((inst) => (
-            <motion.div
-              key={inst.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-6 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div
-                  className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                    inst.status === "active"
-                      ? "bg-blue-500/10 text-blue-400"
-                      : "bg-amber-500/10 text-amber-400"
-                  }`}
-                >
-                  <Building2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg">{inst.name}</h3>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span
-                      className={`px-2 py-0.5 rounded-full border ${
-                        inst.status === "active"
-                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                          : "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                      }`}
-                    >
-                      {inst.status === "active"
-                        ? "Registered"
-                        : "Awaiting Approval"}
-                    </span>
-                    {inst.joinedAt && (
-                      <span className="text-zinc-500">
-                        Since {inst.joinedAt}
+        {/* LOADING STATE */}
+        {isLoadingData && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-4" />
+            <p className="text-zinc-500 text-sm">Loading your institutes...</p>
+          </div>
+        )}
+
+        {/* EMPTY STATE */}
+        {!isLoadingData && enrollments.length === 0 && (
+          <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl">
+            <Building2 className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-zinc-300">
+              No Institutes Found
+            </h3>
+            <p className="text-zinc-500 mt-2 max-w-md mx-auto">
+              You haven't joined any institutes yet. Click the button above to
+              enter your invitation details.
+            </p>
+          </div>
+        )}
+
+        {/* ENROLLMENT LIST */}
+        {!isLoadingData && (
+          <div className="grid gap-4">
+            {enrollments.map((enrollment) => (
+              <motion.div
+                key={enrollment.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-6 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                      enrollment.status === "APPROVED"
+                        ? "bg-blue-500/10 text-blue-400"
+                        : "bg-amber-500/10 text-amber-400"
+                    }`}
+                  >
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg">
+                      {enrollment.institute.name}
+                    </h3>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span
+                        className={`px-2 py-0.5 rounded-full border ${
+                          enrollment.status === "APPROVED"
+                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                            : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                        }`}
+                      >
+                        {enrollment.status === "APPROVED"
+                          ? "Registered"
+                          : "Awaiting Approval"}
                       </span>
-                    )}
+                      <span className="text-zinc-500">
+                        Requested:{" "}
+                        {new Date(enrollment.requestedAt).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {inst.status === "active" && (
-                <div className="text-right text-xs text-zinc-500">
-                  <p>Credentials Auto-Syncing</p>
-                  <p className="text-emerald-500 flex items-center justify-end gap-1 mt-1">
-                    <CheckCircle className="w-3 h-3" /> Active
-                  </p>
-                </div>
-              )}
-            </motion.div>
-          ))}
-        </div>
+                {enrollment.status === "APPROVED" ? (
+                  <div className="text-right text-xs text-zinc-500">
+                    <p>Credentials Auto-Syncing</p>
+                    <p className="text-emerald-500 flex items-center justify-end gap-1 mt-1">
+                      <CheckCircle className="w-3 h-3" /> Active
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-right text-xs text-zinc-500">
+                    <p>Request Pending</p>
+                    <p className="text-amber-500 flex items-center justify-end gap-1 mt-1">
+                      <Clock className="w-3 h-3" /> In Review
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* JOIN MODAL */}
@@ -145,29 +198,35 @@ export default function StudentInstitutes() {
 
               <h2 className="text-xl font-bold mb-1">Join Institute</h2>
               <p className="text-zinc-400 text-sm mb-6">
-                Enter the unique token provided by your institute administrator.
+                Enter the unique ID and token provided by your institute
+                administrator.
               </p>
 
               <form onSubmit={handleJoinRequest} className="space-y-4">
+                {/* Institute ID Input */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-zinc-300 uppercase">
-                    Institute Email ID
+                    Institute ID
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
+                    <Hash className="absolute left-3 top-3 w-4 h-4 text-zinc-500" />
                     <input
-                      type="email"
+                      type="text"
                       required
-                      placeholder="admin@university.edu"
-                      value={formData.email}
+                      placeholder="e.g. 692297a9d8..."
+                      value={formData.instituteId}
                       onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
+                        setFormData({
+                          ...formData,
+                          instituteId: e.target.value,
+                        })
                       }
-                      className="w-full bg-black/50 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                      className="w-full bg-black/50 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none transition-colors font-mono"
                     />
                   </div>
                 </div>
 
+                {/* Token Input */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-zinc-300 uppercase">
                     Invitation Token
@@ -187,13 +246,19 @@ export default function StudentInstitutes() {
                   </div>
                 </div>
 
+                {errorMsg && (
+                  <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-xs text-red-400">
+                    <AlertCircle className="w-4 h-4" /> {errorMsg}
+                  </div>
+                )}
+
                 <div className="pt-2">
                   <button
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                     type="submit"
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {isLoading ? (
+                    {isSubmitting ? (
                       <Loader2 className="animate-spin w-4 h-4" />
                     ) : (
                       "Send Request"

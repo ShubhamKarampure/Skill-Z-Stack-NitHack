@@ -11,15 +11,21 @@ import {
   Clock,
   ArrowUpRight,
   Fuel,
+  Loader2,
+  ShieldCheck,
+  BadgeCheck,
+  Wallet,
+  AlertCircle,
 } from "lucide-react";
 
-// --- SUB-COMPONENTS ---
+// Imports
+import { authService, UserProfile } from "@/lib/api"; // Adjust path to your api file
+import { useAuthStore } from "@/lib/store"; // Adjust path to your store
 
-// 1. Gas Tracker Component
+// --- 1. Gas Tracker Component (Preserved) ---
 const GasTracker = () => {
   const [gas, setGas] = useState(34); // Mock Gwei
 
-  // Simulate live gas changes
   useEffect(() => {
     const interval = setInterval(() => {
       setGas((prev) => prev + (Math.random() > 0.5 ? 1 : -1));
@@ -74,7 +80,7 @@ const GasTracker = () => {
   );
 };
 
-// 2. Stat Card
+// --- 2. Stat Card Component (Preserved) ---
 const StatCard = ({ title, value, sub, icon: Icon, color }: any) => (
   <motion.div
     whileHover={{ y: -5 }}
@@ -94,41 +100,138 @@ const StatCard = ({ title, value, sub, icon: Icon, color }: any) => (
   </motion.div>
 );
 
+// --- MAIN DASHBOARD COMPONENT ---
 export default function DashboardOverview() {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Zustand store hook to sync data
+  const { updateUser } = useAuthStore();
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const response = await authService.getProfile();
+
+        console.log("Dashboard Data:", response);
+
+        if (response.success && response.user) {
+          // 1. Update Local State for UI
+          setProfile(response.user);
+
+          // 2. CRITICAL: Update Global Store
+          // This ensures the Navbar knows about 'instituteData' immediately
+          updateUser({
+            name: response.user.name,
+            walletAddress: response.user.walletAddress,
+            instituteData: response.user.instituteData,
+            role: response.user.role, // ensure role is synced
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, [updateUser]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-zinc-500">
+        <Loader2 className="w-8 h-8 animate-spin" />
+        <span className="ml-2">Loading Dashboard...</span>
+      </div>
+    );
+  }
+
+  // Helper variables for cleaner JSX
+  const isInstitute = profile?.role === "institute";
+  const instData = profile?.instituteData;
+
   return (
     <main className="min-h-screen text-white pt-32 pb-20 px-4 md:px-8 max-w-7xl mx-auto">
-      {/* Welcome Header */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold tracking-tight mb-2">
-          Institute{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-            Dashboard
-          </span>
-        </h1>
-        <p className="text-zinc-400">
-          Real-time overview of credential issuance and student activity.
-        </p>
+      {/* --- HEADER SECTION: Name & Badges --- */}
+      <div className="mb-10 flex flex-col md:flex-row justify-between items-end gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-4xl font-bold tracking-tight mb-3 flex items-center gap-3">
+            {profile?.name || "Institute"}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+              Dashboard
+            </span>
+          </h1>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Wallet Badge */}
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-800 border border-white/5 text-zinc-400 text-xs font-mono">
+              <Wallet className="w-3 h-3" />
+              {profile?.walletAddress
+                ? `${profile.walletAddress.substring(
+                    0,
+                    6
+                  )}...${profile.walletAddress.substring(38)}`
+                : "No Wallet"}
+            </div>
+
+            {/* Institute Specific Badges */}
+            {isInstitute && instData && (
+              <>
+                {/* Accreditation Status */}
+                {instData.isAccredited ? (
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wide">
+                    <ShieldCheck className="w-4 h-4" />
+                    Accredited
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-wide">
+                    <Clock className="w-4 h-4" />
+                    Pending Accreditation
+                  </div>
+                )}
+
+                {/* Registration Status */}
+                {instData.isRegistered ? (
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wide">
+                    <BadgeCheck className="w-4 h-4" />
+                    Authorized Issuer
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold uppercase tracking-wide">
+                    <AlertCircle className="w-4 h-4" />
+                    Not Registered
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </motion.div>
       </div>
 
-      {/* Top Grid: Stats & Gas */}
+      {/* --- STATS GRID (Dynamic Data) --- */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Total Credentials"
-          value="1,284"
+          value={profile?.credentialCount || 0}
           sub="Lifetime issuance"
           icon={FileBadge}
           color="bg-blue-500"
         />
         <StatCard
           title="Active Students"
-          value="842"
+          value={profile?.enrolledStudentCount || 0}
           sub="Currently enrolled"
           icon={Users}
           color="bg-purple-500"
         />
         <StatCard
           title="Pending Review"
-          value="14"
+          value={profile?.enrollmentCount || 0} // Assuming 'enrollmentCount' might be pending requests, or set to 0
           sub="Admission requests"
           icon={Clock}
           color="bg-amber-500"
@@ -136,7 +239,7 @@ export default function DashboardOverview() {
         <GasTracker />
       </div>
 
-      {/* Middle Section: Activity Graph & Recent Log */}
+      {/* --- ANALYTICS SECTION (Preserved Mock Data for Visuals) --- */}
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Main Chart Area */}
         <div className="lg:col-span-2 p-6 rounded-2xl bg-white/[0.02] border border-white/5 min-h-[400px] flex flex-col">
@@ -160,7 +263,7 @@ export default function DashboardOverview() {
                 transition={{ duration: 1, delay: i * 0.05 }}
                 className="w-full bg-gradient-to-t from-blue-600/20 to-purple-500/60 rounded-t-sm hover:from-blue-600/40 hover:to-purple-500/80 transition-colors relative group"
               >
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-black border border-white/10 text-xs px-2 py-1 rounded transition-opacity">
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-black border border-white/10 text-xs px-2 py-1 rounded transition-opacity z-10">
                   {h}
                 </div>
               </motion.div>
@@ -192,12 +295,6 @@ export default function DashboardOverview() {
                 cred: "DeFi Specialist",
                 time: "1h ago",
                 hash: "0x3c...44",
-              },
-              {
-                name: "Mike R.",
-                cred: "Solidity Advanced",
-                time: "3h ago",
-                hash: "0x1d...22",
               },
             ].map((item, i) => (
               <div
