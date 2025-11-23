@@ -12,7 +12,8 @@ export const issueCredential = async (req, res) => {
       metadataURI,
       expirationDate,
       revocable,
-      credentialData
+      credentialData,
+      metadata // Allow passing metadata directly for DB storage
     } = req.body;
 
     // Validation
@@ -43,6 +44,7 @@ export const issueCredential = async (req, res) => {
       issuer: req.user?.walletAddress || holderAddress,
       credentialType: credentialType || 0,
       metadataURI,
+      metadata, // Save the metadata object
       transactionHash: result.transactionHash,
       blockNumber: result.blockNumber,
       issuedAt: new Date()
@@ -176,6 +178,31 @@ export const revokeCredential = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to revoke credential',
+      error: error.message
+    });
+  }
+};
+
+export const getInstituteTemplates = async (req, res) => {
+  try {
+    const walletAddress = req.user.walletAddress.toLowerCase();
+
+    // Find credentials where issuer is the current user AND holder is the current user
+    // This convention represents a "Template"
+    const templates = await CredentialModel.find({
+      issuer: walletAddress,
+      holder: walletAddress
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data: templates
+    });
+  } catch (error) {
+    console.error('Get Templates Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch credential templates',
       error: error.message
     });
   }

@@ -7,7 +7,7 @@ import verifierRoutes from './verifierRoutes.js';
 import metadataRoutes from './metadataRoutes.js';
 import userRoutes from './userRoutes.js';
 import blockchainRoutes from './blockchainRoutes.js';
-import enrollmentRoutes from './enrollmentRoutes.js'; // NEW
+import enrollmentRoutes from './enrollmentRoutes.js'; 
 
 const router = express.Router();
 
@@ -28,6 +28,6 @@ router.use('/verify', verifierRoutes);
 router.use('/metadata', metadataRoutes);
 router.use('/users', userRoutes);
 router.use('/blockchain', blockchainRoutes);
-router.use('/enrollments', enrollmentRoutes); // NEW
+router.use('/enrollments', enrollmentRoutes);
 
 export default router;

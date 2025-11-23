@@ -71,7 +71,7 @@ async function fetchAPI<T>(
   const token = useAuthStore.getState().token;
 
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
+    ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
@@ -141,6 +141,92 @@ export const credentialService = {
     return fetchAPI<{ count: number, credentials: Credential[] }>(`/credentials/holder/${address}`, {
       method: "GET",
     });
+  },
+
+  issueCredential: async (data: {
+    issuerPrivateKey: string;
+    holderAddress: string;
+    credentialType: number;
+    metadataURI: string;
+    expirationDate?: number;
+    revocable?: boolean;
+    credentialData: any;
+    metadata?: any;
+  }) => {
+    return fetchAPI("/credentials/issue", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+export const metadataService = {
+  uploadMetadata: async (formData: FormData) => {
+    return fetchAPI<{
+      imageCID: string;
+      imageURL: string;
+      metadataCID: string;
+      metadataURI: string;
+      metadata: any;
+    }>("/metadata/upload", {
+      method: "POST",
+      body: formData,
+    });
+  },
+};
+
+export const templateService = {
+  createTemplate: async (data: {
+    name: string;
+    description: string;
+    type: CredentialType;
+    image: string;
+    skills: string[];
+    issuerPrivateKey: string; // Required for signing
+    metadataURI?: string;
+  }) => {
+    const user = useAuthStore.getState().user;
+    if (!user?.walletAddress) {
+      return { success: false, message: "User wallet not connected" };
+    }
+
+    // We use the issue endpoint to create a "self-issued" credential that acts as a template
+    return fetchAPI("/credentials/issue", {
+      method: "POST",
+      body: JSON.stringify({
+        issuerPrivateKey: data.issuerPrivateKey,
+        holderAddress: user.walletAddress, // Self-issue
+        credentialType: data.type,
+        metadataURI: data.metadataURI || "ipfs://placeholder-for-demo",
+        metadata: {
+          name: data.name,
+          description: data.description,
+          image: data.image,
+          skills: data.skills,
+        },
+        credentialData: {
+          // Additional data if needed by the contract
+        },
+        // We store the actual template data in the metadata field of the DB model
+        // The controller expects 'metadataURI' but also saves metadata to DB if we modify it?
+        // Wait, the controller only saves metadataURI to DB.
+        // We might need to pass the metadata in the body if the controller supports it,
+        // OR we rely on the fact that we can't easily save the full metadata structure 
+        // without modifying the controller to accept 'metadata' object directly.
+        // Let's check the controller again.
+      }),
+    });
+  },
+
+  getTemplates: async () => {
+    return fetchAPI<Credential[]>("/credentials/templates", {
+      method: "GET",
+    });
+  },
+
+  deleteTemplate: async (id: string) => {
+    // Not implemented in backend yet
+    return { success: false, message: "Not implemented" };
   },
 };
 
