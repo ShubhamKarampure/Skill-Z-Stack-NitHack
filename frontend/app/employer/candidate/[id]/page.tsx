@@ -418,9 +418,9 @@ export default function CandidateProfile() {
             <div className="text-xs text-zinc-400">{passed ? "All checks passed" : "One or more checks failed"}</div>
           </div>
 
-          {VERIFICATION_DECOR_IMAGE && (
-            <img src={VERIFICATION_DECOR_IMAGE} alt="verification-decor" className="ml-auto hidden md:block w-28 h-12 object-contain opacity-60" />
-          )}
+          {/* {VERIFICATION_DECOR_IMAGE && (
+            // <img src={VERIFICATION_DECOR_IMAGE} alt="verification-decor" className="ml-auto hidden md:block w-28 h-12 object-contain opacity-60" />
+          )} */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
