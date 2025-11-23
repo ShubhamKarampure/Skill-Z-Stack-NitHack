@@ -16,7 +16,7 @@ export const uploadCredentialMetadata = async (req, res) => {
 
         // Upload image to Pinata
         const imageCID = await uploadFileToPinata(file.path);
-        const imageURL = `ipfs://${imageCID}`;
+        const imageURL = `https://gateway.pinata.cloud/ipfs/${imageCID}`;
 
         // Build metadata JSON
         const metadata = {
