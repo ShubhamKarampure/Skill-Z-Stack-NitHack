@@ -16,6 +16,8 @@ import {
   Briefcase,
   GraduationCap,
   Lock,
+  ChevronRight,
+  Upload,
 } from "lucide-react";
 import { verifierService } from "@/lib/api";
 
@@ -140,6 +142,80 @@ export default function CandidateProfile() {
   const [zkpInput, setZkpInput] = useState("");
   const [verificationResult, setVerificationResult] = useState<"success" | "error" | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  
+  // Form states
+  const [ageThreshold, setAgeThreshold] = useState("18");
+  const [credentialRoot, setCredentialRoot] = useState("0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
+  const [maxRank, setMaxRank] = useState("100");
+  const [isCalculatingRoot, setIsCalculatingRoot] = useState(false);
+
+  // Helper function to hash data using SHA-256
+  const sha256 = async (message: string) => {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return '0x' + hashHex;
+  };
+
+  // Simple Merkle Tree implementation
+  const calculateMerkleRoot = async (leaves: string[]) => {
+    if (leaves.length === 0) return '0x0';
+    
+    let currentLevel = leaves;
+    
+    while (currentLevel.length > 1) {
+      const nextLevel = [];
+      for (let i = 0; i < currentLevel.length; i += 2) {
+        if (i + 1 < currentLevel.length) {
+          const combined = currentLevel[i] + currentLevel[i + 1].slice(2); // Remove 0x from second
+          nextLevel.push(await sha256(combined));
+        } else {
+          nextLevel.push(currentLevel[i]);
+        }
+      }
+      currentLevel = nextLevel;
+    }
+    
+    return currentLevel[0];
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    setIsCalculatingRoot(true);
+    try {
+      const files = Array.from(e.target.files);
+      const fileHashes = await Promise.all(files.map(async (file) => {
+        const text = await file.text();
+        return await sha256(text);
+      }));
+      
+      const root = await calculateMerkleRoot(fileHashes);
+      setCredentialRoot(root);
+    } catch (error) {
+      console.error("Error calculating Merkle root:", error);
+    } finally {
+      setIsCalculatingRoot(false);
+    }
+  };
+
+  // Update JSON when inputs change
+  React.useEffect(() => {
+    if (!selectedTemplate) return;
+    
+    const template = JSON.parse(JSON.stringify(ZKP_TEMPLATES[selectedTemplate].template));
+    
+    if (selectedTemplate === 'age') {
+      template.publicSignals = [ageThreshold];
+    } else if (selectedTemplate === 'credential') {
+      template.publicSignals = [credentialRoot];
+    } else if (selectedTemplate === 'rank') {
+      template.publicSignals = [maxRank];
+    }
+    
+    setZkpInput(JSON.stringify(template, null, 2));
+  }, [selectedTemplate, ageThreshold, credentialRoot, maxRank]);
 
   if (!candidate) {
     return (
@@ -315,19 +391,102 @@ export default function CandidateProfile() {
                   </div>
 
                   <div className="space-y-4">
-                    <div>
-                      <label className="text-xs font-bold text-zinc-500 uppercase mb-2 block">
-                        Paste Proof JSON
-                      </label>
-                      <textarea
-                        value={zkpInput}
-                        onChange={(e) => setZkpInput(e.target.value)}
-                        placeholder={`Paste the ${ZKP_TEMPLATES[selectedTemplate].title} proof here...`}
-                        className="w-full h-48 bg-black/40 border border-white/10 rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-indigo-500 transition-all resize-none"
-                      />
+                    {/* Dynamic Inputs based on Template */}
+                    <div className="p-4 bg-indigo-500/10 rounded-xl border border-indigo-500/20 mb-4">
+                      {selectedTemplate === 'age' && (
+                        <div>
+                          <label className="text-xs font-bold text-indigo-300 uppercase mb-2 block">
+                            Minimum Age Requirement
+                          </label>
+                          <input 
+                            type="number" 
+                            value={ageThreshold}
+                            onChange={(e) => setAgeThreshold(e.target.value)}
+                            className="w-full bg-black/40 border border-indigo-500/30 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-500 transition-all"
+                          />
+                          <p className="text-xs text-zinc-400 mt-2">
+                            The system will verify if the candidate is older than this age using the provided ZK proof.
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedTemplate === 'credential' && (
+                        <div>
+                          <label className="text-xs font-bold text-indigo-300 uppercase mb-2 block">
+                            Credential Merkle Root
+                          </label>
+                          
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                              <label className="flex-1 cursor-pointer">
+                                <div className="flex items-center justify-center w-full p-3 border-2 border-dashed border-indigo-500/30 rounded-lg hover:bg-indigo-500/10 transition-colors">
+                                  <div className="flex items-center gap-2 text-sm text-indigo-300">
+                                    <Upload className="w-4 h-4" />
+                                    <span>Upload Credential Files</span>
+                                  </div>
+                                  <input 
+                                    type="file" 
+                                    multiple 
+                                    className="hidden" 
+                                    onChange={handleFileUpload}
+                                  />
+                                </div>
+                              </label>
+                            </div>
+
+                            <div className="relative">
+                              <input 
+                                type="text" 
+                                value={credentialRoot}
+                                onChange={(e) => setCredentialRoot(e.target.value)}
+                                className="w-full bg-black/40 border border-indigo-500/30 rounded-lg p-3 text-white font-mono text-xs focus:outline-none focus:border-indigo-500 transition-all pr-10"
+                                placeholder="0x..."
+                              />
+                              {isCalculatingRoot && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                  <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <p className="text-xs text-zinc-400 mt-2">
+                            Upload credential files to calculate the Merkle root, or enter it manually.
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedTemplate === 'rank' && (
+                        <div>
+                          <label className="text-xs font-bold text-indigo-300 uppercase mb-2 block">
+                            Maximum University Rank
+                          </label>
+                          <input 
+                            type="number" 
+                            value={maxRank}
+                            onChange={(e) => setMaxRank(e.target.value)}
+                            className="w-full bg-black/40 border border-indigo-500/30 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-500 transition-all"
+                          />
+                          <p className="text-xs text-zinc-400 mt-2">
+                            Verify if the candidate's university is ranked within this top N list.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <details className="group">
+                      <summary className="flex items-center gap-2 text-xs font-bold text-zinc-500 uppercase cursor-pointer hover:text-zinc-300 transition-colors mb-2 select-none">
+                        <ChevronRight className="w-4 h-4 group-open:rotate-90 transition-transform" />
+                        View Raw Proof JSON
+                      </summary>
+                      <textarea
+                        value={zkpInput}
+                        readOnly
+                        className="w-full h-32 bg-black/40 border border-white/10 rounded-xl p-4 text-xs font-mono text-zinc-400 focus:outline-none resize-none"
+                      />
+                    </details>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
                       <div className="flex items-center gap-2">
                         {verificationResult === "success" && (
                           <span className="flex items-center gap-2 text-green-400 text-sm font-bold">
