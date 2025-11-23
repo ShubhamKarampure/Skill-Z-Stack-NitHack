@@ -1,0 +1,2326 @@
+{
+  "contractName": "IVerifier",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "totalVerified",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "validCount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "verificationDate",
+          "type": "uint256"
+        }
+      ],
+      "name": "BatchVerificationCompleted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isValid",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "verificationDate",
+          "type": "uint256"
+        }
+      ],
+      "name": "CredentialVerified",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "proofHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isValid",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "verificationDate",
+          "type": "uint256"
+        }
+      ],
+      "name": "ZKPVerified",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "verifyCredential",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "isValid",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "exists",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isActive",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isExpired",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isRevoked",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "issuerAccredited",
+              "type": "bool"
+            },
+            {
+              "internalType": "enum CredentialTypes.CredentialStatus",
+              "name": "status",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct CredentialTypes.VerificationResult",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "tokenIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "verifyCredentialBatch",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "isValid",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "exists",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isActive",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isExpired",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isRevoked",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "issuerAccredited",
+              "type": "bool"
+            },
+            {
+              "internalType": "enum CredentialTypes.CredentialStatus",
+              "name": "status",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct CredentialTypes.VerificationResult[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "isCredentialValid",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "claimedHolder",
+          "type": "address"
+        }
+      ],
+      "name": "verifyOwnership",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "issuerAddress",
+          "type": "address"
+        }
+      ],
+      "name": "verifyIssuer",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "claimedHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "verifyCredentialHash",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "verifierAddress",
+          "type": "address"
+        }
+      ],
+      "name": "getVerificationCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "verifyCredentialDetailed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "exists",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "isActive",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "issuerAccredited",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "isExpired",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "isRevoked",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "proofHash",
+          "type": "bytes32"
+        },
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "claimType",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "claimValue",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "proofHash",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct CredentialTypes.ZKPClaim",
+          "name": "claim",
+          "type": "tuple"
+        }
+      ],
+      "name": "verifyZKProof",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum CredentialTypes.CredentialType",
+          "name": "expectedType",
+          "type": "uint8"
+        }
+      ],
+      "name": "verifyCredentialType",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getVerificationStatus",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "isValid",
+          "type": "bool"
+        },
+        {
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.20+commit.a1b79de6\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"totalVerified\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"validCount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"verificationDate\",\"type\":\"uint256\"}],\"name\":\"BatchVerificationCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isValid\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"verificationDate\",\"type\":\"uint256\"}],\"name\":\"CredentialVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"proofHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isValid\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"verificationDate\",\"type\":\"uint256\"}],\"name\":\"ZKPVerified\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifierAddress\",\"type\":\"address\"}],\"name\":\"getVerificationCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getVerificationStatus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"isValid\",\"type\":\"bool\"},{\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"isCredentialValid\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"verifyCredential\",\"outputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"isValid\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"exists\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isActive\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isExpired\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isRevoked\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"issuerAccredited\",\"type\":\"bool\"},{\"internalType\":\"enum CredentialTypes.CredentialStatus\",\"name\":\"status\",\"type\":\"uint8\"}],\"internalType\":\"struct CredentialTypes.VerificationResult\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"tokenIds\",\"type\":\"uint256[]\"}],\"name\":\"verifyCredentialBatch\",\"outputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"isValid\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"exists\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isActive\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isExpired\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isRevoked\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"issuerAccredited\",\"type\":\"bool\"},{\"internalType\":\"enum CredentialTypes.CredentialStatus\",\"name\":\"status\",\"type\":\"uint8\"}],\"internalType\":\"struct CredentialTypes.VerificationResult[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"verifyCredentialDetailed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"exists\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isActive\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"issuerAccredited\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isExpired\",\"type\":\"bool\"},{\"internalType\":\"bool\",\"name\":\"isRevoked\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"claimedHash\",\"type\":\"bytes32\"}],\"name\":\"verifyCredentialHash\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"enum CredentialTypes.CredentialType\",\"name\":\"expectedType\",\"type\":\"uint8\"}],\"name\":\"verifyCredentialType\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"issuerAddress\",\"type\":\"address\"}],\"name\":\"verifyIssuer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"claimedHolder\",\"type\":\"address\"}],\"name\":\"verifyOwnership\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"proofHash\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"claimType\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"claimValue\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"proofHash\",\"type\":\"bytes32\"}],\"internalType\":\"struct CredentialTypes.ZKPClaim\",\"name\":\"claim\",\"type\":\"tuple\"}],\"name\":\"verifyZKProof\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Interface for the Credential Verifier contract Provides verification functions for credentials\",\"kind\":\"dev\",\"methods\":{\"getVerificationCount(address)\":{\"details\":\"Get verification history count for a verifier\",\"params\":{\"verifierAddress\":\"Address of the verifier\"},\"returns\":{\"_0\":\"Number of verifications performed\"}},\"getVerificationStatus(uint256)\":{\"details\":\"Get verification result as boolean and reason\",\"params\":{\"tokenId\":\"The ID of the credential\"},\"returns\":{\"isValid\":\"Whether credential is valid\",\"reason\":\"Reason if invalid (empty if valid)\"}},\"isCredentialValid(uint256)\":{\"details\":\"Quick check if credential is valid (simplified version)\",\"params\":{\"tokenId\":\"The ID of the credential\"},\"returns\":{\"_0\":\"True if valid, false otherwise\"}},\"verifyCredential(uint256)\":{\"details\":\"Verify a credential's authenticity and validity\",\"params\":{\"tokenId\":\"The ID of the credential to verify\"},\"returns\":{\"_0\":\"VerificationResult struct with detailed verification status\"}},\"verifyCredentialBatch(uint256[])\":{\"details\":\"Verify multiple credentials in batch\",\"params\":{\"tokenIds\":\"Array of credential IDs to verify\"},\"returns\":{\"_0\":\"Array of VerificationResult structs\"}},\"verifyCredentialDetailed(uint256)\":{\"details\":\"Verify credential with detailed checks\",\"params\":{\"tokenId\":\"The ID of the credential\"},\"returns\":{\"exists\":\"Whether credential exists\",\"isActive\":\"Whether credential is active (not revoked/expired)\",\"isExpired\":\"Whether credential is expired\",\"isRevoked\":\"Whether credential is revoked\",\"issuerAccredited\":\"Whether issuer is accredited\"}},\"verifyCredentialHash(uint256,bytes32)\":{\"details\":\"Verify credential against a specific hash\",\"params\":{\"claimedHash\":\"Hash to verify against\",\"tokenId\":\"The ID of the credential\"},\"returns\":{\"_0\":\"True if hashes match, false otherwise\"}},\"verifyCredentialType(uint256,uint8)\":{\"details\":\"Check if credential type matches expected type\",\"params\":{\"expectedType\":\"The expected credential type\",\"tokenId\":\"The ID of the credential\"},\"returns\":{\"_0\":\"True if types match, false otherwise\"}},\"verifyIssuer(address)\":{\"details\":\"Verify that issuer is accredited\",\"params\":{\"issuerAddress\":\"Address of the issuer to verify\"},\"returns\":{\"_0\":\"True if issuer is accredited, false otherwise\"}},\"verifyOwnership(uint256,address)\":{\"details\":\"Verify credential ownership\",\"params\":{\"claimedHolder\":\"Address claiming to own the credential\",\"tokenId\":\"The ID of the credential\"},\"returns\":{\"_0\":\"True if holder owns the credential, false otherwise\"}},\"verifyZKProof(bytes32,(string,uint256,bytes32))\":{\"details\":\"Verify zero-knowledge proof claim\",\"params\":{\"claim\":\"The claim being verified\",\"proofHash\":\"Hash of the ZK proof\"},\"returns\":{\"_0\":\"True if proof is valid, false otherwise\"}}},\"title\":\"IVerifier\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/interfaces/IVerifier.sol\":\"IVerifier\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/interfaces/IVerifier.sol\":{\"keccak256\":\"0x33fc48057cfbf0cc38a0dab7c013586ef4aaa43733ff2a1f90ab6f81601b3b34\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://511ff512c2f236ea4df75e7d31fef4970c5ab3354ae8a3d5649d0c4a88d9e7bd\",\"dweb:/ipfs/QmZZPzYFrByc3Rsa4G3iNDaFoihFf4tBP1YrQq9wtNsVKJ\"]},\"project:/contracts/libraries/CredentialTypes.sol\":{\"keccak256\":\"0xb9e8b9ad05915b4ff5c0e7361f444cbb4b6b3a29edcb514f4fe7510dc98167f1\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://63a193ac19d95b9dbacf158fca6f77fece6dc7c12d742579bb749231bda53c8e\",\"dweb:/ipfs/QmRWYioZw7xUGWg6uKLpPyMMrahDUujg1cXCTQnanNpgZX\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\nimport \"../libraries/CredentialTypes.sol\";\n\n/**\n * @title IVerifier\n * @dev Interface for the Credential Verifier contract\n * Provides verification functions for credentials\n */\ninterface IVerifier {\n    \n    // Events\n    event CredentialVerified(\n        uint256 indexed tokenId,\n        address indexed verifier,\n        bool isValid,\n        uint256 verificationDate\n    );\n    \n    event BatchVerificationCompleted(\n        address indexed verifier,\n        uint256 totalVerified,\n        uint256 validCount,\n        uint256 verificationDate\n    );\n    \n    event ZKPVerified(\n        bytes32 indexed proofHash,\n        address indexed verifier,\n        bool isValid,\n        uint256 verificationDate\n    );\n\n    /**\n     * @dev Verify a credential's authenticity and validity\n     * @param tokenId The ID of the credential to verify\n     * @return VerificationResult struct with detailed verification status\n     */\n    function verifyCredential(uint256 tokenId) \n        external \n        view \n        returns (CredentialTypes.VerificationResult memory);\n\n    /**\n     * @dev Verify multiple credentials in batch\n     * @param tokenIds Array of credential IDs to verify\n     * @return Array of VerificationResult structs\n     */\n    function verifyCredentialBatch(uint256[] memory tokenIds) \n        external \n        view \n        returns (CredentialTypes.VerificationResult[] memory);\n\n    /**\n     * @dev Quick check if credential is valid (simplified version)\n     * @param tokenId The ID of the credential\n     * @return True if valid, false otherwise\n     */\n    function isCredentialValid(uint256 tokenId) external view returns (bool);\n\n    /**\n     * @dev Verify credential ownership\n     * @param tokenId The ID of the credential\n     * @param claimedHolder Address claiming to own the credential\n     * @return True if holder owns the credential, false otherwise\n     */\n    function verifyOwnership(uint256 tokenId, address claimedHolder) \n        external \n        view \n        returns (bool);\n\n    /**\n     * @dev Verify that issuer is accredited\n     * @param issuerAddress Address of the issuer to verify\n     * @return True if issuer is accredited, false otherwise\n     */\n    function verifyIssuer(address issuerAddress) external view returns (bool);\n\n    /**\n     * @dev Verify credential against a specific hash\n     * @param tokenId The ID of the credential\n     * @param claimedHash Hash to verify against\n     * @return True if hashes match, false otherwise\n     */\n    function verifyCredentialHash(uint256 tokenId, bytes32 claimedHash) \n        external \n        view \n        returns (bool);\n\n    /**\n     * @dev Get verification history count for a verifier\n     * @param verifierAddress Address of the verifier\n     * @return Number of verifications performed\n     */\n    function getVerificationCount(address verifierAddress) \n        external \n        view \n        returns (uint256);\n\n    /**\n     * @dev Verify credential with detailed checks\n     * @param tokenId The ID of the credential\n     * @return exists Whether credential exists\n     * @return isActive Whether credential is active (not revoked/expired)\n     * @return issuerAccredited Whether issuer is accredited\n     * @return isExpired Whether credential is expired\n     * @return isRevoked Whether credential is revoked\n     */\n    function verifyCredentialDetailed(uint256 tokenId) \n        external \n        view \n        returns (\n            bool exists,\n            bool isActive,\n            bool issuerAccredited,\n            bool isExpired,\n            bool isRevoked\n        );\n\n    /**\n     * @dev Verify zero-knowledge proof claim\n     * @param proofHash Hash of the ZK proof\n     * @param claim The claim being verified\n     * @return True if proof is valid, false otherwise\n     */\n    function verifyZKProof(\n        bytes32 proofHash,\n        CredentialTypes.ZKPClaim memory claim\n    ) external view returns (bool);\n\n    /**\n     * @dev Check if credential type matches expected type\n     * @param tokenId The ID of the credential\n     * @param expectedType The expected credential type\n     * @return True if types match, false otherwise\n     */\n    function verifyCredentialType(\n        uint256 tokenId,\n        CredentialTypes.CredentialType expectedType\n    ) external view returns (bool);\n\n    /**\n     * @dev Get verification result as boolean and reason\n     * @param tokenId The ID of the credential\n     * @return isValid Whether credential is valid\n     * @return reason Reason if invalid (empty if valid)\n     */\n    function getVerificationStatus(uint256 tokenId) \n        external \n        view \n        returns (bool isValid, string memory reason);\n}\n",
+  "sourcePath": "/home/shubham/dev/hackathon/NITHACKS_BLOCKCHAIN/blockchain/contracts/interfaces/IVerifier.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/interfaces/IVerifier.sol",
+    "exportedSymbols": {
+      "CredentialTypes": [
+        9044
+      ],
+      "IVerifier": [
+        8865
+      ]
+    },
+    "id": 8866,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 8720,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "32:23:31"
+      },
+      {
+        "absolutePath": "project:/contracts/libraries/CredentialTypes.sol",
+        "file": "../libraries/CredentialTypes.sol",
+        "id": 8721,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 8866,
+        "sourceUnit": 9045,
+        "src": "57:42:31",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IVerifier",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 8722,
+          "nodeType": "StructuredDocumentation",
+          "src": "101:133:31",
+          "text": " @title IVerifier\n @dev Interface for the Credential Verifier contract\n Provides verification functions for credentials"
+        },
+        "fullyImplemented": false,
+        "id": 8865,
+        "linearizedBaseContracts": [
+          8865
+        ],
+        "name": "IVerifier",
+        "nameLocation": "245:9:31",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "anonymous": false,
+            "eventSelector": "efbef9495dd86a33855860f320c262b3fb0161d3e709c8a849b7dcf97d5f4c09",
+            "id": 8732,
+            "name": "CredentialVerified",
+            "nameLocation": "286:18:31",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 8731,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8724,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "330:7:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8732,
+                  "src": "314:23:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8723,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "314:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8726,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "verifier",
+                  "nameLocation": "363:8:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8732,
+                  "src": "347:24:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8725,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "347:7:31",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8728,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "isValid",
+                  "nameLocation": "386:7:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8732,
+                  "src": "381:12:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8727,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "381:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8730,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "verificationDate",
+                  "nameLocation": "411:16:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8732,
+                  "src": "403:24:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8729,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "403:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "304:129:31"
+            },
+            "src": "280:154:31"
+          },
+          {
+            "anonymous": false,
+            "eventSelector": "412c3bdb9401e6423c9c0b1d34d8a54ec77396619403f329c590e36f03970941",
+            "id": 8742,
+            "name": "BatchVerificationCompleted",
+            "nameLocation": "450:26:31",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 8741,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8734,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "verifier",
+                  "nameLocation": "502:8:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8742,
+                  "src": "486:24:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8733,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "486:7:31",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8736,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "totalVerified",
+                  "nameLocation": "528:13:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8742,
+                  "src": "520:21:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8735,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "520:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8738,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "validCount",
+                  "nameLocation": "559:10:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8742,
+                  "src": "551:18:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8737,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "551:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8740,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "verificationDate",
+                  "nameLocation": "587:16:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8742,
+                  "src": "579:24:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8739,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "579:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "476:133:31"
+            },
+            "src": "444:166:31"
+          },
+          {
+            "anonymous": false,
+            "eventSelector": "f5e9552ded0dcdf62c5ac26f257a0565d66bd00a111e87e9a8d2e55f4ade6f83",
+            "id": 8752,
+            "name": "ZKPVerified",
+            "nameLocation": "626:11:31",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 8751,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8744,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "proofHash",
+                  "nameLocation": "663:9:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8752,
+                  "src": "647:25:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 8743,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "647:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8746,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "verifier",
+                  "nameLocation": "698:8:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8752,
+                  "src": "682:24:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8745,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "682:7:31",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8748,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "isValid",
+                  "nameLocation": "721:7:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8752,
+                  "src": "716:12:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8747,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "716:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8750,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "verificationDate",
+                  "nameLocation": "746:16:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8752,
+                  "src": "738:24:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8749,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "738:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "637:131:31"
+            },
+            "src": "620:149:31"
+          },
+          {
+            "documentation": {
+              "id": 8753,
+              "nodeType": "StructuredDocumentation",
+              "src": "775:203:31",
+              "text": " @dev Verify a credential's authenticity and validity\n @param tokenId The ID of the credential to verify\n @return VerificationResult struct with detailed verification status"
+            },
+            "functionSelector": "f2a91b1c",
+            "id": 8761,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "verifyCredential",
+            "nameLocation": "992:16:31",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8756,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8755,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "1017:7:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8761,
+                  "src": "1009:15:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8754,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1009:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1008:17:31"
+            },
+            "returnParameters": {
+              "id": 8760,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8759,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8761,
+                  "src": "1076:41:31",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_VerificationResult_$8934_memory_ptr",
+                    "typeString": "struct CredentialTypes.VerificationResult"
+                  },
+                  "typeName": {
+                    "id": 8758,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 8757,
+                      "name": "CredentialTypes.VerificationResult",
+                      "nameLocations": [
+                        "1076:15:31",
+                        "1092:18:31"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 8934,
+                      "src": "1076:34:31"
+                    },
+                    "referencedDeclaration": 8934,
+                    "src": "1076:34:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_VerificationResult_$8934_storage_ptr",
+                      "typeString": "struct CredentialTypes.VerificationResult"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1075:43:31"
+            },
+            "scope": 8865,
+            "src": "983:136:31",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 8762,
+              "nodeType": "StructuredDocumentation",
+              "src": "1125:168:31",
+              "text": " @dev Verify multiple credentials in batch\n @param tokenIds Array of credential IDs to verify\n @return Array of VerificationResult structs"
+            },
+            "functionSelector": "841ea07d",
+            "id": 8772,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "verifyCredentialBatch",
+            "nameLocation": "1307:21:31",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8766,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8765,
+                  "mutability": "mutable",
+                  "name": "tokenIds",
+                  "nameLocation": "1346:8:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8772,
+                  "src": "1329:25:31",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
+                    "typeString": "uint256[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 8763,
+                      "name": "uint256",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "1329:7:31",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "id": 8764,
+                    "nodeType": "ArrayTypeName",
+                    "src": "1329:9:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                      "typeString": "uint256[]"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1328:27:31"
+            },
+            "returnParameters": {
+              "id": 8771,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8770,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8772,
+                  "src": "1406:43:31",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_VerificationResult_$8934_memory_ptr_$dyn_memory_ptr",
+                    "typeString": "struct CredentialTypes.VerificationResult[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 8768,
+                      "nodeType": "UserDefinedTypeName",
+                      "pathNode": {
+                        "id": 8767,
+                        "name": "CredentialTypes.VerificationResult",
+                        "nameLocations": [
+                          "1406:15:31",
+                          "1422:18:31"
+                        ],
+                        "nodeType": "IdentifierPath",
+                        "referencedDeclaration": 8934,
+                        "src": "1406:34:31"
+                      },
+                      "referencedDeclaration": 8934,
+                      "src": "1406:34:31",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_VerificationResult_$8934_storage_ptr",
+                        "typeString": "struct CredentialTypes.VerificationResult"
+                      }
+                    },
+                    "id": 8769,
+                    "nodeType": "ArrayTypeName",
+                    "src": "1406:36:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_VerificationResult_$8934_storage_$dyn_storage_ptr",
+                      "typeString": "struct CredentialTypes.VerificationResult[]"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1405:45:31"
+            },
+            "scope": 8865,
+            "src": "1298:153:31",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 8773,
+              "nodeType": "StructuredDocumentation",
+              "src": "1457:172:31",
+              "text": " @dev Quick check if credential is valid (simplified version)\n @param tokenId The ID of the credential\n @return True if valid, false otherwise"
+            },
+            "functionSelector": "6da48b9a",
+            "id": 8780,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isCredentialValid",
+            "nameLocation": "1643:17:31",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8776,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8775,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "1669:7:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8780,
+                  "src": "1661:15:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8774,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1661:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1660:17:31"
+            },
+            "returnParameters": {
+              "id": 8779,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8778,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8780,
+                  "src": "1701:4:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8777,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1701:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1700:6:31"
+            },
+            "scope": 8865,
+            "src": "1634:73:31",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 8781,
+              "nodeType": "StructuredDocumentation",
+              "src": "1713:232:31",
+              "text": " @dev Verify credential ownership\n @param tokenId The ID of the credential\n @param claimedHolder Address claiming to own the credential\n @return True if holder owns the credential, false otherwise"
+            },
+            "functionSelector": "09cc449d",
+            "id": 8790,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "verifyOwnership",
+            "nameLocation": "1959:15:31",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8786,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8783,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "1983:7:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8790,
+                  "src": "1975:15:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8782,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1975:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8785,
+                  "mutability": "mutable",
+                  "name": "claimedHolder",
+                  "nameLocation": "2000:13:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8790,
+                  "src": "1992:21:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8784,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1992:7:31",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1974:40:31"
+            },
+            "returnParameters": {
+              "id": 8789,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8788,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8790,
+                  "src": "2065:4:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8787,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2065:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2064:6:31"
+            },
+            "scope": 8865,
+            "src": "1950:121:31",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 8791,
+              "nodeType": "StructuredDocumentation",
+              "src": "2077:177:31",
+              "text": " @dev Verify that issuer is accredited\n @param issuerAddress Address of the issuer to verify\n @return True if issuer is accredited, false otherwise"
+            },
+            "functionSelector": "60c000d4",
+            "id": 8798,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "verifyIssuer",
+            "nameLocation": "2268:12:31",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8794,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8793,
+                  "mutability": "mutable",
+                  "name": "issuerAddress",
+                  "nameLocation": "2289:13:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8798,
+                  "src": "2281:21:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8792,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2281:7:31",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2280:23:31"
+            },
+            "returnParameters": {
+              "id": 8797,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8796,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8798,
+                  "src": "2327:4:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8795,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2327:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2326:6:31"
+            },
+            "scope": 8865,
+            "src": "2259:74:31",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 8799,
+              "nodeType": "StructuredDocumentation",
+              "src": "2339:214:31",
+              "text": " @dev Verify credential against a specific hash\n @param tokenId The ID of the credential\n @param claimedHash Hash to verify against\n @return True if hashes match, false otherwise"
+            },
+            "functionSelector": "b04035c0",
+            "id": 8808,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "verifyCredentialHash",
+            "nameLocation": "2567:20:31",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8804,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8801,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "2596:7:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8808,
+                  "src": "2588:15:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8800,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2588:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8803,
+                  "mutability": "mutable",
+                  "name": "claimedHash",
+                  "nameLocation": "2613:11:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8808,
+                  "src": "2605:19:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 8802,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2605:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2587:38:31"
+            },
+            "returnParameters": {
+              "id": 8807,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8806,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8808,
+                  "src": "2676:4:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8805,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2676:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2675:6:31"
+            },
+            "scope": 8865,
+            "src": "2558:124:31",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 8809,
+              "nodeType": "StructuredDocumentation",
+              "src": "2688:172:31",
+              "text": " @dev Get verification history count for a verifier\n @param verifierAddress Address of the verifier\n @return Number of verifications performed"
+            },
+            "functionSelector": "f017c5a6",
+            "id": 8816,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getVerificationCount",
+            "nameLocation": "2874:20:31",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8812,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8811,
+                  "mutability": "mutable",
+                  "name": "verifierAddress",
+                  "nameLocation": "2903:15:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8816,
+                  "src": "2895:23:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 8810,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2895:7:31",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2894:25:31"
+            },
+            "returnParameters": {
+              "id": 8815,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8814,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8816,
+                  "src": "2970:7:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8813,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2970:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2969:9:31"
+            },
+            "scope": 8865,
+            "src": "2865:114:31",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 8817,
+              "nodeType": "StructuredDocumentation",
+              "src": "2985:403:31",
+              "text": " @dev Verify credential with detailed checks\n @param tokenId The ID of the credential\n @return exists Whether credential exists\n @return isActive Whether credential is active (not revoked/expired)\n @return issuerAccredited Whether issuer is accredited\n @return isExpired Whether credential is expired\n @return isRevoked Whether credential is revoked"
+            },
+            "functionSelector": "eb6026fa",
+            "id": 8832,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "verifyCredentialDetailed",
+            "nameLocation": "3402:24:31",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8820,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8819,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "3435:7:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8832,
+                  "src": "3427:15:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8818,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3427:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3426:17:31"
+            },
+            "returnParameters": {
+              "id": 8831,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8822,
+                  "mutability": "mutable",
+                  "name": "exists",
+                  "nameLocation": "3512:6:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8832,
+                  "src": "3507:11:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8821,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3507:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8824,
+                  "mutability": "mutable",
+                  "name": "isActive",
+                  "nameLocation": "3537:8:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8832,
+                  "src": "3532:13:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8823,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3532:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8826,
+                  "mutability": "mutable",
+                  "name": "issuerAccredited",
+                  "nameLocation": "3564:16:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8832,
+                  "src": "3559:21:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8825,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3559:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8828,
+                  "mutability": "mutable",
+                  "name": "isExpired",
+                  "nameLocation": "3599:9:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8832,
+                  "src": "3594:14:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8827,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3594:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8830,
+                  "mutability": "mutable",
+                  "name": "isRevoked",
+                  "nameLocation": "3627:9:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8832,
+                  "src": "3622:14:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8829,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3622:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3493:153:31"
+            },
+            "scope": 8865,
+            "src": "3393:254:31",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 8833,
+              "nodeType": "StructuredDocumentation",
+              "src": "3653:202:31",
+              "text": " @dev Verify zero-knowledge proof claim\n @param proofHash Hash of the ZK proof\n @param claim The claim being verified\n @return True if proof is valid, false otherwise"
+            },
+            "functionSelector": "eef86033",
+            "id": 8843,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "verifyZKProof",
+            "nameLocation": "3869:13:31",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8839,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8835,
+                  "mutability": "mutable",
+                  "name": "proofHash",
+                  "nameLocation": "3900:9:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8843,
+                  "src": "3892:17:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 8834,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3892:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8838,
+                  "mutability": "mutable",
+                  "name": "claim",
+                  "nameLocation": "3951:5:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8843,
+                  "src": "3919:37:31",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_ZKPClaim_$8942_memory_ptr",
+                    "typeString": "struct CredentialTypes.ZKPClaim"
+                  },
+                  "typeName": {
+                    "id": 8837,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 8836,
+                      "name": "CredentialTypes.ZKPClaim",
+                      "nameLocations": [
+                        "3919:15:31",
+                        "3935:8:31"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 8942,
+                      "src": "3919:24:31"
+                    },
+                    "referencedDeclaration": 8942,
+                    "src": "3919:24:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_ZKPClaim_$8942_storage_ptr",
+                      "typeString": "struct CredentialTypes.ZKPClaim"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3882:80:31"
+            },
+            "returnParameters": {
+              "id": 8842,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8841,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8843,
+                  "src": "3986:4:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8840,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3986:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3985:6:31"
+            },
+            "scope": 8865,
+            "src": "3860:132:31",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 8844,
+              "nodeType": "StructuredDocumentation",
+              "src": "3998:225:31",
+              "text": " @dev Check if credential type matches expected type\n @param tokenId The ID of the credential\n @param expectedType The expected credential type\n @return True if types match, false otherwise"
+            },
+            "functionSelector": "a9d3bb10",
+            "id": 8854,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "verifyCredentialType",
+            "nameLocation": "4237:20:31",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8850,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8846,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "4275:7:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8854,
+                  "src": "4267:15:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8845,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4267:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8849,
+                  "mutability": "mutable",
+                  "name": "expectedType",
+                  "nameLocation": "4323:12:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8854,
+                  "src": "4292:43:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_enum$_CredentialType_$8878",
+                    "typeString": "enum CredentialTypes.CredentialType"
+                  },
+                  "typeName": {
+                    "id": 8848,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 8847,
+                      "name": "CredentialTypes.CredentialType",
+                      "nameLocations": [
+                        "4292:15:31",
+                        "4308:14:31"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 8878,
+                      "src": "4292:30:31"
+                    },
+                    "referencedDeclaration": 8878,
+                    "src": "4292:30:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_enum$_CredentialType_$8878",
+                      "typeString": "enum CredentialTypes.CredentialType"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4257:84:31"
+            },
+            "returnParameters": {
+              "id": 8853,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8852,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8854,
+                  "src": "4365:4:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8851,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4365:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4364:6:31"
+            },
+            "scope": 8865,
+            "src": "4228:143:31",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 8855,
+              "nodeType": "StructuredDocumentation",
+              "src": "4377:224:31",
+              "text": " @dev Get verification result as boolean and reason\n @param tokenId The ID of the credential\n @return isValid Whether credential is valid\n @return reason Reason if invalid (empty if valid)"
+            },
+            "functionSelector": "1d9425ca",
+            "id": 8864,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getVerificationStatus",
+            "nameLocation": "4615:21:31",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8858,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8857,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "4645:7:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8864,
+                  "src": "4637:15:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 8856,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4637:7:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4636:17:31"
+            },
+            "returnParameters": {
+              "id": 8863,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8860,
+                  "mutability": "mutable",
+                  "name": "isValid",
+                  "nameLocation": "4709:7:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8864,
+                  "src": "4704:12:31",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 8859,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4704:4:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 8862,
+                  "mutability": "mutable",
+                  "name": "reason",
+                  "nameLocation": "4732:6:31",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8864,
+                  "src": "4718:20:31",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 8861,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4718:6:31",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4703:36:31"
+            },
+            "scope": 8865,
+            "src": "4606:134:31",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 8866,
+        "src": "235:4507:31",
+        "usedErrors": [],
+        "usedEvents": [
+          8732,
+          8742,
+          8752
+        ]
+      }
+    ],
+    "src": "32:4711:31"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.20+commit.a1b79de6.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.16",
+  "updatedAt": "2025-11-22T20:06:33.632Z",
+  "devdoc": {
+    "details": "Interface for the Credential Verifier contract Provides verification functions for credentials",
+    "kind": "dev",
+    "methods": {
+      "getVerificationCount(address)": {
+        "details": "Get verification history count for a verifier",
+        "params": {
+          "verifierAddress": "Address of the verifier"
+        },
+        "returns": {
+          "_0": "Number of verifications performed"
+        }
+      },
+      "getVerificationStatus(uint256)": {
+        "details": "Get verification result as boolean and reason",
+        "params": {
+          "tokenId": "The ID of the credential"
+        },
+        "returns": {
+          "isValid": "Whether credential is valid",
+          "reason": "Reason if invalid (empty if valid)"
+        }
+      },
+      "isCredentialValid(uint256)": {
+        "details": "Quick check if credential is valid (simplified version)",
+        "params": {
+          "tokenId": "The ID of the credential"
+        },
+        "returns": {
+          "_0": "True if valid, false otherwise"
+        }
+      },
+      "verifyCredential(uint256)": {
+        "details": "Verify a credential's authenticity and validity",
+        "params": {
+          "tokenId": "The ID of the credential to verify"
+        },
+        "returns": {
+          "_0": "VerificationResult struct with detailed verification status"
+        }
+      },
+      "verifyCredentialBatch(uint256[])": {
+        "details": "Verify multiple credentials in batch",
+        "params": {
+          "tokenIds": "Array of credential IDs to verify"
+        },
+        "returns": {
+          "_0": "Array of VerificationResult structs"
+        }
+      },
+      "verifyCredentialDetailed(uint256)": {
+        "details": "Verify credential with detailed checks",
+        "params": {
+          "tokenId": "The ID of the credential"
+        },
+        "returns": {
+          "exists": "Whether credential exists",
+          "isActive": "Whether credential is active (not revoked/expired)",
+          "isExpired": "Whether credential is expired",
+          "isRevoked": "Whether credential is revoked",
+          "issuerAccredited": "Whether issuer is accredited"
+        }
+      },
+      "verifyCredentialHash(uint256,bytes32)": {
+        "details": "Verify credential against a specific hash",
+        "params": {
+          "claimedHash": "Hash to verify against",
+          "tokenId": "The ID of the credential"
+        },
+        "returns": {
+          "_0": "True if hashes match, false otherwise"
+        }
+      },
+      "verifyCredentialType(uint256,uint8)": {
+        "details": "Check if credential type matches expected type",
+        "params": {
+          "expectedType": "The expected credential type",
+          "tokenId": "The ID of the credential"
+        },
+        "returns": {
+          "_0": "True if types match, false otherwise"
+        }
+      },
+      "verifyIssuer(address)": {
+        "details": "Verify that issuer is accredited",
+        "params": {
+          "issuerAddress": "Address of the issuer to verify"
+        },
+        "returns": {
+          "_0": "True if issuer is accredited, false otherwise"
+        }
+      },
+      "verifyOwnership(uint256,address)": {
+        "details": "Verify credential ownership",
+        "params": {
+          "claimedHolder": "Address claiming to own the credential",
+          "tokenId": "The ID of the credential"
+        },
+        "returns": {
+          "_0": "True if holder owns the credential, false otherwise"
+        }
+      },
+      "verifyZKProof(bytes32,(string,uint256,bytes32))": {
+        "details": "Verify zero-knowledge proof claim",
+        "params": {
+          "claim": "The claim being verified",
+          "proofHash": "Hash of the ZK proof"
+        },
+        "returns": {
+          "_0": "True if proof is valid, false otherwise"
+        }
+      }
+    },
+    "title": "IVerifier",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}

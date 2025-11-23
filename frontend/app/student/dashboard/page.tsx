@@ -12,18 +12,14 @@ import {
   Plus,
   ScrollText,
 } from "lucide-react";
-
-import SkillConstellation, {
-  ConstellationNode,
-  NodeStatus,
-} from "@/components/skill-constellation";
+import SkillConstellation from "@/components/skill-constellation";
 import { SkillDetailSidebar } from "@/components/skill-detail-sidebar";
-import { Credential, CredentialType } from "@/app/lib/types";
-import { generateSkillConstellation } from "@/app/lib/generate-constellation";
-import { credentialService } from "@/app/lib/api";
+import { Credential, CredentialType } from "@/lib/types";
+import { generateSkillConstellation } from "@/lib/generate-constellation";
+import { credentialService } from "@/lib/api";
+import { ConstellationNode, NodeStatus } from "@/lib/types";
 
 // --- UTILS ---
-
 // Helper for Icons based on Enum
 const CredentialIcon = ({ type }: { type: CredentialType }) => {
   switch (type) {
@@ -55,7 +51,7 @@ const getCredentialColorClass = (type: CredentialType) => {
 // --- SUB-COMPONENTS ---
 
 const AnalyticsCard = () => (
-  <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 relative overflow-hidden h-full min-h-[250px] flex flex-col justify-between">
+  <div className="p-6 rounded-2xl bg-white/2 border border-white/5 relative overflow-hidden h-full min-h-[250px] flex flex-col justify-between">
     <div className="flex justify-between items-start z-10">
       <div>
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -78,14 +74,14 @@ const AnalyticsCard = () => (
               initial={{ height: 0 }}
               animate={{ height: `${height}%` }}
               transition={{ duration: 1, delay: i * 0.1 }}
-              className="absolute bottom-0 w-full bg-gradient-to-t from-cyan-500/20 to-cyan-500/60"
+              className="absolute bottom-0 w-full bg-linear-to-t from-cyan-500/20 to-cyan-500/60"
             />
           </div>
         </div>
       ))}
     </div>
 
-    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
+    <div className="absolute inset-0 bg-linear-to-br from-cyan-500/5 to-transparent pointer-events-none" />
   </div>
 );
 
