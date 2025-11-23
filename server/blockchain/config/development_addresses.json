@@ -1,21 +1,21 @@
 {
   "network": "development",
-  "admin": "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1",
-  "IssuerRegistry": "0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb",
-  "CredentialNFT": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7",
-  "RevocationRegistry": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C",
-  "CredentialVerifier": "0x59d3631c86BbE35EF041872d502F218A39FBa150",
-  "deployedAt": "2025-11-23T07:38:48.575Z",
+  "admin": "0x786A9511F4620F628FFB89b42B9dA101d555beF6",
+  "IssuerRegistry": "0x2341Cb1f07a6d0f9765F5ce710cC3AC9B07D3df8",
+  "CredentialNFT": "0x94067ADb386b677016E96Efd501e3714485e8870",
+  "RevocationRegistry": "0x04a72D29D620d8742135b8f645b2675abF1330ae",
+  "CredentialVerifier": "0xDCcc9fD3ED237f7321913B89fDFd3c6884025668",
+  "deployedAt": "2025-11-23T06:56:13.354Z",
   "governance": {
-    "Timelock": "0x67B5656d60a809915323Bf2C40A8bEF15A152e3e",
-    "IssuerDAO": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66",
-    "GovernanceHelper": "0x0E696947A06550DEf604e82C26fd9E493e576337"
+    "Timelock": "0x3C7624049c6c6a5494496f6949723eeE1C051ba1",
+    "IssuerDAO": "0xE4A3a366ab65AB78de4b43ede94ee416068253fa",
+    "GovernanceHelper": "0xB96cc9Ef93F3efAB5EEE8deeB106a8f9b81E7672"
   },
   "zkp": {
-    "AgeVerifier": "0xA94B7f0465E98609391C623d0560C5720a3f2D33",
-    "CredentialProofVerifier": "0x6eD79Aa1c71FD7BdBC515EfdA3Bd4e26394435cC",
-    "UniversityRankVerifier": "0xb09bCc172050fBd4562da8b229Cf3E45Dc3045A6",
-    "ZKPVerifier": "0xFC628dd79137395F3C9744e33b1c5DE554D94882",
-    "SelectiveDisclosure": "0x5f8e26fAcC23FA4cbd87b8d9Dbbd33D5047abDE1"
+    "AgeVerifier": "0x460Ca4a65F33406D7f5896a0B4783993Dd988D68",
+    "CredentialProofVerifier": "0x685fD3692e8d3a323C742b73b3F67d90617677f1",
+    "UniversityRankVerifier": "0x4179637B0681b038a870191284Dd1a187DE34871",
+    "ZKPVerifier": "0x80F27c15A45BFa0af6aB0eEd80669d5d2cc5E1c0",
+    "SelectiveDisclosure": "0x8B6086d4E4571C1F706D3B9d3Aa7CbC8b4FBC8C6"
   }
 }

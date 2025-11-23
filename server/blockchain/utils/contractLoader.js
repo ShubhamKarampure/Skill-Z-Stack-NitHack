@@ -46,6 +46,21 @@ export const getContract = (contractName) => {
             case 'Timelock':
                 address = addresses.governance?.Timelock;
                 break;
+            case 'AgeVerifier':
+                address = addresses.zkp?.AgeVerifier;
+                break;
+            case 'CredentialProofVerifier':
+                address = addresses.zkp?.CredentialProofVerifier;
+                break;
+            case 'UniversityRankVerifier':
+                address = addresses.zkp?.UniversityRankVerifier;
+                break;
+            case 'ZKPVerifier':
+                address = addresses.zkp?.ZKPVerifier;
+                break;
+            case 'SelectiveDisclosure':
+                address = addresses.zkp?.SelectiveDisclosure;
+                break;
             default:
                 throw new Error(`Unknown contract: ${contractName}`);
         }

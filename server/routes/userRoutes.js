@@ -5,11 +5,25 @@ import UserModel from '../models/User.js';
 
 const router = express.Router();
 
-// Get all users (admin only)
-router.get('/', authenticate, requireRole(['admin']), async (req, res) => {
+// Get all users (admin and employer)
+router.get('/', authenticate, requireRole(['admin', 'employer']), async (req, res) => {
     try {
-        const { page = 1, limit = 20, role } = req.query;
+        const { page = 1, limit = 20, role, search } = req.query;
         const query = role ? { role } : {};
+
+        // If employer, force role to be student if not specified (or maybe just allow searching students)
+        if (req.user.role === 'employer' && !role) {
+             query.role = 'student';
+        }
+
+        // Add search functionality
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { walletAddress: { $regex: search, $options: 'i' } }
+            ];
+        }
 
         const users = await UserModel.find(query)
             .select('-password')
@@ -21,10 +35,12 @@ router.get('/', authenticate, requireRole(['admin']), async (req, res) => {
 
         res.status(200).json({
             success: true,
-            users,
-            totalPages: Math.ceil(count / limit),
-            currentPage: page,
-            total: count
+            data: {
+                users,
+                totalPages: Math.ceil(count / limit),
+                currentPage: page,
+                total: count
+            }
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -42,7 +58,22 @@ router.get('/wallet/:address', authenticate, async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        res.status(200).json({ success: true, user });
+        res.status(200).json({ success: true, data: { user } });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get user by ID
+router.get('/:id', authenticate, async (req, res) => {
+    try {
+        const user = await UserModel.findById(req.params.id).select('-password');
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.status(200).json({ success: true, data: { user } });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

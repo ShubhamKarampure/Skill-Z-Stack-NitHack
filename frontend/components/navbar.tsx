@@ -24,26 +24,38 @@ export function Navbar() {
     router.push("/login");
   };
 
-  const roleLinks: Record<string, { label: string; href: string }[]> = {
-    student: [
-      { label: "Dashboard", href: "/student/dashboard" },
-      { label: "My Institutes", href: "/student/institutes" },
-    ],
-    institute: [
-      { label: "Overview", href: "/institute/dashboard" }, // New Analytics Hub
-      { label: "Issue Credentials", href: "/institute/issue" }, // Separated Page
-      { label: "Admissions", href: "/institute/admissions" },
-      { label: "Library", href: "/institute/credentials" },
-    ],
-    admin: [
-      { label: "Governance", href: "/admin/dashboard" },
-      { label: "Members", href: "/admin/members" },
-    ],
-    employer: [{ label: "Search", href: "/employer" }],
-  };
+  // --- DYNAMIC LINK GENERATION ---
+  let currentLinks: { label: string; href: string }[] = [];
 
-  const currentLinks =
-    isAuthenticated && user?.role ? roleLinks[user.role] : [];
+  if (isAuthenticated && user?.role) {
+    if (user.role === "institute") {
+      // 1. Base link (Always visible)
+      currentLinks = [{ label: "Dashboard", href: "/institute/dashboard" }];
+
+      // 2. Conditional Links (Only if Accredited)
+      if (user.instituteData?.isAccredited) {
+        currentLinks.push(
+          { label: "Issue Credentials", href: "/institute/issue" },
+          { label: "Admissions", href: "/institute/admissions" },
+          { label: "Library", href: "/institute/credentials" }
+        );
+      }
+    } else {
+      // Standard links for other roles
+      const otherRoles: Record<string, { label: string; href: string }[]> = {
+        student: [
+          { label: "Dashboard", href: "/student/dashboard" },
+          { label: "My Institutes", href: "/student/institutes" },
+        ],
+        admin: [
+          { label: "Dashboard", href: "/admin/dashboard" },
+          { label: "Manage Institutes", href: "/admin/institutes" },
+        ],
+        employer: [{ label: "Search", href: "/employer" }],
+      };
+      currentLinks = otherRoles[user.role] || [];
+    }
+  }
 
   return (
     <motion.nav
@@ -59,7 +71,7 @@ export function Navbar() {
         } flex items-center justify-between`}
       >
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
             <span className="font-bold text-xl text-white">S</span>
           </div>
           <span className="font-bold text-xl tracking-tight text-white">
