@@ -54,6 +54,16 @@ export const WALLET_PRIVATE_KEYS: Record<string, string> = {
 export const getPrivateKey = (walletAddress: string): string | null => {
   // Normalize to checksum or lowercase as needed, but here we assume exact match or case-insensitive
   const normalized = walletAddress.toLowerCase();
+  
+  // 1. Check hardcoded list
   const entry = Object.entries(WALLET_PRIVATE_KEYS).find(([key]) => key.toLowerCase() === normalized);
-  return entry ? entry[1] : null;
+  if (entry) return entry[1];
+
+  // 2. Check LocalStorage (for manually connected wallets)
+  if (typeof window !== 'undefined') {
+    const storedKey = localStorage.getItem(`MANUAL_PRIVATE_KEY_${normalized}`);
+    if (storedKey) return storedKey;
+  }
+
+  return null;
 };
