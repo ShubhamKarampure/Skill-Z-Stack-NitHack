@@ -744,44 +744,40 @@ skill-z/
 **🥇 1st Place Winners - Blockchain Problem Statement**  
 **NITHacks 8.0 | 2025**
 
-Built with ❤️ and late-night coding sessions
-
 </div>
 
+<div align="center">
 
-<table align="center">
+<table>
 <tr>
-<td align="center">
-<img src="https://media.licdn.in/dms/image/v2/D5603AQFSPqLF7tFQUw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1729864652628?e=1740614400&v=beta&t=Z7L3pKmKVwCqcuZlMWBdKjm_Y4Y5xO7PK_nIZbkLRvs" width="100px" alt="Ritvik"/><br>
+<td align="center" style="padding: 10px;">
+<img src="https://media.licdn.com/dms/image/v2/D4D35AQEDrqGf2WrKGw/profile-framedphoto-shrink_400_400/profile-framedphoto-shrink_400_400/0/1722442996078?e=1764622800&v=beta&t=XXvIQ0IipMR5pI-hV9JS4-080pH56LKmJzfBE_yroTI" width="100" height="100" style="border-radius:50%;" alt="Ritvik"/><br>
 <b>Ritvik Sharma</b><br>
 <sub>Backend & Blockchain Lead</sub><br>
-<a href="https://github.com/ritvik-sharma-4483b0311">GitHub</a> • <a href="https://in.linkedin.com/in/ritvik-sharma-4483b0311">LinkedIn</a>
+<a href="https://github.com/Ritvik-lab-coder">GitHub</a> • <a href="https://in.linkedin.com/in/ritvik-sharma-4483b0311">LinkedIn</a>
 </td>
-<td align="center">
-<img src="https://media.licdn.in/dms/image/v2/D5603AQGMqxAHFrSlXg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724919748823?e=1740614400&v=beta&t=YmxCDZqVkzZFqJy8yPWzKqVPk-0s5nqQFgHyGKJaLBs" width="100px" alt="Vedant"/><br>
+<td align="center" style="padding: 10px;">
+<img src="https://media.licdn.com/dms/image/v2/D4D03AQFYG7dvhqvQlQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1726457455263?e=1765411200&v=beta&t=0JLFPwwNfvXZKsyNmG2Tpq0dkw8jitXxYSJHbl1bJaI" width="100" height="100" style="border-radius:50%;" alt="Vedant"/><br>
 <b>Vedant Shah</b><br>
 <sub>Full Stack Developer</sub><br>
 <a href="https://github.com/vedantshah45">GitHub</a> • <a href="https://in.linkedin.com/in/vedantshah45">LinkedIn</a>
 </td>
 </tr>
 <tr>
-<td align="center">
-<img src="https://media.licdn.in/dms/image/v2/D5603AQGqZsEVXwV7Xw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1730788622969?e=1740614400&v=beta&t=HJ8w5Y1Y-lrBPZ-U5bqWz8kqDzKp6e3BJWQL0RhvTjs" width="100px" alt="Talha"/><br>
+<td align="center" style="padding: 10px;">
+<img src="https://media.licdn.com/dms/image/v2/D4D03AQExczf3K-Qunw/profile-displayphoto-scale_400_400/B4DZkyyZfhJMAg-/0/1757493698645?e=1765411200&v=beta&t=jVIhW9gbdSU4u2xXRfWhjhTqfdwKJymvOVbCAC_ifbQ" width="100" height="100" style="border-radius:50%;" alt="Talha"/><br>
 <b>Talha Naik</b><br>
-<sub>Frontend Developer</sub><br>
+<sub>Frontend & BlockChain Developer</sub><br>
 <a href="https://github.com/talha-naik">GitHub</a> • <a href="https://in.linkedin.com/in/talha-naik-06406b257">LinkedIn</a>
 </td>
-<td align="center">
-<img src="https://media.licdn.in/dms/image/v2/D5603AQGJAf4_wt79nQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1730568730634?e=1740614400&v=beta&t=dRz5qP8fJJO_rMGBkYJxVQGU8H8z0P9kRxJuTGQ-cPE" width="100px" alt="Shubham"/><br>
+<td align="center" style="padding: 10px;">
+<img src="https://media.licdn.com/dms/image/v2/D4D03AQG3AnDU0Racmw/profile-displayphoto-scale_100_100/B4DZhS.p8wHYAg-/0/1753738813834?e=1765411200&v=beta&t=HJM1uDFlJBJaHD-fzeZrwL0QrDup3ziF1-2iuBjLhrs" width="100" height="100" style="border-radius:50%;" alt="Shubham"/><br>
 <b>Shubham Karampure</b><br>
-<sub>UI/UX & AI Lead</sub><br>
+<sub>UI/UX AI Lead & DevOps</sub><br>
 <a href="https://github.com/ShubhamKarampure">GitHub</a> • <a href="https://in.linkedin.com/in/shubham-karampure">LinkedIn</a>
 </td>
 </tr>
 </table>
-
-
-<div align="center">
 
 </div>
 
