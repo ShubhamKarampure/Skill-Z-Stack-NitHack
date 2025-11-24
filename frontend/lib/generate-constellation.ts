@@ -2,7 +2,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI("AIzaSyC8cGdOWaaWeA58E7FwqkJ0R3X0V5Uw_ho");
+const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API || "");
 
 export async function generateSkillConstellation(
   userSkills: string[]
