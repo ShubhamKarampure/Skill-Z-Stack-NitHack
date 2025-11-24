@@ -32,6 +32,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const IS_PRODUCTION = process.env.NEXT_PUBLIC_NODE_ENV === "production";
+
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -49,12 +51,16 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // --- LOGOUT LOGIC ---
   const handleLogout = () => {
-    // 1. Clear Auth Store
+    // 1. Clear Auth Store (Always)
     logout();
 
-    // 2. Clear Wallet State
-    if (disconnect) disconnect();
+    // 2. Clear Wallet State (ONLY IN PROD)
+    // We skip this in dev so you don't have to reconnect metamask constantly while testing
+    if (IS_PRODUCTION && disconnect) {
+      disconnect();
+    }
 
     // 3. UI Feedback
     toast({
@@ -73,7 +79,6 @@ export function Navbar() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Helper: Get Role Icon & Label Colors
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "student":
@@ -338,7 +343,6 @@ export function Navbar() {
                     </button>
                   </>
                 ) : (
-                  // Fallback for weird state where user is not auth but on dashboard page
                   <Link
                     href="/login"
                     className="w-full py-3 text-center bg-white text-black font-bold rounded-xl"
