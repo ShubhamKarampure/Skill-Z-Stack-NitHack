@@ -156,16 +156,10 @@ export const authService = {
   },
 
   loginWithWallet: async (walletAddress: string) => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login-wallet`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress }),
-      });
-      return await response.json();
-    } catch (error) {
-      return { success: false, message: "Network error" };
-    }
+    return fetchAPI<User>("/auth/login-wallet", {
+      method: "POST",
+      body: JSON.stringify({ walletAddress }),
+    });
   },
 
   login: async (credentials: { email: string; password: string }) => {
