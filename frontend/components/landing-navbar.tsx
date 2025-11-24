@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const IS_PRODUCTION = process.env.NEXT_PUBLIC_NODE_ENV === "production";
 
-export function LandingNavbar() {
+export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
