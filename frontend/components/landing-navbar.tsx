@@ -28,8 +28,8 @@ export function Navbar() {
   const navItems = [
     { label: "Features", href: "/#features" },
     { label: "Protocol", href: "/#how-it-works" },
-    { label: "Governance", href: "/governance" },
-    { label: "Ecosystem", href: "/ecosystem" },
+    { label: "Governance", href: "/#governance" },
+    { label: "Ecosystem", href: "/#ecosystem" },
   ];
 
   // Helper to format 0x1234...5678

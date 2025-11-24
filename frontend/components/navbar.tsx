@@ -2,35 +2,39 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, X, Wallet, LogOut, Key } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  Menu,
+  Wallet,
+  LogOut,
+  User as UserIcon,
+  ChevronDown,
+  Copy,
+  Check,
+  Mail,
+  GraduationCap,
+  Building2,
+  Briefcase,
+  ShieldCheck,
+  BadgeCheck,
+} from "lucide-react";
+import { motion } from "framer-motion";
 import { useAuthStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { LogoCrest } from "./logo";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { WALLET_PRIVATE_KEYS } from "@/lib/wallet-constants";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, isAuthenticated, logout, updateUser } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
   const router = useRouter();
-
-  // Wallet Modal State
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-  const [walletAddressInput, setWalletAddressInput] = useState("");
-  const [privateKeyInput, setPrivateKeyInput] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -43,23 +47,42 @@ export function Navbar() {
     router.push("/login");
   };
 
-  const handleSaveWallet = () => {
-    if (!walletAddressInput) return;
+  const copyToClipboard = (text: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-    // 1. Update User Store
-    updateUser({ walletAddress: walletAddressInput });
-
-    // 2. Save Private Key to LocalStorage (if provided)
-    if (privateKeyInput) {
-      localStorage.setItem(
-        `MANUAL_PRIVATE_KEY_${walletAddressInput.toLowerCase()}`,
-        privateKeyInput
-      );
+  // --- HELPER: Get Role Icon & Label Colors ---
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case "student":
+        return {
+          icon: <GraduationCap className="w-3 h-3" />,
+          color: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+        };
+      case "institute":
+        return {
+          icon: <Building2 className="w-3 h-3" />,
+          color: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+        };
+      case "employer":
+        return {
+          icon: <Briefcase className="w-3 h-3" />,
+          color: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+        };
+      case "admin":
+        return {
+          icon: <ShieldCheck className="w-3 h-3" />,
+          color: "text-red-400 bg-red-500/10 border-red-500/20",
+        };
+      default:
+        return {
+          icon: <UserIcon className="w-3 h-3" />,
+          color: "text-zinc-400 bg-zinc-500/10 border-zinc-500/20",
+        };
     }
-
-    setIsWalletModalOpen(false);
-    setWalletAddressInput("");
-    setPrivateKeyInput("");
   };
 
   // --- DYNAMIC LINK GENERATION ---
@@ -67,10 +90,7 @@ export function Navbar() {
 
   if (isAuthenticated && user?.role) {
     if (user.role === "institute") {
-      // 1. Base link (Always visible)
       currentLinks = [{ label: "Dashboard", href: "/institute/dashboard" }];
-
-      // 2. Conditional Links (Only if Accredited)
       if (user.instituteData?.isAccredited) {
         currentLinks.push(
           { label: "Issue Credentials", href: "/institute/issue" },
@@ -80,7 +100,6 @@ export function Navbar() {
         );
       }
     } else {
-      // Standard links for other roles
       const otherRoles: Record<string, { label: string; href: string }[]> = {
         student: [
           { label: "Dashboard", href: "/student/dashboard" },
@@ -91,11 +110,13 @@ export function Navbar() {
           { label: "Dashboard", href: "/admin/dashboard" },
           { label: "Manage Institutes", href: "/admin/institutes" },
         ],
-        employer: [{ label: "Search", href: "/employer" }],
+        employer: [{ label: "Dashboard", href: "/employer/dashboard" }],
       };
       currentLinks = otherRoles[user.role] || [];
     }
   }
+
+  const roleStyle = user ? getRoleBadge(user.role) : null;
 
   return (
     <motion.nav
@@ -132,124 +153,119 @@ export function Navbar() {
 
         {/* Actions */}
         <div className="hidden md:flex items-center gap-4">
-          {isAuthenticated ? (
-            <>
-              <Dialog open={isWalletModalOpen} onOpenChange={setIsWalletModalOpen}>
-                <DialogTrigger asChild>
-                  <button 
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-zinc-300 hover:bg-white/10 transition-colors"
-                    onClick={() => {
-                        setWalletAddressInput(user?.walletAddress || "");
-                        setPrivateKeyInput("");
-                    }}
+          {isAuthenticated && user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-zinc-300 hover:bg-white/10 hover:text-white transition-all group">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center border ${
+                      roleStyle?.color
+                        .replace("text-", "border-")
+                        .split(" ")[2] || "border-zinc-700"
+                    } bg-black/20`}
                   >
-                    <Wallet className="w-4 h-4 text-emerald-400" />
-                    <span>
-                      {user?.walletAddress
-                        ? `${user.walletAddress.slice(0, 6)}...`
-                        : "Connect Wallet"}
-                    </span>
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="bg-zinc-900 border-zinc-800 text-white sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Connect Wallet</DialogTitle>
-                    <DialogDescription className="text-zinc-400">
-                      Enter your wallet details manually for this session.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="wallet-address">Wallet Address</Label>
-                      <Input
-                        id="wallet-address"
-                        placeholder="0x..."
-                        value={walletAddressInput}
-                        onChange={(e) => setWalletAddressInput(e.target.value)}
-                        className="bg-zinc-950 border-zinc-800 font-mono"
-                      />
-                      {Object.entries(WALLET_PRIVATE_KEYS).find(
-                        ([address]) =>
-                          address.toLowerCase() === walletAddressInput.toLowerCase()
-                      )?.[1] && (
-                        <div className="mt-2 p-3 rounded-md bg-yellow-500/10 border border-yellow-500/20 text-xs flex flex-col gap-2">
-                          <p className="text-red-400 font-bold">
-                            Do <span className="underline">NOT</span> share your private key with anyone. Anyone with this key can control your wallet.
-                          </p>
-                          <div className="flex items-center gap-2 bg-black/40 p-2 rounded border border-white/5">
-                            <code className="flex-1 font-mono text-emerald-400 truncate">
-                              {
-                                Object.entries(WALLET_PRIVATE_KEYS).find(
-                                  ([address]) =>
-                                    address.toLowerCase() ===
-                                    walletAddressInput.toLowerCase()
-                                )?.[1]
-                              }
-                            </code>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 px-2 text-zinc-400 hover:text-white"
-                              onClick={() =>
-                                setPrivateKeyInput(
-                                  Object.entries(WALLET_PRIVATE_KEYS).find(
-                                    ([address]) =>
-                                      address.toLowerCase() ===
-                                      walletAddressInput.toLowerCase()
-                                  )?.[1] || ""
-                                )
-                              }
-                            >
-                              Use
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="private-key">Private Key</Label>
-                      <Input
-                        id="private-key"
-                        type="password"
-                        placeholder="0x..."
-                        value={privateKeyInput}
-                        onChange={(e) => setPrivateKeyInput(e.target.value)}
-                        className="bg-zinc-950 border-zinc-800 font-mono"
-                      />
-                      <p className="text-xs text-zinc-500">
-                        Required for signing transactions (e.g., issuing/revoking). Stored locally.
-                      </p>
-                    </div>
+                    {roleStyle?.icon}
                   </div>
-                  <DialogFooter>
-                    <Button variant="ghost" onClick={() => setIsWalletModalOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleSaveWallet} className="bg-emerald-600 hover:bg-emerald-700">
-                      Save & Connect
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                  <div className="flex flex-col items-start text-xs">
+                    <span className="font-semibold text-white max-w-[100px] truncate">
+                      {user.name}
+                    </span>
+                    <span className="opacity-60 capitalize">{user.role}</span>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300 transition-colors ml-1" />
+                </button>
+              </DropdownMenuTrigger>
 
-              <button
-                onClick={handleLogout}
-                className="p-2 rounded-full hover:bg-red-500/10 text-zinc-400 hover:text-red-400"
+              <DropdownMenuContent
+                className="w-72 bg-[#09090b] border-zinc-800 text-zinc-200 mt-2 p-2"
+                align="end"
               >
-                <LogOut className="w-5 h-5" />
-              </button>
-            </>
+                <div className="flex items-start gap-3 p-2">
+                  {/* Role Icon Large */}
+                  <div className={`p-2 rounded-md border ${roleStyle?.color}`}>
+                    {roleStyle?.icon}
+                  </div>
+                  <div className="flex flex-col gap-0.5 overflow-hidden">
+                    <span className="font-semibold text-white truncate">
+                      {user.name}
+                    </span>
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                      <Mail className="w-3 h-3" />
+                      <span className="truncate max-w-[180px]">
+                        {user.email}
+                      </span>
+                    </div>
+
+                    {/* Conditional Details based on Role */}
+                    {user.role === "employer" && user.companyName && (
+                      <span className="text-xs text-zinc-500 mt-1 flex items-center gap-1">
+                        <Briefcase className="w-3 h-3" /> {user.companyName}
+                      </span>
+                    )}
+                    {user.role === "institute" &&
+                      user.instituteData?.isAccredited && (
+                        <span className="text-[10px] text-emerald-400 mt-1 flex items-center gap-1 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 w-fit">
+                          <BadgeCheck className="w-3 h-3" /> Accredited
+                        </span>
+                      )}
+                  </div>
+                </div>
+
+                <DropdownMenuSeparator className="bg-zinc-800 my-2" />
+
+                {/* Wallet Address Section */}
+                <div className="px-2 pb-2 space-y-2">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                    <Wallet className="w-3 h-3" />
+                    <span>Connected Wallet</span>
+                  </div>
+                  {user.walletAddress ? (
+                    <div className="bg-black/40 border border-zinc-800 rounded p-2 flex items-center justify-between gap-2 group/copy transition-colors hover:border-zinc-700">
+                      <code className="text-xs font-mono text-emerald-400 truncate">
+                        {user.walletAddress.slice(0, 10)}...
+                        {user.walletAddress.slice(-6)}
+                      </code>
+                      <button
+                        onClick={() => copyToClipboard(user.walletAddress!)}
+                        className="hover:bg-zinc-800 p-1.5 rounded-md transition-colors"
+                        title="Copy address"
+                      >
+                        {copied ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-500" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5 text-zinc-500 group-hover/copy:text-zinc-300" />
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-zinc-500 italic px-2 py-1 bg-zinc-900/50 rounded border border-zinc-800/50">
+                      No wallet connected
+                    </div>
+                  )}
+                </div>
+
+                <DropdownMenuSeparator className="bg-zinc-800 my-1" />
+
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer m-1 rounded-md"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Link
               href="/login"
-              className="px-6 py-3 text-sm font-bold text-zinc-300"
+              className="px-6 py-3 text-sm font-bold text-zinc-300 bg-white/5 rounded-full hover:bg-white/10 border border-white/10 transition-all"
             >
               Login
             </Link>
           )}
         </div>
 
-        {/* Mobile menu omitted for brevity */}
+        {/* Mobile Toggle would go here */}
       </div>
     </motion.nav>
   );
