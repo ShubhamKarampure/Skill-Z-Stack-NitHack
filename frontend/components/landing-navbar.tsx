@@ -2,21 +2,29 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Menu, X, ChevronRight, Wallet, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogoCrest } from "@/components/logo"; // Ensure this path matches your project
-import { useWallet } from "@/hooks/use-wallet"; // Ensure you created this hook from previous step
+import { LogoCrest } from "@/components/logo";
+import { useWallet } from "@/hooks/use-wallet";
+import { authService } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
 
 // 🔧 CONFIGURATION
-// Change this manually to 'true' to test Web3 features in Dev
 const IS_PRODUCTION = process.env.NEXT_PUBLIC_NODE_ENV === "production";
 
 export function Navbar() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(false);
 
   // 🦊 Web3 Hook
   const { address, connectWallet, isConnecting } = useWallet();
+
+  // ✅ FIXED: Select state individually to avoid infinite loop / object reference issues
+  const login = useAuthStore((state) => state.login);
+  const user = useAuthStore((state) => state.user);
 
   // Scroll Effect
   useEffect(() => {
@@ -25,6 +33,53 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // 🛠 HELPER: Get correct dashboard URL based on role
+  const getDashboardPath = (role: string | undefined) => {
+    switch (role) {
+      case "student":
+        return "/student/dashboard";
+      case "institute":
+        return "/institute/dashboard";
+      case "employer":
+        return "/employer/dashboard";
+      case "admin":
+        return "/admin/dashboard";
+      default:
+        return "/login";
+    }
+  };
+
+  // 🚀 HANDLER: Connect -> Check API -> Redirect based on Role
+  const handleConnectAndLogin = async () => {
+    try {
+      // 1. Connect Wallet
+      const walletAddress = await connectWallet();
+      if (!walletAddress) return;
+
+      setIsAuthChecking(true);
+
+      // 2. Check Backend
+      const response = await authService.loginWithWallet(walletAddress);
+
+      if (response.success && response.user) {
+        // A. Login Successful
+        login(response.user, response.token);
+
+        // B. Redirect based on the role validation from Backend
+        const targetPath = getDashboardPath(response.user.role);
+        router.push(targetPath);
+      } else {
+        // C. User not found -> Register
+        router.push(`/register?address=${walletAddress}`);
+      }
+    } catch (error) {
+      console.error("Auth flow failed", error);
+    } finally {
+      setIsAuthChecking(false);
+      setIsOpen(false);
+    }
+  };
+
   const navItems = [
     { label: "Features", href: "/#features" },
     { label: "Protocol", href: "/#how-it-works" },
@@ -32,10 +87,8 @@ export function Navbar() {
     { label: "Ecosystem", href: "/#ecosystem" },
   ];
 
-  // Helper to format 0x1234...5678
-  const formatAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  };
+  const formatAddress = (addr: string) =>
+    `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
   return (
     <>
@@ -72,14 +125,14 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* --- ACTION BUTTONS (RIGHT SIDE) --- */}
+          {/* --- ACTION BUTTONS (DESKTOP) --- */}
           <div className="hidden md:flex items-center gap-4">
             {IS_PRODUCTION ? (
-              // 🦊 PRODUCTION: WALLET LOGIC
+              // 🦊 PRODUCTION LOGIC
               address ? (
                 <Link
-                  href={address ? "/student/dashboard" : "/login"} // Redirects to dashboard if connected
-                  className="flex items-center gap-3 px-6 py-3 bg-zinc-900 border border-zinc-800 rounded-full text-sm font-mono text-emerald-400 hover:bg-zinc-800 hover:border-emerald-500/30 transition-all group"
+                  href={getDashboardPath(user?.role)}
+                  className="flex items-center gap-3 px-6 py-3 bg-zinc-900 border border-zinc-800 rounded-full text-sm font-mono text-emerald-400 hover:bg-zinc-800 transition-all group"
                 >
                   <div className="relative">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -89,20 +142,22 @@ export function Navbar() {
                 </Link>
               ) : (
                 <button
-                  onClick={() => connectWallet()}
-                  disabled={isConnecting}
+                  onClick={handleConnectAndLogin}
+                  disabled={isConnecting || isAuthChecking}
                   className="group relative px-7 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                 >
-                  {isConnecting ? (
+                  {isConnecting || isAuthChecking ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Wallet className="w-4 h-4" />
                   )}
-                  {isConnecting ? "Connecting..." : "Connect Wallet"}
+                  {isConnecting || isAuthChecking
+                    ? "Verifying..."
+                    : "Connect Wallet"}
                 </button>
               )
             ) : (
-              // 💻 DEV MODE: LOGIN / REGISTER
+              // 💻 DEV MODE BUTTONS
               <>
                 <Link
                   href="/login"
@@ -118,7 +173,6 @@ export function Navbar() {
                     Get Started{" "}
                     <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-purple-100 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
               </>
             )}
@@ -157,27 +211,34 @@ export function Navbar() {
                 {/* Mobile Action Buttons */}
                 <div className="flex flex-col gap-3 mt-4">
                   {IS_PRODUCTION ? (
-                    // 🦊 Mobile Web3
+                    // 🦊 Mobile Logic
                     address ? (
                       <Link
-                        href="/student/dashboard"
-                        className="w-full py-3 text-center text-emerald-400 font-bold bg-emerald-900/20 border border-emerald-500/20 rounded-xl font-mono"
+                        href={getDashboardPath(user?.role)}
+                        onClick={() => setIsOpen(false)}
+                        className="w-full py-3 text-center text-emerald-400 font-bold bg-emerald-900/20 border border-emerald-500/20 rounded-xl font-mono flex items-center justify-center gap-2"
                       >
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         {formatAddress(address)}
                       </Link>
                     ) : (
                       <button
-                        onClick={() => {
-                          connectWallet();
-                          setIsOpen(false);
-                        }}
-                        className="w-full py-3 text-center bg-white text-black font-bold rounded-xl flex items-center justify-center gap-2"
+                        onClick={handleConnectAndLogin}
+                        disabled={isConnecting || isAuthChecking}
+                        className="w-full py-3 text-center bg-white text-black font-bold rounded-xl flex items-center justify-center gap-2 disabled:opacity-70"
                       >
-                        <Wallet className="w-4 h-4" /> Connect Wallet
+                        {isConnecting || isAuthChecking ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Wallet className="w-4 h-4" />
+                        )}
+                        {isConnecting || isAuthChecking
+                          ? "Verifying..."
+                          : "Connect Wallet"}
                       </button>
                     )
                   ) : (
-                    // 💻 Mobile Dev Mode
+                    // Dev Mode Mobile
                     <>
                       <Link
                         href="/login"

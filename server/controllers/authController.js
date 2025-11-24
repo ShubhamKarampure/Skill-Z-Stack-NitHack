@@ -4,6 +4,72 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { getWeb3 } from '../blockchain/utils/provider.js';
 
+
+export const loginWithWallet = async (req, res) => {
+  try {
+    const { walletAddress } = req.body;
+
+    if (!walletAddress) {
+      return res.status(400).json({
+        success: false,
+        message: "Wallet address required",
+      });
+    }
+
+    // 1. Find user by normalized wallet address
+    const user = await UserModel.findOne({
+      walletAddress: walletAddress.toLowerCase(),
+    });
+
+    // 2. If User Not Found -> Return 404 (Frontend handles this as "Go to Register")
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not registered",
+      });
+    }
+
+    // 3. If User Found -> Check if active
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Account deactivated",
+      });
+    }
+
+    // 4. Generate Token
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+        walletAddress: user.walletAddress,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Wallet login successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        walletAddress: user.walletAddress,
+      },
+      token,
+    });
+  } catch (error) {
+    console.error("Wallet Login Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 export const register = async (req, res) => {
   try {
     
