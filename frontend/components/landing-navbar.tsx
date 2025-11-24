@@ -2,19 +2,29 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Menu, X, ChevronRight, Wallet, Loader2 } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import {
+  Menu,
+  X,
+  ChevronRight,
+  Wallet,
+  Loader2,
+  ExternalLink,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogoCrest } from "@/components/logo";
 import { useWallet } from "@/hooks/use-wallet";
 import { authService } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
+import { useToast } from "@/hooks/use-toast"; // Assuming you have a toast hook
 
-// 🔧 CONFIGURATION
 const IS_PRODUCTION = process.env.NEXT_PUBLIC_NODE_ENV === "production";
 
 export function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
+  const { toast } = useToast();
+
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isAuthChecking, setIsAuthChecking] = useState(false);
@@ -22,18 +32,16 @@ export function Navbar() {
   // 🦊 Web3 Hook
   const { address, connectWallet, isConnecting } = useWallet();
 
-  // ✅ FIXED: Select state individually to avoid infinite loop / object reference issues
+  // 💾 Store (Selected individually to prevent infinite loops)
   const login = useAuthStore((state) => state.login);
   const user = useAuthStore((state) => state.user);
 
-  // Scroll Effect
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // 🛠 HELPER: Get correct dashboard URL based on role
   const getDashboardPath = (role: string | undefined) => {
     switch (role) {
       case "student":
@@ -49,31 +57,65 @@ export function Navbar() {
     }
   };
 
-  // 🚀 HANDLER: Connect -> Check API -> Redirect based on Role
+  // 🚀 MAIN HANDLER: Smart Routing for Mobile & Desktop
   const handleConnectAndLogin = async () => {
     try {
-      // 1. Connect Wallet
-      const walletAddress = await connectWallet();
-      if (!walletAddress) return;
-
       setIsAuthChecking(true);
 
-      // 2. Check Backend
+      // 1. DETECT ENVIRONMENT
+      // @ts-ignore
+      const hasProvider = typeof window !== "undefined" && window.ethereum;
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const currentUrl = window.location.host + pathname;
+
+      // 🛑 SCENARIO A: NO WALLET DETECTED
+      if (!hasProvider) {
+        setIsAuthChecking(false);
+        setIsOpen(false);
+
+        if (isMobile) {
+          // 📲 Mobile: Deep Link to App
+          // This forces the phone to switch to the MetaMask App
+          const deepLink = `https://metamask.app.link/dapp/${currentUrl}`;
+          window.location.href = deepLink;
+        } else {
+          // 💻 Desktop: Route to Install Page
+          // We open a new tab directly to the download source
+          toast({
+            title: "Wallet Not Found",
+            description: "Redirecting you to install MetaMask...",
+          });
+          window.open("https://metamask.io/download/", "_blank");
+        }
+        return;
+      }
+
+      // ✅ SCENARIO B: WALLET EXISTS (Connect & Login)
+      const walletAddress = await connectWallet();
+
+      if (!walletAddress) {
+        // User rejected the popup
+        setIsAuthChecking(false);
+        return;
+      }
+
+      // 3. Backend Logic (Check if user exists)
       const response = await authService.loginWithWallet(walletAddress);
 
       if (response.success && response.user) {
-        // A. Login Successful
         login(response.user, response.token);
-
-        // B. Redirect based on the role validation from Backend
         const targetPath = getDashboardPath(response.user.role);
         router.push(targetPath);
       } else {
-        // C. User not found -> Register
         router.push(`/register?address=${walletAddress}`);
       }
     } catch (error) {
       console.error("Auth flow failed", error);
+      toast({
+        title: "Connection Failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsAuthChecking(false);
       setIsOpen(false);
@@ -104,7 +146,7 @@ export function Navbar() {
               : "bg-transparent py-6 px-4"
           } flex items-center justify-between`}
         >
-          {/* --- LOGO --- */}
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <LogoCrest className="w-10 h-10 group-hover:scale-105 transition-transform" />
             <span className="font-bold text-2xl tracking-tight text-white">
@@ -112,7 +154,7 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* --- DESKTOP NAVIGATION --- */}
+          {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8 bg-white/5 px-8 py-3 rounded-full border border-white/5 backdrop-blur-md">
             {navItems.map((item) => (
               <Link
@@ -125,10 +167,9 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* --- ACTION BUTTONS (DESKTOP) --- */}
+          {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
             {IS_PRODUCTION ? (
-              // 🦊 PRODUCTION LOGIC
               address ? (
                 <Link
                   href={getDashboardPath(user?.role)}
@@ -157,7 +198,7 @@ export function Navbar() {
                 </button>
               )
             ) : (
-              // 💻 DEV MODE BUTTONS
+              // Dev Mode
               <>
                 <Link
                   href="/login"
@@ -167,7 +208,7 @@ export function Navbar() {
                 </Link>
                 <Link
                   href="/register"
-                  className="group relative px-7 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)] overflow-hidden"
+                  className="group relative px-7 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                 >
                   <span className="relative z-10 flex items-center gap-2">
                     Get Started{" "}
@@ -178,7 +219,7 @@ export function Navbar() {
             )}
           </div>
 
-          {/* --- MOBILE MENU TOGGLE --- */}
+          {/* Mobile Toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden p-3 rounded-xl bg-white/5 text-white border border-white/10"
@@ -187,7 +228,7 @@ export function Navbar() {
           </button>
         </div>
 
-        {/* --- MOBILE MENU OVERLAY --- */}
+        {/* Mobile Menu */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -208,10 +249,8 @@ export function Navbar() {
                   </Link>
                 ))}
 
-                {/* Mobile Action Buttons */}
                 <div className="flex flex-col gap-3 mt-4">
                   {IS_PRODUCTION ? (
-                    // 🦊 Mobile Logic
                     address ? (
                       <Link
                         href={getDashboardPath(user?.role)}
@@ -238,7 +277,6 @@ export function Navbar() {
                       </button>
                     )
                   ) : (
-                    // Dev Mode Mobile
                     <>
                       <Link
                         href="/login"
