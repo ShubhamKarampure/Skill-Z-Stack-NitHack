@@ -20,7 +20,6 @@ import { CredentialType } from "@/lib/types";
 import { templateService, metadataService } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/lib/store";
-import { getPrivateKey } from "@/lib/wallet-constants";
 
 interface CredentialTemplate {
   id: string;
@@ -54,7 +53,6 @@ export default function CredentialsLibrary() {
     image: "",
     skills: "",
     file: null,
-    // issuerPrivateKey: "", // Removed in favor of auto-lookup
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -75,7 +73,7 @@ export default function CredentialsLibrary() {
         type: item.credentialType,
         image: item.metadata?.image || "https://via.placeholder.com/400",
         skills: item.metadata?.skills || [],
-        holders: 0, // We don't have holder count in this API yet
+        holders: 0, 
       }));
       setCredentials(mapped);
     } else {
@@ -92,17 +90,7 @@ export default function CredentialsLibrary() {
     e.preventDefault();
     
     const user = useAuthStore.getState().user;
-    const privateKey = user?.walletAddress ? getPrivateKey(user.walletAddress) : null;
-
-    if (!privateKey) {
-      toast({
-        title: "Wallet Error",
-        description: "Could not find a private key for your connected wallet.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    
     if (!newCred.file) {
       toast({
         title: "Missing File",
@@ -142,7 +130,6 @@ export default function CredentialsLibrary() {
         type: newCred.type,
         image: imageURL,
         skills: newCred.skills.split(",").map((s) => s.trim()),
-        issuerPrivateKey: privateKey,
         metadataURI: metadataURI,
       });
 

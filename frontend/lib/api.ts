@@ -199,7 +199,6 @@ export const credentialService = {
     revocable?: boolean;
     credentialData: any;
     metadata?: any;
-    issuerPrivateKey?: string;
   }) => {
     return executeTransactionFlow(
       "/credentials/issue/prepare",

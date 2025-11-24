@@ -26,7 +26,6 @@ import {
 import { CredentialType } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/lib/store";
-import { getPrivateKey } from "@/lib/wallet-constants";
 
 // --- TYPES ---
 interface StudentData {
@@ -295,24 +294,11 @@ export default function IssuePage() {
 
   const handleMint = async () => {
     const user = useAuthStore.getState().user;
-    const privateKey = user?.walletAddress
-      ? getPrivateKey(user.walletAddress)
-      : null;
-
+    
     if (!selectedTemplate || selectedStudents.length === 0) {
       toast({
         title: "Missing Information",
         description: "Please select a template and at least one student.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!privateKey) {
-      toast({
-        title: "Wallet Error",
-        description:
-          "Could not find a private key. Check wallet configuration.",
         variant: "destructive",
       });
       return;
@@ -343,7 +329,6 @@ export default function IssuePage() {
           if (!student) continue;
 
           const payload = {
-            issuerPrivateKey: privateKey,
             holderAddress: student.studentWalletAddress,
             credentialType: selectedTemplate.type,
             metadataURI: selectedTemplate.metadataURI,
