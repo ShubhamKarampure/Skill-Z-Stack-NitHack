@@ -12,7 +12,7 @@ const config = {
             gasLimit: 6721975
         },
         sepolia: {
-            url: process.env.RPC_URL || process.env.ALCHEMY_RPC_URL,
+            url: process.env.ALCHEMY_URL,
             networkId: 11155111,
             gasLimit: 8000000
         }
