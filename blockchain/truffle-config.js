@@ -1,46 +1,46 @@
-require('dotenv').config();
-const HDWalletProvider = require('@truffle/hdwallet-provider');
+require("dotenv").config();
+const HDWalletProvider = require("@truffle/hdwallet-provider");
 
 module.exports = {
   networks: {
     development: {
       host: "127.0.0.1",
       port: 7545,
-      network_id: "*"
+      network_id: "*",
     },
     sepolia: {
-      provider: () => new HDWalletProvider({
-        privateKeys: [process.env.METAMASK_PRIVATE_KEY],
-        providerOrUrl: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-        pollingInterval: 15000,        // Increased from 10000
-        timeout: 300000                // Added 5 minute timeout
-      }),
+      provider: () =>
+        new HDWalletProvider({
+          privateKeys: [process.env.PRIVATE_KEY],
+          providerOrUrl: process.env.ALCHEMY_URL,
+          pollingInterval: 30000, // Check every 30 seconds (Slow down!)
+          deploymentPollingInterval: 30000,
+        }),
       network_id: 11155111,
       gas: 6000000,
-      gasPrice: 20000000000,
+      gasPrice: 30000000000, // 30 Gwei (pay a bit more to be faster)
       confirmations: 2,
-      timeoutBlocks: 500,              // Increased from 200
+      timeoutBlocks: 500, // Wait long for blocks
       skipDryRun: true,
-      networkCheckTimeout: 1000000,    // Increased from 100000
-      deploymentPollingInterval: 15000 // Increased from 10000
+      networkCheckTimeout: 10000000, // Don't timeout easily
+      disableConfirmationListener: true, // ⚠️ Helps prevent hanging
     },
   },
 
   mocha: {
-    timeout: 100000
+    timeout: 100000,
   },
 
   compilers: {
     solc: {
-      version: "0.8.20",
+      version: "0.8.20", 
       settings: {
         optimizer: {
           enabled: true,
-          runs: 200
-        }
-        // Remove viaIR: true
+          runs: 200,
+        },
       },
-      evmVersion: "london"
-    }
-  }
+      evmVersion: "paris", 
+    },
+  },
 };

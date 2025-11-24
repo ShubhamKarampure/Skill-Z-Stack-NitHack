@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2,
@@ -19,8 +19,13 @@ import { authService } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { LogoCrest } from "@/components/logo";
 import { Loader } from "@/components/loader";
-import { useToast } from "@/hooks/use-toast"; // Assuming this is your hook path
+import { useToast } from "@/hooks/use-toast";
+import { useWallet } from "@/hooks/use-wallet";
 
+// --- CONFIGURATION ---
+const IS_PRODUCTION = process.env.NEXT_PUBLIC_NODE_ENV === "production";
+
+// --- BACKGROUND ---
 const Aurora = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-[#09090b]">
     <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-emerald-600/10 blur-[120px]" />
@@ -30,20 +35,19 @@ const Aurora = () => (
 
 type Role = "student" | "institute" | "employer" | "admin";
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const login = useAuthStore((state) => state.login);
+  const { connectWallet } = useWallet();
 
   const [role, setRole] = useState<Role>("student");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // New state for handling the full-screen loader
   const [showSuccessLoader, setShowSuccessLoader] = useState(false);
   const [targetPath, setTargetPath] = useState("/");
 
-  // Define form state explicitly
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -52,12 +56,32 @@ export default function RegisterPage() {
     companyName: "",
   });
 
+  // AUTO-FILL WALLET LOGIC
+  useEffect(() => {
+    const initWallet = async () => {
+      // 1. Check URL params (if redirected from Login)
+      const urlAddress = searchParams.get("address");
+      if (urlAddress) {
+        setFormData((prev) => ({ ...prev, walletAddress: urlAddress }));
+        return;
+      }
+
+      // 2. If Production, auto-connect to fill field
+      if (IS_PRODUCTION) {
+        const address = await connectWallet();
+        if (address) {
+          setFormData((prev) => ({ ...prev, walletAddress: address }));
+        }
+      }
+    };
+    initWallet();
+  }, [searchParams]);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    // Create payload with specific type structure
     const payload = {
       name: formData.name,
       email: formData.email,
@@ -71,7 +95,6 @@ export default function RegisterPage() {
       const response = await authService.register(payload);
 
       if (response.success && response.token && response.user) {
-        // Update Global State
         login(response.user, response.token);
 
         const redirectMap: Record<Role, string> = {
@@ -82,48 +105,20 @@ export default function RegisterPage() {
         };
 
         setTargetPath(redirectMap[role] || "/");
-
-        toast({
-          title: "Account Created Successfully",
-          description: "Preparing your decentralized profile...",
-          className: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
-        });
-
-        // Trigger loader instead of immediate push
         setShowSuccessLoader(true);
       } else {
-        const msg = response.message || "Registration failed";
-        setError(msg);
-        toast({
-          variant: "destructive",
-          title: "Registration Failed",
-          description: msg,
-        });
+        setError(response.message || "Registration failed");
         setIsLoading(false);
       }
     } catch (err) {
-      const msg = "Network error. Please try again later.";
-      setError(msg);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: msg,
-      });
+      setError("Network error. Please try again.");
       setIsLoading(false);
     }
   };
 
-  const handleLoaderComplete = () => {
-    router.push(targetPath);
-  };
-
-  // Type-safe change handler
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -136,7 +131,7 @@ export default function RegisterPage() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100]"
           >
-            <Loader onComplete={handleLoaderComplete} />
+            <Loader onComplete={() => router.push(targetPath)} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -147,7 +142,7 @@ export default function RegisterPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-lg "
+          className="w-full max-w-lg"
         >
           <div className="text-center mb-8">
             <Link
@@ -156,9 +151,11 @@ export default function RegisterPage() {
             >
               <LogoCrest className="w-16 h-16 group-hover:scale-105 transition-transform" />
             </Link>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Sign Up</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">
+              Create Account
+            </h1>
             <p className="text-zinc-400">
-              Select your role to initialize your account.
+              Join the decentralized credential network.
             </p>
           </div>
 
@@ -188,7 +185,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="bg-white/[0.03] border border-white/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl relative overflow-hidden">
-            {/* Role Glow Indicator */}
+            {/* Role Glow */}
             <div
               className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${
                 role === "student"
@@ -209,13 +206,10 @@ export default function RegisterPage() {
               )}
 
               <div className="grid grid-cols-1 gap-5">
+                {/* Name Input */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1">
-                    {role === "institute"
-                      ? "Institute Name"
-                      : role === "employer"
-                      ? "HR Rep Name"
-                      : "Full Name"}
+                    {role === "institute" ? "Institute Name" : "Full Name"}
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
@@ -229,16 +223,17 @@ export default function RegisterPage() {
                           ? "Stanford University"
                           : "John Doe"
                       }
-                      className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 transition-all"
+                      className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:border-white/30 focus:outline-none transition-all"
                       required
                     />
                   </div>
                 </div>
 
+                {/* Employer Only: Company Name */}
                 {role === "employer" && (
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1">
-                      Company Name
+                      Company
                     </label>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
@@ -247,17 +242,17 @@ export default function RegisterPage() {
                         type="text"
                         onChange={handleChange}
                         value={formData.companyName}
-                        placeholder="Google Inc."
-                        className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 transition-all"
+                        className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:border-white/30 focus:outline-none"
                         required
                       />
                     </div>
                   </div>
                 )}
 
+                {/* Email */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1">
-                    Email Address
+                    Email
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
@@ -266,35 +261,46 @@ export default function RegisterPage() {
                       type="email"
                       onChange={handleChange}
                       value={formData.email}
-                      placeholder={
-                        role === "institute"
-                          ? "admin@stanford.edu"
-                          : "john@example.com"
-                      }
-                      className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 transition-all"
+                      className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:border-white/30 focus:outline-none"
                       required
                     />
                   </div>
                 </div>
 
+                {/* Wallet Address - Locked in Prod */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1">
-                    Wallet Address
+                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1 flex items-center justify-between">
+                    <span>Wallet Address</span>
+                    {IS_PRODUCTION && formData.walletAddress && (
+                      <span className="text-[10px] text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">
+                        AUTO-FILLED
+                      </span>
+                    )}
                   </label>
                   <div className="relative">
-                    <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                    <Wallet
+                      className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${
+                        IS_PRODUCTION ? "text-emerald-500" : "text-zinc-500"
+                      }`}
+                    />
                     <input
                       name="walletAddress"
                       type="text"
                       onChange={handleChange}
                       value={formData.walletAddress}
+                      readOnly={IS_PRODUCTION}
                       placeholder="0x..."
-                      className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 transition-all font-mono text-sm"
+                      className={`w-full bg-black/40 border rounded-xl py-3 pl-10 pr-4 text-white font-mono text-sm transition-all ${
+                        IS_PRODUCTION
+                          ? "border-emerald-500/30 text-emerald-300 cursor-not-allowed bg-emerald-900/10"
+                          : "border-white/10 focus:border-white/30 focus:outline-none"
+                      }`}
                       required
                     />
                   </div>
                 </div>
 
+                {/* Password */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1">
                     Password
@@ -306,8 +312,7 @@ export default function RegisterPage() {
                       type="password"
                       onChange={handleChange}
                       value={formData.password}
-                      placeholder="••••••••"
-                      className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 transition-all"
+                      className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:border-white/30 focus:outline-none"
                       required
                     />
                   </div>
@@ -319,21 +324,18 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 className={`w-full py-3.5 rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-6 ${
                   role === "student"
-                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:shadow-cyan-500/25"
+                    ? "bg-gradient-to-r from-cyan-600 to-blue-600"
                     : role === "institute"
-                    ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:shadow-purple-500/25"
+                    ? "bg-gradient-to-r from-purple-600 to-pink-600"
                     : role === "employer"
-                    ? "bg-gradient-to-r from-emerald-600 to-green-600 hover:shadow-emerald-500/25"
-                    : "bg-gradient-to-r from-red-600 to-orange-600 hover:shadow-red-500/25"
+                    ? "bg-gradient-to-r from-emerald-600 to-green-600"
+                    : "bg-gradient-to-r from-red-600 to-orange-600"
                 }`}
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  <>
-                    Create {role.charAt(0).toUpperCase() + role.slice(1)}{" "}
-                    Account
-                  </>
+                  "Create Account"
                 )}
               </button>
             </form>
@@ -351,5 +353,14 @@ export default function RegisterPage() {
         </motion.div>
       </div>
     </>
+  );
+}
+
+// Suspense Wrapper for useSearchParams
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#09090b]" />}>
+      <RegisterContent />
+    </Suspense>
   );
 }

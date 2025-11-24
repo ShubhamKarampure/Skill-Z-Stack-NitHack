@@ -12,7 +12,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { adminService, Institute } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast"; // Import your hook
+import { useToast } from "@/hooks/use-toast";
 
 // --- COMPONENTS ---
 const Aurora = () => (
@@ -25,10 +25,15 @@ const Aurora = () => (
 export default function AdminMembersPage() {
   const [members, setMembers] = useState<Institute[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [processingId, setProcessingId] = useState<string | null>(null);
+
+  // 1. CHANGE: State now holds an object with ID and TYPE, or null
+  const [processingState, setProcessingState] = useState<{
+    id: string;
+    type: "register" | "accredit";
+  } | null>(null);
+
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Use your existing toast hook
   const { toast } = useToast();
 
   // --- API FETCHING ---
@@ -37,11 +42,9 @@ export default function AdminMembersPage() {
     try {
       const response = await adminService.getInstitutes();
       if (response.success) {
-        // Sort alphabetically by name immediately
         const sortedData = response.data.sort((a, b) =>
           a.name.localeCompare(b.name)
         );
-        console.log(sortedData)
         setMembers(sortedData);
       } else {
         toast({
@@ -68,12 +71,12 @@ export default function AdminMembersPage() {
   // --- ACTIONS ---
 
   const handleRegister = async (member: Institute) => {
-    setProcessingId(member.id);
+    // 2. CHANGE: Set specific action type
+    setProcessingState({ id: member.id, type: "register" });
 
     try {
       const res = await adminService.registerIssuer(member.walletAddress);
       if (res.success) {
-        // Optimistic UI Update
         setMembers((prev) =>
           prev.map((m) =>
             m.id === member.id ? { ...m, isRegistered: true } : m
@@ -97,17 +100,17 @@ export default function AdminMembersPage() {
         description: "Could not reach the server.",
       });
     } finally {
-      setProcessingId(null);
+      setProcessingState(null);
     }
   };
 
   const handleAccredit = async (member: Institute) => {
-    setProcessingId(member.id);
+    // 2. CHANGE: Set specific action type
+    setProcessingState({ id: member.id, type: "accredit" });
 
     try {
       const res = await adminService.accreditIssuer(member.walletAddress);
       if (res.success) {
-        // Optimistic UI Update
         setMembers((prev) =>
           prev.map((m) =>
             m.id === member.id ? { ...m, isAccredited: true } : m
@@ -131,7 +134,7 @@ export default function AdminMembersPage() {
         description: "Could not reach the server.",
       });
     } finally {
-      setProcessingId(null);
+      setProcessingState(null);
     }
   };
 
@@ -168,9 +171,6 @@ export default function AdminMembersPage() {
   return (
     <main className="min-h-screen bg-[#09090b] text-white font-sans overflow-x-hidden selection:bg-emerald-500/30">
       <Aurora />
-
-      {/* Note: Assuming <Toaster /> is rendered in your root layout. 
-          If not, add <Toaster /> here or in the parent layout. */}
 
       <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Header */}
@@ -245,6 +245,14 @@ export default function AdminMembersPage() {
                   filteredMembers.map((member) => {
                     const status = getStatusInfo(member);
 
+                    // 3. CHANGE: Check if this specific row is processing
+                    const isProcessingThis = processingState?.id === member.id;
+                    const isRegistering =
+                      isProcessingThis && processingState?.type === "register";
+                    const isAccrediting =
+                      isProcessingThis && processingState?.type === "accredit";
+                    const isGlobalProcessing = !!processingState; // Any action on any row
+
                     return (
                       <tr
                         key={member.id}
@@ -285,7 +293,10 @@ export default function AdminMembersPage() {
                             {/* BUTTON 1: REGISTER */}
                             <button
                               onClick={() => handleRegister(member)}
-                              disabled={member.isRegistered || !!processingId}
+                              // Disable if already registered OR if any action is currently running globally
+                              disabled={
+                                member.isRegistered || isGlobalProcessing
+                              }
                               className={`relative px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${
                                 member.isRegistered
                                   ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-default opacity-60"
@@ -297,7 +308,8 @@ export default function AdminMembersPage() {
                                   <CheckCircle2 className="w-3 h-3" />{" "}
                                   Registered
                                 </>
-                              ) : processingId === member.id ? (
+                              ) : isRegistering ? (
+                                // 4. CHANGE: Only show loader if specifically registering
                                 <Loader2 className="w-3 h-3 animate-spin" />
                               ) : (
                                 <>
@@ -309,7 +321,10 @@ export default function AdminMembersPage() {
                             {/* BUTTON 2: ACCREDIT */}
                             <button
                               onClick={() => handleAccredit(member)}
-                              disabled={member.isAccredited || !!processingId}
+                              // Disable if already accredited OR if any action is currently running globally
+                              disabled={
+                                member.isAccredited || isGlobalProcessing
+                              }
                               className={`relative px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${
                                 member.isAccredited
                                   ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-default opacity-60"
@@ -320,7 +335,8 @@ export default function AdminMembersPage() {
                                 <>
                                   <ShieldCheck className="w-3 h-3" /> Accredited
                                 </>
-                              ) : processingId === member.id ? (
+                              ) : isAccrediting ? (
+                                // 4. CHANGE: Only show loader if specifically accrediting
                                 <Loader2 className="w-3 h-3 animate-spin" />
                               ) : (
                                 <>

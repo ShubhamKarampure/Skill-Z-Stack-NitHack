@@ -1,174 +1,150 @@
 // src/blockchain/services/issuerService.js
-import { getContract } from '../utils/contractLoader.js';
-import { getAdminAccount } from '../utils/wallet.js';
-import { getWeb3 } from '../utils/provider.js';
+import { getContract } from "../utils/contractLoader.js";
+import { getWeb3 } from "../utils/provider.js";
+// Removed: import { getAdminAccount } from '../utils/wallet.js';
 
 class IssuerService {
-    constructor() {
-        this.contract = null;
+  constructor() {
+    this.contract = null;
+  }
+
+  _getContract() {
+    if (!this.contract) {
+      this.contract = getContract("IssuerRegistry");
     }
+    return this.contract;
+  }
 
-    _getContract() {
-        if (!this.contract) {
-            this.contract = getContract('IssuerRegistry');
-        }
-        return this.contract;
+  /**
+   * REFRACTORED: Prepare registration transaction.
+   * @param {string} senderAddress - The address paying for this tx (Admin or Self)
+   */
+  async prepareRegisterIssuer(senderAddress, issuerAddress, name, metadataURI) {
+    try {
+      const contract = this._getContract();
+
+      const txObject = contract.methods.registerIssuer(
+        issuerAddress,
+        name,
+        metadataURI
+      );
+      const encodedABI = txObject.encodeABI();
+
+      return {
+        to: contract.options.address,
+        from: senderAddress,
+        data: encodedABI,
+      };
+    } catch (error) {
+      console.error("Prepare register issuer error:", error);
+      throw new Error(`Failed to prepare register issuer: ${error.message}`);
     }
+  }
 
-    async registerIssuer(issuerAddress, name, metadataURI) {
-        try {
-            const contract = this._getContract();
-            const admin = getAdminAccount();
-            const web3 = getWeb3();
+  /**
+   * REFRACTORED: Prepare accreditation transaction.
+   */
+  async prepareAccreditIssuer(senderAddress, issuerAddress) {
+    try {
+      const contract = this._getContract();
+   
+      const txObject = contract.methods.accreditIssuer(issuerAddress);
+      const encodedABI = txObject.encodeABI();
 
-            const tx = contract.methods.registerIssuer(issuerAddress, name, metadataURI);
-
-            // Fix: Convert BigInt to Number
-            const gasEstimate = await tx.estimateGas({ from: admin.address });
-            const gasPrice = await web3.eth.getGasPrice();
-
-            const receipt = await tx.send({
-                from: admin.address,
-                gas: Number(gasEstimate) + 50000, // Add buffer without multiplication
-                gasPrice: gasPrice.toString() // Convert BigInt to string
-            });
-
-            return {
-                success: true,
-                transactionHash: receipt.transactionHash,
-                issuerAddress,
-                blockNumber: Number(receipt.blockNumber)
-            };
-        } catch (error) {
-            console.error('Register issuer error:', error);
-            throw new Error(`Failed to register issuer: ${error.message}`);
-        }
+      return {
+        to: contract.options.address,
+        from: senderAddress, // Usually the Admin
+        data: encodedABI,
+      };
+    } catch (error) {
+      console.error("Prepare accredit issuer error:", error);
+      throw new Error(`Failed to prepare accredit issuer: ${error.message}`);
     }
+  }
 
-    async accreditIssuer(issuerAddress) {
-        try {
-            const contract = this._getContract();
-            const admin = getAdminAccount();
-            const web3 = getWeb3();
+  /**
+   * REFRACTORED: Prepare suspension transaction.
+   */
+  async prepareSuspendIssuer(senderAddress, issuerAddress, reason) {
+    try {
+      const contract = this._getContract();
 
-            const tx = contract.methods.accreditIssuer(issuerAddress);
+      const txObject = contract.methods.suspendIssuer(issuerAddress, reason);
+      const encodedABI = txObject.encodeABI();
 
-            // Fix: Convert BigInt properly
-            const gasEstimate = await tx.estimateGas({ from: admin.address });
-            const gasPrice = await web3.eth.getGasPrice();
-
-            const receipt = await tx.send({
-                from: admin.address,
-                gas: Number(gasEstimate) + 50000,
-                gasPrice: gasPrice.toString()
-            });
-
-            return {
-                success: true,
-                transactionHash: receipt.transactionHash,
-                issuerAddress
-            };
-        } catch (error) {
-            console.error('Accredit issuer error:', error);
-            throw new Error(`Failed to accredit issuer: ${error.message}`);
-        }
+      return {
+        to: contract.options.address,
+        from: senderAddress,
+        data: encodedABI,
+      };
+    } catch (error) {
+      console.error("Prepare suspend issuer error:", error);
+      throw new Error(`Failed to prepare suspend issuer: ${error.message}`);
     }
+  }
 
-    async isAccredited(issuerAddress) {
-        try {
-            const contract = this._getContract();
-            return await contract.methods.isAccredited(issuerAddress).call();
-        } catch (error) {
-            console.error('Check accreditation error:', error);
-            throw new Error(`Failed to check accreditation: ${error.message}`);
-        }
+  /**
+   * REFRACTORED: Prepare revocation transaction.
+   */
+  async prepareRevokeIssuer(senderAddress, issuerAddress, reason) {
+    try {
+      const contract = this._getContract();
+
+      const txObject = contract.methods.revokeIssuer(issuerAddress, reason);
+      const encodedABI = txObject.encodeABI();
+
+      return {
+        to: contract.options.address,
+        from: senderAddress,
+        data: encodedABI,
+      };
+    } catch (error) {
+      console.error("Prepare revoke issuer error:", error);
+      throw new Error(`Failed to prepare revoke issuer: ${error.message}`);
     }
+  }
 
-    async getIssuer(issuerAddress) {
-        try {
-            const contract = this._getContract();
-            const issuer = await contract.methods.getIssuer(issuerAddress).call();
+  // --- READ-ONLY METHODS (UNCHANGED) ---
 
-            return {
-                address: issuer.issuerAddress,
-                name: issuer.name,
-                metadataURI: issuer.metadataURI,
-                isAccredited: issuer.isAccredited,
-                isSuspended: issuer.isSuspended,
-                registrationDate: Number(issuer.registrationDate),
-                accreditationDate: Number(issuer.accreditationDate)
-            };
-        } catch (error) {
-            console.error('Get issuer error:', error);
-            throw new Error(`Failed to get issuer: ${error.message}`);
-        }
+  async isAccredited(issuerAddress) {
+    try {
+      const contract = this._getContract();
+      return await contract.methods.isAccredited(issuerAddress).call();
+    } catch (error) {
+      console.error("Check accreditation error:", error);
+      throw new Error(`Failed to check accreditation: ${error.message}`);
     }
+  }
 
-    async getAllAccreditedIssuers() {
-        try {
-            const contract = this._getContract();
-            return await contract.methods.getAllAccreditedIssuers().call();
-        } catch (error) {
-            console.error('Get all issuers error:', error);
-            throw new Error(`Failed to get all issuers: ${error.message}`);
-        }
+  async getIssuer(issuerAddress) {
+    try {
+      const contract = this._getContract();
+      const issuer = await contract.methods.getIssuer(issuerAddress).call();
+
+      return {
+        address: issuer.issuerAddress,
+        name: issuer.name,
+        metadataURI: issuer.metadataURI,
+        isAccredited: issuer.isAccredited,
+        isSuspended: issuer.isSuspended,
+        registrationDate: Number(issuer.registrationDate),
+        accreditationDate: Number(issuer.accreditationDate),
+      };
+    } catch (error) {
+      console.error("Get issuer error:", error);
+      throw new Error(`Failed to get issuer: ${error.message}`);
     }
+  }
 
-    async suspendIssuer(issuerAddress, reason) {
-        try {
-            const contract = this._getContract();
-            const admin = getAdminAccount();
-            const web3 = getWeb3();
-
-            const tx = contract.methods.suspendIssuer(issuerAddress, reason);
-
-            const gasEstimate = await tx.estimateGas({ from: admin.address });
-            const gasPrice = await web3.eth.getGasPrice();
-
-            const receipt = await tx.send({
-                from: admin.address,
-                gas: Number(gasEstimate) + 50000,
-                gasPrice: gasPrice.toString()
-            });
-
-            return {
-                success: true,
-                transactionHash: receipt.transactionHash,
-                issuerAddress
-            };
-        } catch (error) {
-            console.error('Suspend issuer error:', error);
-            throw new Error(`Failed to suspend issuer: ${error.message}`);
-        }
+  async getAllAccreditedIssuers() {
+    try {
+      const contract = this._getContract();
+      return await contract.methods.getAllAccreditedIssuers().call();
+    } catch (error) {
+      console.error("Get all issuers error:", error);
+      throw new Error(`Failed to get all issuers: ${error.message}`);
     }
-
-    async revokeIssuer(issuerAddress, reason) {
-        try {
-            const contract = this._getContract();
-            const admin = getAdminAccount();
-            const web3 = getWeb3();
-
-            const tx = contract.methods.revokeIssuer(issuerAddress, reason);
-
-            const gasEstimate = await tx.estimateGas({ from: admin.address });
-            const gasPrice = await web3.eth.getGasPrice();
-
-            const receipt = await tx.send({
-                from: admin.address,
-                gas: Number(gasEstimate) + 50000,
-                gasPrice: gasPrice.toString()
-            });
-
-            return {
-                success: true,
-                transactionHash: receipt.transactionHash,
-                issuerAddress
-            };
-        } catch (error) {
-            console.error('Revoke issuer error:', error);
-            throw new Error(`Failed to revoke issuer: ${error.message}`);
-        }
-    }
+  }
 }
 
 export default new IssuerService();

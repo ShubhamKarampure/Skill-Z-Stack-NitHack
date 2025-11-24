@@ -1,37 +1,85 @@
 // src/routes/credentialRoutes.js
-import express from 'express';
+import express from "express";
 import {
-    issueCredential,
-    getCredential,
-    getHolderCredentials,
-    revokeCredential,
-    getInstituteTemplates, // Add this
-    getIssuedCredentials // Add this
-} from '../controllers/credentialController.js';
-import { authenticate, requireRole } from '../middleware/auth.js';
-import { validateTokenId, validateAddress } from '../middleware/validation.js';
+  // Read
+  getCredential,
+  getHolderCredentials,
+  getInstituteTemplates,
+  getIssuedCredentials,
+
+  // Write (Split)
+  prepareIssueCredential,
+  finalizeIssueCredential,
+  prepareRevokeCredential,
+  finalizeRevokeCredential,
+} from "../controllers/credentialController.js";
+import { authenticate, requireRole } from "../middleware/auth.js";
+import { validateTokenId, validateAddress } from "../middleware/validation.js";
 
 const router = express.Router();
 
-// Protected routes - Institute only
-router.post('/issue', authenticate, requireRole(['institute', 'admin']), issueCredential);
-router.post('/revoke', authenticate, requireRole(['institute', 'admin']), revokeCredential);
-router.get('/templates', authenticate, requireRole(['institute', 'admin']), getInstituteTemplates);
-router.get('/issued', authenticate, requireRole(['institute', 'admin']), getIssuedCredentials);
+// =====================================================
+// INSTITUTE / ADMIN ROUTES (Protected Write)
+// =====================================================
 
-// Get credentials for authenticated user (student)
-router.get('/my/credentials', authenticate, async (req, res) => {
-    try {
-        const { getHolderCredentials } = await import('../controllers/credentialController.js');
-        req.params.address = req.user.walletAddress;
-        return getHolderCredentials(req, res);
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+// 1. Issue Credential
+router.post(
+  "/issue/prepare",
+  authenticate,
+  requireRole(["institute", "admin"]),
+  prepareIssueCredential
+);
+router.post(
+  "/issue/finalize",
+  authenticate,
+  requireRole(["institute", "admin"]),
+  finalizeIssueCredential
+);
+
+// 2. Revoke Credential
+router.post(
+  "/revoke/prepare",
+  authenticate,
+  requireRole(["institute", "admin"]),
+  prepareRevokeCredential
+);
+router.post(
+  "/revoke/finalize",
+  authenticate,
+  requireRole(["institute", "admin"]),
+  finalizeRevokeCredential
+);
+
+// 3. Institute Dashboard Data
+router.get(
+  "/templates",
+  authenticate,
+  requireRole(["institute", "admin"]),
+  getInstituteTemplates
+);
+router.get(
+  "/issued",
+  authenticate,
+  requireRole(["institute", "admin"]),
+  getIssuedCredentials
+);
+
+// =====================================================
+// STUDENT ROUTES (Protected Read)
+// =====================================================
+
+// Get credentials for the currently logged-in user
+router.get("/my/credentials", authenticate, async (req, res) => {
+  // Reuse the controller logic but inject the user's address
+  req.params.address = req.user.walletAddress;
+  return getHolderCredentials(req, res);
 });
 
-// Public routes
-router.get('/:tokenId', validateTokenId, getCredential);
-router.get('/holder/:address', validateAddress, getHolderCredentials);
+// =====================================================
+// PUBLIC ROUTES (Read Only)
+// =====================================================
+
+router.get("/:tokenId", validateTokenId, getCredential);
+router.get("/holder/:address", validateAddress, getHolderCredentials);
 
 export default router;

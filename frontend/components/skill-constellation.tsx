@@ -163,10 +163,11 @@ function Node3D({
         center
         distanceFactor={12}
         style={{ pointerEvents: "none" }}
+        zIndexRange={[40, 0]}
       >
         <div
           className={`transition-all duration-300 ${
-            isHovered || isSelected ? "scale-110 z-50" : "scale-100 z-10"
+            isHovered || isSelected ? "scale-110 z-10" : "scale-100 z-10"
           }`}
         >
           <div
@@ -178,7 +179,7 @@ function Node3D({
              }`}
           >
             <span
-              className={`text-xs font-bold whitespace-nowrap ${
+              className={`text-xs font-bold whitespace-nowrap z-10 ${
                 node.status === NodeStatus.GHOST
                   ? "text-purple-300"
                   : "text-zinc-200"

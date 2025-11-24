@@ -2,14 +2,23 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, X, ChevronRight } from "lucide-react";
+import { Menu, X, ChevronRight, Wallet, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogoCrest } from "./logo";
+import { LogoCrest } from "@/components/logo"; // Ensure this path matches your project
+import { useWallet } from "@/hooks/use-wallet"; // Ensure you created this hook from previous step
+
+// 🔧 CONFIGURATION
+// Change this manually to 'true' to test Web3 features in Dev
+const IS_PRODUCTION = process.env.NEXT_PUBLIC_NODE_ENV === "production";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // 🦊 Web3 Hook
+  const { address, connectWallet, isConnecting } = useWallet();
+
+  // Scroll Effect
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
@@ -22,6 +31,11 @@ export function Navbar() {
     { label: "Governance", href: "/governance" },
     { label: "Ecosystem", href: "/ecosystem" },
   ];
+
+  // Helper to format 0x1234...5678
+  const formatAddress = (addr: string) => {
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
 
   return (
     <>
@@ -37,7 +51,7 @@ export function Navbar() {
               : "bg-transparent py-6 px-4"
           } flex items-center justify-between`}
         >
-          {/* Logo */}
+          {/* --- LOGO --- */}
           <Link href="/" className="flex items-center gap-3 group">
             <LogoCrest className="w-10 h-10 group-hover:scale-105 transition-transform" />
             <span className="font-bold text-2xl tracking-tight text-white">
@@ -45,7 +59,7 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* --- DESKTOP NAVIGATION --- */}
           <div className="hidden md:flex items-center gap-8 bg-white/5 px-8 py-3 rounded-full border border-white/5 backdrop-blur-md">
             {navItems.map((item) => (
               <Link
@@ -58,27 +72,59 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* CTA Buttons */}
+          {/* --- ACTION BUTTONS (RIGHT SIDE) --- */}
           <div className="hidden md:flex items-center gap-4">
-            <Link
-              href="/login"
-              className="px-6 py-3 text-sm font-bold text-zinc-300 hover:text-white transition-colors"
-            >
-              Login
-            </Link>
-            <Link
-              href="/register"
-              className="group relative px-7 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)] overflow-hidden"
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                Get Started{" "}
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-purple-100 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </Link>
+            {IS_PRODUCTION ? (
+              // 🦊 PRODUCTION: WALLET LOGIC
+              address ? (
+                <Link
+                  href={address ? "/student/dashboard" : "/login"} // Redirects to dashboard if connected
+                  className="flex items-center gap-3 px-6 py-3 bg-zinc-900 border border-zinc-800 rounded-full text-sm font-mono text-emerald-400 hover:bg-zinc-800 hover:border-emerald-500/30 transition-all group"
+                >
+                  <div className="relative">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 blur-sm opacity-50" />
+                  </div>
+                  {formatAddress(address)}
+                </Link>
+              ) : (
+                <button
+                  onClick={() => connectWallet()}
+                  disabled={isConnecting}
+                  className="group relative px-7 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                >
+                  {isConnecting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Wallet className="w-4 h-4" />
+                  )}
+                  {isConnecting ? "Connecting..." : "Connect Wallet"}
+                </button>
+              )
+            ) : (
+              // 💻 DEV MODE: LOGIN / REGISTER
+              <>
+                <Link
+                  href="/login"
+                  className="px-6 py-3 text-sm font-bold text-zinc-300 hover:text-white transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="group relative px-7 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)] overflow-hidden"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    Get Started{" "}
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-purple-100 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+              </>
+            )}
           </div>
 
-          {/* Mobile Menu Toggle */}
+          {/* --- MOBILE MENU TOGGLE --- */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden p-3 rounded-xl bg-white/5 text-white border border-white/10"
@@ -87,14 +133,14 @@ export function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Menu Overlay */}
+        {/* --- MOBILE MENU OVERLAY --- */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="md:hidden absolute top-24 left-4 right-4 bg-[#18181b] border border-white/10 rounded-2xl p-6 shadow-2xl"
+              className="md:hidden absolute top-24 left-4 right-4 bg-[#18181b] border border-white/10 rounded-2xl p-6 shadow-2xl z-40"
             >
               <div className="flex flex-col gap-4">
                 {navItems.map((item) => (
@@ -107,21 +153,48 @@ export function Navbar() {
                     {item.label}
                   </Link>
                 ))}
+
+                {/* Mobile Action Buttons */}
                 <div className="flex flex-col gap-3 mt-4">
-                  <Link
-                    href="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="w-full py-3 text-center text-white font-bold bg-white/10 rounded-xl"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    href="/register"
-                    onClick={() => setIsOpen(false)}
-                    className="w-full py-3 text-center bg-white text-black font-bold rounded-xl"
-                  >
-                    Get Started
-                  </Link>
+                  {IS_PRODUCTION ? (
+                    // 🦊 Mobile Web3
+                    address ? (
+                      <Link
+                        href="/student/dashboard"
+                        className="w-full py-3 text-center text-emerald-400 font-bold bg-emerald-900/20 border border-emerald-500/20 rounded-xl font-mono"
+                      >
+                        {formatAddress(address)}
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          connectWallet();
+                          setIsOpen(false);
+                        }}
+                        className="w-full py-3 text-center bg-white text-black font-bold rounded-xl flex items-center justify-center gap-2"
+                      >
+                        <Wallet className="w-4 h-4" /> Connect Wallet
+                      </button>
+                    )
+                  ) : (
+                    // 💻 Mobile Dev Mode
+                    <>
+                      <Link
+                        href="/login"
+                        onClick={() => setIsOpen(false)}
+                        className="w-full py-3 text-center text-white font-bold bg-white/10 rounded-xl"
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        href="/register"
+                        onClick={() => setIsOpen(false)}
+                        className="w-full py-3 text-center bg-white text-black font-bold rounded-xl"
+                      >
+                        Get Started
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>

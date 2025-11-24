@@ -5,44 +5,47 @@ require('dotenv').config();
  * Network Configurations
  */
 const NETWORKS = {
-    development: {
-        name: 'Development (Ganache)',
-        networkId: 1337,
-        rpcUrl: process.env.GANACHE_URL || 'http://localhost:8545',
-        gasPrice: '20000000000', // 20 Gwei
-        gasLimit: 6721975,
-        confirmations: 0,
-        timeoutBlocks: 200
-    },
-    ganache: {
-        name: 'Ganache Local',
-        networkId: 5777,
-        rpcUrl: 'http://127.0.0.1:8545',
-        gasPrice: '20000000000',
-        gasLimit: 6721975,
-        confirmations: 0,
-        timeoutBlocks: 200
-    },
-    sepolia: {
-        name: 'Sepolia Testnet',
-        networkId: 11155111,
-        rpcUrl: process.env.SEPOLIA_RPC_URL || 'https://sepolia.infura.io/v3/YOUR_INFURA_KEY',
-        gasPrice: '30000000000', // 30 Gwei
-        gasLimit: 8000000,
-        confirmations: 2,
-        timeoutBlocks: 200,
-        chainId: 11155111
-    },
-    mainnet: {
-        name: 'Ethereum Mainnet',
-        networkId: 1,
-        rpcUrl: process.env.MAINNET_RPC_URL || 'https://mainnet.infura.io/v3/YOUR_INFURA_KEY',
-        gasPrice: '50000000000', // 50 Gwei
-        gasLimit: 8000000,
-        confirmations: 3,
-        timeoutBlocks: 200,
-        chainId: 1
-    }
+  development: {
+    name: "Development (Ganache)",
+    networkId: 1337,
+    rpcUrl: process.env.GANACHE_URL || "http://localhost:8545",
+    gasPrice: "20000000000", // 20 Gwei
+    gasLimit: 6721975,
+    confirmations: 0,
+    timeoutBlocks: 200,
+  },
+  ganache: {
+    name: "Ganache Local",
+    networkId: 5777,
+    rpcUrl: "http://127.0.0.1:8545",
+    gasPrice: "20000000000",
+    gasLimit: 6721975,
+    confirmations: 0,
+    timeoutBlocks: 200,
+  },
+  sepolia: {
+    name: "Sepolia Testnet",
+    networkId: 11155111,
+    rpcUrl:
+      process.env.ALCHEMY_URL || "https://sepolia.infura.io/v3/YOUR_INFURA_KEY",
+    gasPrice: "30000000000", // 30 Gwei
+    gasLimit: 8000000,
+    confirmations: 2,
+    timeoutBlocks: 200,
+    chainId: 11155111,
+  },
+  mainnet: {
+    name: "Ethereum Mainnet",
+    networkId: 1,
+    rpcUrl:
+      process.env.MAINNET_RPC_URL ||
+      "https://mainnet.infura.io/v3/YOUR_INFURA_KEY",
+    gasPrice: "50000000000", // 50 Gwei
+    gasLimit: 8000000,
+    confirmations: 3,
+    timeoutBlocks: 200,
+    chainId: 1,
+  },
 };
 
 /**

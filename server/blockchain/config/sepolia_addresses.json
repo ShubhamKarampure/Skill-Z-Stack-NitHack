@@ -1,0 +1,21 @@
+{
+  "network": "sepolia",
+  "admin": "0x4F006BaBAbb423C6d59f6a7c559f46b6EE5510a0",
+  "IssuerRegistry": "0x97926b32e3A07489936bFb62653BAf1Bc696D9a0",
+  "CredentialNFT": "0x4147b7d0A7AC8A0FcC5d1eec54FaeC5f6779F705",
+  "RevocationRegistry": "0x93acCcD0B48d3CabC00B11a821D28c2060181b62",
+  "CredentialVerifier": "0xc2A5F5EdB4d4eCec12409792527714959161cCD2",
+  "deployedAt": "2025-11-24T07:25:01.773Z",
+  "governance": {
+    "Timelock": "0x1Aa64CB978698C5a16682CdDAbdd23521C91bcaE",
+    "IssuerDAO": "0xCF4ab334C50938D22789c492D5736cf3B60440d5",
+    "GovernanceHelper": "0x00284C6f737927D519a34A81bee970fd6815eD31"
+  },
+  "zkp": {
+    "AgeVerifier": "0x2c99C958737d9C1983B61F5f214DAFeEF63203C4",
+    "CredentialProofVerifier": "0x37DB6903734c049177C62faa88Cba9395fE21196",
+    "UniversityRankVerifier": "0x9d73173B241024AE9F7ffD8cc75C2E9aa4FCfd6A",
+    "ZKPVerifier": "0xb1B25898bdffEBbeAab04986343Bcb5eD362E613",
+    "SelectiveDisclosure": "0x5cdfEa08DeA50cd4a71A6535b809bA8e23743894"
+  }
+}

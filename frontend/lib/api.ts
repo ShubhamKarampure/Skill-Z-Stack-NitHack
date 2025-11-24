@@ -1,69 +1,13 @@
 import { useAuthStore, User } from "./store";
 import { APIResponse, Credential, CredentialType } from "./types";
+import { signAndSendTransaction } from "./blockchain-client"; // Import the transaction handler
+import { ethers } from "ethers";
 
 // --- CONFIGURATION ---
 const BASE_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000/api/v1";
 
-// --- MOCK DATA (Backend Simulation) ---
-const MOCK_CREDENTIALS_DB: Credential[] = [
-  {
-    tokenId: "1001",
-    holder: "0x123...abc",
-    issuer: "TechCertified Academy",
-    credentialType: CredentialType.CERTIFICATE,
-    credentialTypeName: "CERTIFICATE",
-    metadataURI: "ipfs://QmHash1...",
-    transactionHash: "0xabc123...",
-    issuedAt: "2024-11-15T10:00:00Z",
-    isRevoked: false,
-    status: "ACTIVE",
-    metadata: {
-      name: "Advanced React Patterns",
-      description: "Mastery of HOCs, Hooks, and Context.",
-      image: "",
-      skills: ["React", "TypeScript", "Performance Optimization"],
-    },
-  },
-  {
-    tokenId: "1002",
-    holder: "0x123...abc",
-    issuer: "Global Hackathon DAO",
-    credentialType: CredentialType.BADGE,
-    credentialTypeName: "BADGE",
-    metadataURI: "ipfs://QmHash2...",
-    transactionHash: "0xdef456...",
-    issuedAt: "2024-11-20T14:30:00Z",
-    isRevoked: false,
-    status: "ACTIVE",
-    metadata: {
-      name: "Top Innovator 2024",
-      description: "First place in Web3 category.",
-      image: "",
-      skills: ["Innovation", "Solidity", "Pitching"],
-    },
-  },
-  {
-    tokenId: "1003",
-    holder: "0x123...abc",
-    issuer: "TechCertified Academy",
-    credentialType: CredentialType.CERTIFICATE,
-    credentialTypeName: "CERTIFICATE",
-    metadataURI: "ipfs://QmHash3...",
-    transactionHash: "0xghi789...",
-    issuedAt: "2024-10-15T10:00:00Z",
-    isRevoked: false,
-    status: "ACTIVE",
-    metadata: {
-      name: "Backend Architecture",
-      description: "Node.js scalable systems.",
-      image: "",
-      skills: ["Node.js", "Express", "MongoDB"],
-    },
-  },
-];
-
-// --- HELPER FUNCTION ---
+// --- HELPER FUNCTION: STANDARD FETCH ---
 async function fetchAPI<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -71,21 +15,22 @@ async function fetchAPI<T>(
   const token = useAuthStore.getState().token;
 
   const headers: HeadersInit = {
-    ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+    ...(options.body instanceof FormData
+      ? {}
+      : { "Content-Type": "application/json" }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
   try {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
-      'cache': 'no-cache',
+      cache: "no-cache",
       ...options,
       headers,
     });
 
     const data = await res.json();
 
-    // Pass through if the server returns a specific error message structure
     if (!res.ok) {
       throw new Error(data.message || "An error occurred");
     }
@@ -100,6 +45,106 @@ async function fetchAPI<T>(
   }
 }
 
+// --- NEW HELPER: TRANSACTION ORCHESTRATOR ---
+async function executeTransactionFlow<T>(
+  prepareEndpoint: string,
+  finalizeEndpoint: string,
+  payload: any
+): Promise<APIResponse<T>> {
+  try {
+    // 1. PREPARE: Get raw transaction data from backend
+    const prepareRes = await fetchAPI<any>(prepareEndpoint, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    if (!prepareRes.success) {
+      throw new Error(prepareRes.message || "Failed to prepare transaction");
+    }
+
+    const txData = prepareRes.data?.txData || prepareRes.txData;
+
+    if (!txData) {
+      throw new Error("Invalid server response: Missing transaction data.");
+    }
+
+    // 2. SIGN & SEND: User signs via MetaMask / Local Provider
+    // (Ensure your blockchain-client.ts handles gas limits correctly now)
+    const receipt = await signAndSendTransaction(txData);
+
+    if (!receipt) {
+      throw new Error("Transaction failed: No receipt received.");
+    }
+
+    // 3. PARSE LOGS: Robustly extract Token ID
+    // We define the ABI events we care about to parse them safely
+    let tokenId: string | null = null;
+
+    // Interface includes CredentialIssued (Mint) and standard Transfer (ERC721/20)
+    const iface = new ethers.Interface([
+      "event CredentialIssued(uint256 indexed tokenId, address indexed issuer, address indexed holder, uint8 credentialType, string metadataURI, uint256 expirationDate)",
+      "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
+    ]);
+
+    for (const log of receipt.logs) {
+      try {
+        const parsedLog = iface.parseLog({
+          topics: [...log.topics],
+          data: log.data,
+        });
+
+        if (parsedLog) {
+          // Priority 1: Custom Issue Event
+          if (parsedLog.name === "CredentialIssued") {
+            tokenId = parsedLog.args.tokenId.toString();
+            break;
+          }
+          // Priority 2: Standard ERC721 Mint (Transfer from 0x0)
+          if (
+            parsedLog.name === "Transfer" &&
+            parsedLog.args.from === ethers.ZeroAddress
+          ) {
+            tokenId = parsedLog.args.tokenId.toString();
+            // Keep searching in case CredentialIssued is emitted later
+          }
+        }
+      } catch (e) {
+        // Log didn't match interface, skip it
+        continue;
+      }
+    }
+
+    // Fallback: If no event matched, try naive topic extraction (e.g. for non-standard events)
+    if (!tokenId && receipt.logs.length > 0) {
+      try {
+        // Try last topic (standard for indexed uint256 as last argument)
+        const logs = receipt.logs;
+        const lastLog = logs[logs.length - 1];
+        const lastTopic = lastLog.topics[lastLog.topics.length - 1];
+        tokenId = BigInt(lastTopic).toString();
+      } catch (e) {
+        console.warn("Could not extract Token ID via fallback method.");
+      }
+    }
+
+    // 4. FINALIZE: Update backend database
+    return await fetchAPI<T>(finalizeEndpoint, {
+      method: "POST",
+      body: JSON.stringify({
+        ...payload,
+        txHash: receipt.hash, // v6 uses .hash, v5 used .transactionHash
+        blockNumber: receipt.blockNumber,
+        tokenId: tokenId, // Pass the extracted ID
+      }),
+    });
+  } catch (error: any) {
+    console.error("Transaction Flow Error:", error);
+    return {
+      success: false,
+      message: error.message || "Transaction process failed.",
+    };
+  }
+}
 // --- SERVICES ---
 
 export const authService = {
@@ -125,27 +170,21 @@ export const authService = {
 };
 
 export const credentialService = {
-  // Get All Credentials (Simulated)
-  getAllCredentials: async (): Promise<APIResponse<Credential[]>> => {
-    // Simulate network delay of 3 seconds
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Return mock data disguised as a real API response
-    return {
-      success: true,
-      message: "Credentials fetched successfully",
-      data: MOCK_CREDENTIALS_DB,
-    };
-  },
+  // Read operations
+  getAllCredentials: async () =>
+    fetchAPI<Credential[]>("/credentials", { method: "GET" }),
 
   getCredentialsByAddress: async (address: string) => {
-    return fetchAPI<{ count: number, credentials: Credential[] }>(`/credentials/holder/${address}`, {
-      method: "GET",
-    });
+    return fetchAPI<{ count: number; credentials: Credential[] }>(
+      `/credentials/holder/${address}`,
+      {
+        method: "GET",
+      }
+    );
   },
 
+  // WRITE: Updated to use executeTransactionFlow
   issueCredential: async (data: {
-    issuerPrivateKey: string;
     holderAddress: string;
     credentialType: number;
     metadataURI: string;
@@ -153,11 +192,13 @@ export const credentialService = {
     revocable?: boolean;
     credentialData: any;
     metadata?: any;
+    issuerPrivateKey?: string;
   }) => {
-    return fetchAPI("/credentials/issue", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+    return executeTransactionFlow(
+      "/credentials/issue/prepare",
+      "/credentials/issue/finalize",
+      data
+    );
   },
 
   getIssuedCredentials: async () => {
@@ -166,15 +207,17 @@ export const credentialService = {
     });
   },
 
+  // WRITE: Updated to use executeTransactionFlow
   revokeCredential: async (data: {
     tokenId: string;
-    issuerPrivateKey: string;
     reason: string;
+    issuerPrivateKey?: string; // Legacy param, ignored
   }) => {
-    return fetchAPI("/credentials/revoke", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+    return executeTransactionFlow(
+      "/credentials/revoke/prepare",
+      "/credentials/revoke/finalize",
+      data
+    );
   },
 };
 
@@ -200,40 +243,33 @@ export const templateService = {
     type: CredentialType;
     image: string;
     skills: string[];
-    issuerPrivateKey: string; // Required for signing
     metadataURI?: string;
+    issuerPrivateKey?: string; // Legacy
   }) => {
     const user = useAuthStore.getState().user;
     if (!user?.walletAddress) {
       return { success: false, message: "User wallet not connected" };
     }
 
-    // We use the issue endpoint to create a "self-issued" credential that acts as a template
-    return fetchAPI("/credentials/issue", {
-      method: "POST",
-      body: JSON.stringify({
-        issuerPrivateKey: data.issuerPrivateKey,
+    // A template is essentially a self-issued credential in this system
+    // We use the new transaction flow
+    return executeTransactionFlow(
+      "/credentials/issue/prepare",
+      "/credentials/issue/finalize",
+      {
         holderAddress: user.walletAddress, // Self-issue
         credentialType: data.type,
-        metadataURI: data.metadataURI || "ipfs://placeholder-for-demo",
+        metadataURI: data.metadataURI || "ipfs://placeholder-for-template",
         metadata: {
           name: data.name,
           description: data.description,
           image: data.image,
           skills: data.skills,
         },
-        credentialData: {
-          // Additional data if needed by the contract
-        },
-        // We store the actual template data in the metadata field of the DB model
-        // The controller expects 'metadataURI' but also saves metadata to DB if we modify it?
-        // Wait, the controller only saves metadataURI to DB.
-        // We might need to pass the metadata in the body if the controller supports it,
-        // OR we rely on the fact that we can't easily save the full metadata structure 
-        // without modifying the controller to accept 'metadata' object directly.
-        // Let's check the controller again.
-      }),
-    });
+        credentialData: {}, // Empty specific data
+        revocable: true,
+      }
+    );
   },
 
   getTemplates: async () => {
@@ -243,16 +279,19 @@ export const templateService = {
   },
 
   deleteTemplate: async (id: string) => {
-    // Not implemented in backend yet
     return { success: false, message: "Not implemented" };
   },
 };
 
 export const verifierService = {
-  verifyZKProof: async (tokenId: string, proofType: string, proof: any, publicSignals: any) => {
+  verifyZKProof: async (
+    tokenId: string,
+    proofType: string,
+    proof: any,
+    publicSignals: any
+  ) => {
     return fetchAPI<{ isValid: boolean }>(`/verify/verify/${tokenId}`, {
       method: "GET",
-      // body: JSON.stringify({ proofType, proof, publicSignals }),
     });
   },
 };
@@ -264,12 +303,17 @@ export const userService = {
       page: page.toString(),
       limit: limit.toString(),
     });
-    
+
     if (search) {
       queryParams.append("search", search);
     }
 
-    return fetchAPI<{ users: User[], totalPages: number, currentPage: number, total: number }>(`/users?${queryParams.toString()}`, {
+    return fetchAPI<{
+      users: User[];
+      totalPages: number;
+      currentPage: number;
+      total: number;
+    }>(`/users?${queryParams.toString()}`, {
       method: "GET",
     });
   },
@@ -283,7 +327,6 @@ export const userService = {
 
 // --- SHARED INTERFACES ---
 
-// The Clean UI Interface (Used by Admin & Enrollment)
 export interface Institute {
   id: string;
   name: string;
@@ -291,7 +334,6 @@ export interface Institute {
   status: "pending" | "active" | "revoked";
   requestedAt: string;
   credentialCount: number;
-  // Flags for Admin Logic
   isRegistered: boolean;
   isAccredited: boolean;
 }
@@ -306,9 +348,7 @@ export interface Enrollment {
   joinedAt?: string;
 }
 
-// --- ENROLLMENT SERVICE ---
 export const enrollmentService = {
-  // 1. Get My Institutes
   getMyEnrollments: async () => {
     return fetchAPI<Enrollment[]>("/enrollments/my-enrollments", {
       method: "GET",
@@ -321,7 +361,6 @@ export const enrollmentService = {
     });
   },
 
-  // 2. Request to Join Institute
   requestEnrollment: async (instituteId: string, token: string) => {
     return fetchAPI<Enrollment>("/enrollments/request", {
       method: "POST",
@@ -333,9 +372,8 @@ export const enrollmentService = {
   },
 };
 
-// --- ADMIN SERVICE (ADAPTER PATTERN) ---
+// --- ADMIN SERVICE ---
 
-// 1. Backend Types (Private to this file, matching DB structure)
 interface BackendInstituteItem {
   _id: string;
   name: string;
@@ -357,29 +395,23 @@ interface BackendAdminResponse {
 }
 
 export const adminService = {
-  // GET: Fetches and Maps data to clean UI type
   getInstitutes: async (): Promise<{
     success: boolean;
     data: Institute[];
     message?: string;
   }> => {
     try {
-      // Note: We cast the response because fetchAPI returns APIResponse<T>,
-      // but the backend structure here is slightly nested differently
       const response = await fetchAPI<BackendAdminResponse>(
         "/issuers/admin/institutes",
         { method: "GET" }
       );
 
-      // Access the nested data structure
       const rawData = (response as any).institutes?.all;
 
       if (response.success && rawData) {
-        // --- MAPPING LOGIC ---
         const mappedData: Institute[] = rawData.map(
           (item: BackendInstituteItem) => {
             let status: Institute["status"] = "pending";
-
             if (item.instituteData?.isSuspended) {
               status = "revoked";
             } else if (
@@ -388,7 +420,6 @@ export const adminService = {
             ) {
               status = "active";
             } else {
-              // If missing either registration or accreditation, it's pending action
               status = "pending";
             }
 
@@ -398,7 +429,6 @@ export const adminService = {
               walletAddress: item.walletAddress,
               requestedAt: item.createdAt,
               credentialCount: item.credentialCount || 0,
-              // Map flags for UI buttons
               isRegistered: item.instituteData?.isRegistered || false,
               isAccredited: item.instituteData?.isAccredited || false,
               status: status,
@@ -423,42 +453,38 @@ export const adminService = {
     }
   },
 
-  
-
-  // ACTION 1: Register Issuer (Step 1)
+  // WRITE: Refactored to use executeTransactionFlow
   registerIssuer: async (walletAddress: string) => {
-    return fetchAPI<{ success: boolean; message: string }>(
-      "/issuers/register",
+    return executeTransactionFlow(
+      "/issuers/register/prepare",
+      "/issuers/register/finalize",
       {
-        method: "POST",
-        body: JSON.stringify({
-          issuerAddress: walletAddress,
-          name: "blank", // Hardcoded as requested
-          metadataURI: "blank", // Hardcoded as requested
-        }),
+        issuerAddress: walletAddress,
+        name: "New Institute", // You might want to make this dynamic
+        metadataURI: "ipfs://placeholder",
       }
     );
   },
 
-  // ACTION 2: Accredit Issuer (Step 2)
+  // WRITE: Refactored to use executeTransactionFlow
   accreditIssuer: async (walletAddress: string) => {
-    return fetchAPI<{ success: boolean; message: string }>(
-      "/issuers/accredit",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          issuerAddress: walletAddress,
-        }),
-      }
+    return executeTransactionFlow(
+      "/issuers/accredit/prepare",
+      "/issuers/accredit/finalize",
+      { issuerAddress: walletAddress }
     );
   },
 
-  // ACTION 3: Revoke
+  // WRITE: Refactored to use executeTransactionFlow
   revokeInstitute: async (walletAddress: string) => {
-    return fetchAPI<{ success: boolean; message: string }>("/issuers/revoke", {
-      method: "POST",
-      body: JSON.stringify({ issuerAddress: walletAddress }),
-    });
+    return executeTransactionFlow(
+      "/issuers/suspend/prepare",
+      "/issuers/suspend/finalize",
+      {
+        issuerAddress: walletAddress,
+        reason: "Admin Action",
+      }
+    );
   },
 };
 
@@ -468,7 +494,6 @@ export interface UserProfile {
   email: string;
   role: "student" | "institute" | "admin";
   walletAddress?: string;
-  // Add other fields your UserModel returns
   instituteDetails?: {
     name: string;
     isAccredited: boolean;
@@ -476,14 +501,11 @@ export interface UserProfile {
 }
 
 export const instituteService = {
-  // Fetch only accredited institutes for the public/student dropdown
   getAccreditedInstitutes: async (): Promise<APIResponse<Institute[]>> => {
     console.log("Fetching accredited institutes...");
-    
     const response = await fetchAPI<Institute[]>("/enrollments/institutes", {
       method: "GET",
     });
-    
     return response;
   },
 };
@@ -493,5 +515,5 @@ export interface EnrolledStudent {
   name: string;
   email: string;
   walletAddress?: string;
-  enrolledAt: string; // or joinedAt
+  enrolledAt: string;
 }

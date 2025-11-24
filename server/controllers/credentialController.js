@@ -1,250 +1,230 @@
 // src/controllers/credentialController.js
-import credentialService from '../blockchain/services/credentialService.js';
-import UserModel from '../models/User.js';
-import CredentialModel from '../models/Credential.js';
+import credentialService from "../blockchain/services/credentialService.js";
+import UserModel from "../models/User.js";
+import CredentialModel from "../models/Credential.js";
 
-export const issueCredential = async (req, res) => {
+// --- REFRACTORED: STEP 1 - PREPARE ISSUE ---
+// Generates the raw transaction data for the frontend to sign
+export const prepareIssueCredential = async (req, res) => {
   try {
     const {
-      issuerPrivateKey,
       holderAddress,
       credentialType,
       metadataURI,
       expirationDate,
       revocable,
       credentialData,
-      metadata // Allow passing metadata directly for DB storage
     } = req.body;
 
-    // Validation
-    if (!issuerPrivateKey || !holderAddress || !metadataURI) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields'
-      });
+    // The issuer is the logged-in user (Institute)
+    const issuerAddress = req.user.walletAddress;
+
+    if (!holderAddress || !metadataURI) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
     }
 
-    // Issue on blockchain
-    const result = await credentialService.issueCredential(
-      issuerPrivateKey,
+    // Call service to generate raw transaction object ONLY
+    const txData = await credentialService.prepareIssueCredential(
+      issuerAddress,
       holderAddress,
       {
         credentialType: credentialType || 0,
         metadataURI,
         expirationDate: expirationDate || 0,
         revocable: revocable !== undefined ? revocable : true,
-        ...credentialData
+        ...credentialData,
       }
     );
 
+    return res.status(200).json({
+      success: true,
+      step: "prepare",
+      txData,
+    });
+  } catch (error) {
+    console.error("Prepare Issue Credential Error:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// --- REFRACTORED: STEP 2 - FINALIZE ISSUE ---
+// Called after the frontend successfully broadcasts the transaction
+export const finalizeIssueCredential = async (req, res) => {
+  try {
+    const {
+      txHash,
+      tokenId, // The frontend must parse this from the TransactionReceipt logs
+      blockNumber,
+      holderAddress,
+      metadataURI,
+      metadata,
+      credentialType,
+    } = req.body;
+
+    const issuerAddress = req.user.walletAddress;
+
+    if (!txHash || !tokenId) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Transaction hash and Token ID are required",
+        });
+    }
+
     // Save metadata to database
     const credential = await CredentialModel.create({
-      tokenId: result.tokenId,
+      tokenId,
       holder: holderAddress.toLowerCase(),
-      issuer: req.user?.walletAddress || holderAddress,
+      issuer: issuerAddress.toLowerCase(),
       credentialType: credentialType || 0,
       metadataURI,
-      metadata, // Save the metadata object
-      transactionHash: result.transactionHash,
-      blockNumber: result.blockNumber,
-      issuedAt: new Date()
+      metadata,
+      transactionHash: txHash,
+      blockNumber: blockNumber,
+      issuedAt: new Date(),
     });
 
-    // Update user's credentials
+    // Update user's credentials list
     await UserModel.findOneAndUpdate(
       { walletAddress: holderAddress.toLowerCase() },
-      { $push: { 'studentData.credentials': result.tokenId } }
+      { $push: { "studentData.credentials": tokenId } }
     );
 
     return res.status(201).json({
       success: true,
-      message: 'Credential issued successfully',
-      data: {
-        ...result,
-        credential
-      }
+      message: "Credential finalized and saved",
+      credential,
     });
-
   } catch (error) {
-    console.error('Issue Credential Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to issue credential',
-      error: error.message
-    });
+    console.error("Finalize Issue Credential Error:", error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
 
-export const getCredential = async (req, res) => {
+// --- REFRACTORED: STEP 1 - PREPARE REVOKE ---
+export const prepareRevokeCredential = async (req, res) => {
   try {
-    const { tokenId } = req.params;
+    const { tokenId, reason } = req.body;
+    const issuerAddress = req.user.walletAddress;
 
-    // Get from blockchain
-    const credential = await credentialService.getCredential(tokenId);
-
-    // Get metadata from database
-    const metadata = await CredentialModel.findOne({ tokenId });
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        credential: {
-          ...credential,
-          metadata
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error('Get Credential Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to get credential',
-      error: error.message
-    });
-  }
-};
-
-export const getHolderCredentials = async (req, res) => {
-  try {
-    const { address } = req.params;
-
-    // Get token IDs from blockchain
-    const tokenIds = await credentialService.getHolderCredentials(address);
-
-    // Get details for each
-    const credentials = [];
-    for (const tokenId of tokenIds) {
-      try {
-        const onChainData = await credentialService.getCredential(tokenId);
-        const metadata = await CredentialModel.findOne({ tokenId });
-        
-        // Only include credentials that have metadata in our DB
-        // This filters out "Unknown Credential" ghosts that exist on-chain but not in DB
-        if (metadata) {
-          credentials.push({ ...onChainData, metadata });
-        }
-      } catch (err) {
-        console.warn(`Skipping credential ${tokenId} due to error:`, err.message);
-        // Optionally, try to fetch just from DB if blockchain fails
-        const metadata = await CredentialModel.findOne({ tokenId });
-        if (metadata) {
-           credentials.push({ 
-             tokenId, 
-             status: 'SYNC_ERROR', 
-             isRevoked: true,
-             metadata 
-           });
-        }
-      }
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        count: credentials.length,
-        credentials
-      }
-    });
-
-  } catch (error) {
-    console.error('Get Holder Credentials Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to get credentials',
-      error: error.message
-    });
-  }
-};
-
-export const revokeCredential = async (req, res) => {
-  try {
-    const { tokenId, issuerPrivateKey, reason } = req.body;
-
-    if (!tokenId || !issuerPrivateKey || !reason) {
-      return res.status(400).json({
-        success: false,
-        message: 'tokenId, issuerPrivateKey, and reason are required'
-      });
-    }
-
-    const result = await credentialService.revokeCredential(
+    const txData = await credentialService.prepareRevokeCredential(
       tokenId,
-      issuerPrivateKey,
+      issuerAddress,
       reason
     );
 
-    // Update database
+    return res.status(200).json({ success: true, step: "prepare", txData });
+  } catch (error) {
+    console.error("Prepare Revoke Error:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// --- REFRACTORED: STEP 2 - FINALIZE REVOKE ---
+export const finalizeRevokeCredential = async (req, res) => {
+  try {
+    const { tokenId, reason, txHash } = req.body;
+
     await CredentialModel.findOneAndUpdate(
       { tokenId },
       {
         isRevoked: true,
         revocationReason: reason,
         revokedAt: new Date(),
-        revocationTxHash: result.transactionHash
+        revocationTxHash: txHash,
       }
     );
 
+    return res
+      .status(200)
+      .json({ success: true, message: "Revocation finalized" });
+  } catch (error) {
+    console.error("Finalize Revoke Error:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// --- READ-ONLY METHODS (UNCHANGED) ---
+
+export const getCredential = async (req, res) => {
+  try {
+    const { tokenId } = req.params;
+    const credential = await credentialService.getCredential(tokenId);
+    const metadata = await CredentialModel.findOne({ tokenId });
+
     return res.status(200).json({
       success: true,
-      message: 'Credential revoked successfully',
-      data: result
+      data: { credential: { ...credential, metadata } },
     });
-
   } catch (error) {
-    console.error('Revoke Credential Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to revoke credential',
-      error: error.message
-    });
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const getHolderCredentials = async (req, res) => {
+  try {
+    const { address } = req.params;
+    const tokenIds = await credentialService.getHolderCredentials(address);
+    const credentials = [];
+
+    for (const tokenId of tokenIds) {
+      try {
+        const onChainData = await credentialService.getCredential(tokenId);
+        const metadata = await CredentialModel.findOne({ tokenId });
+        if (metadata) {
+          credentials.push({ ...onChainData, metadata });
+        }
+      } catch (err) {
+        const metadata = await CredentialModel.findOne({ tokenId });
+        if (metadata) {
+          credentials.push({
+            tokenId,
+            status: "SYNC_ERROR",
+            isRevoked: true,
+            metadata,
+          });
+        }
+      }
+    }
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+        data: { count: credentials.length, credentials },
+      });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
 
 export const getInstituteTemplates = async (req, res) => {
   try {
     const walletAddress = req.user.walletAddress.toLowerCase();
-
-    // Find credentials where issuer is the current user AND holder is the current user
-    // This convention represents a "Template"
     const templates = await CredentialModel.find({
       issuer: walletAddress,
-      holder: walletAddress
+      holder: walletAddress,
     }).sort({ createdAt: -1 });
 
-    return res.status(200).json({
-      success: true,
-      data: templates
-    });
+    return res.status(200).json({ success: true, data: templates });
   } catch (error) {
-    console.error('Get Templates Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch credential templates',
-      error: error.message
-    });
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
 
 export const getIssuedCredentials = async (req, res) => {
   try {
     const issuerAddress = req.user.walletAddress.toLowerCase();
-    
     const credentials = await CredentialModel.find({
       issuer: issuerAddress,
-      holder: { $ne: issuerAddress } 
+      holder: { $ne: issuerAddress },
     }).sort({ issuedAt: -1 });
 
-    return res.status(200).json({
-      success: true,
-      data: credentials
-    });
+    return res.status(200).json({ success: true, data: credentials });
   } catch (error) {
-    console.error('Get Issued Credentials Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to get issued credentials',
-      error: error.message
-    });
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
