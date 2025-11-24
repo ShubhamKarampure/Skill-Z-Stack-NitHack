@@ -198,7 +198,7 @@ NEXT_PUBLIC_GEMINI_API_KEY=your_google_gemini_key_here
 
 Built with ❤️ for **NITHacks 8.0**
 
-  * *Ritwik Sharma* - *Backend & Blockchain Lead*
+  * *Ritvik Sharma* - *Backend & Blockchain Lead*
   * *Vedant Shah* - *Full Stack Developer*
   * *Talha Naik* - *Frontend Developer*
   * *Shubham Karampure* - *UI/UX Developer & AI Lead*
